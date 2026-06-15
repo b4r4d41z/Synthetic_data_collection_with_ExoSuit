@@ -30,3 +30,15 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+
+# Local bridge configuration
+docker/exo_ros_bridge/.env
+
+# Docker temporary files
+docker/exo_ros_bridge/**/__pycache__/
+
+# Local bridge configuration
+docker/exo_ros_bridge/.env
+
+# Docker temporary files
+docker/exo_ros_bridge/**/__pycache__/

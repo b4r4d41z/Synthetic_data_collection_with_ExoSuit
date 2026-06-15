@@ -1,0 +1,40 @@
+services:
+  ros2_bridge:
+    build:
+      context: ./ros2
+      dockerfile: Dockerfile
+
+    image: exo-ros2-bridge:jazzy
+    container_name: exo_ros2_bridge
+
+    network_mode: host
+
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      ROS_LOCALHOST_ONLY: "0"
+      ROS2_HAND_TOPIC: /control_robot_hand_position
+      ZMQ_BIND_ENDPOINT: tcp://0.0.0.0:5555
+
+    restart: unless-stopped
+
+  ros1_bridge:
+    build:
+      context: ./ros1
+      dockerfile: Dockerfile
+
+    image: exo-ros1-bridge:noetic
+    container_name: exo_ros1_bridge
+
+    network_mode: host
+
+    depends_on:
+      - ros2_bridge
+
+    environment:
+      ROS_MASTER_URI: http://${EXO_IP}:11311
+      ROS_IP: ${ISAAC_PC_IP}
+      ROS_HOSTNAME: ${ISAAC_PC_IP}
+      ROS1_HAND_TOPIC: /control_robot_hand_position
+      ZMQ_ENDPOINT: tcp://127.0.0.1:5555
+
+    restart: unless-stopped
