@@ -1,0 +1,32 @@
+# ROS2 / colcon build artifacts
+exo2isaacsim/build/
+exo2isaacsim/install/
+exo2isaacsim/log/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python package metadata
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
