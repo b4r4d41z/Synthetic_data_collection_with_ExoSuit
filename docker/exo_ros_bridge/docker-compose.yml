@@ -8,10 +8,13 @@ services:
     container_name: exo_ros2_bridge
 
     network_mode: host
+    ipc: host
 
     environment:
       ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
       ROS_LOCALHOST_ONLY: "0"
+      ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
+      ROS_STATIC_PEERS: ""
       ROS2_HAND_TOPIC: /control_robot_hand_position
       ZMQ_BIND_ENDPOINT: tcp://0.0.0.0:5555
 

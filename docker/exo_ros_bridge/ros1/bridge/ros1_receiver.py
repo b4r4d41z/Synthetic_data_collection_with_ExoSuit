@@ -4,7 +4,7 @@ import os
 import rospy
 import zmq
 
-from dynamic_biped.msg import RobotHandPosition
+from dynamic_biped.msg import robotHandPosition
 
 
 TOPIC = os.getenv(
@@ -29,7 +29,7 @@ class Ros1Receiver:
 
         self.subscriber = rospy.Subscriber(
             TOPIC,
-            RobotHandPosition,
+            robotHandPosition,
             self.callback,
             queue_size=1,
             tcp_nodelay=True,
