@@ -11,7 +11,7 @@ PANE_BRIDGE=$(tmux new-session -d -s $SESSION -n main -P -F "#{pane_id}")
 
 PANE_ROS2=$(tmux split-window -h -t $PANE_BRIDGE -P -F "#{pane_id}")
 PANE_CONTROL=$(tmux split-window -v -t $PANE_BRIDGE -P -F "#{pane_id}")
-PANE_CHECK=$(tmux split-window -v -t $PANE_ROS2 -P -F "#{pane_id}")
+PANE_ARM_CONTROL=$(tmux split-window -v -t $PANE_ROS2 -P -F "#{pane_id}")
 
 tmux select-layout -t $SESSION:main tiled
 
@@ -20,8 +20,8 @@ tmux set-option -t $SESSION pane-border-format "#{pane_title}"
 
 tmux select-pane -t $PANE_BRIDGE -T "ROS1 bridge docker"
 tmux select-pane -t $PANE_ROS2 -T "ROS2 publisher"
-tmux select-pane -t $PANE_CONTROL -T "Isaac controller"
-tmux select-pane -t $PANE_CHECK -T "Checks"
+tmux select-pane -t $PANE_CONTROL -T "Isaac hand controller"
+tmux select-pane -t $PANE_ARM_CONTROL -T "Isaac arm controller"
 
 # --- PANE 1: ROS1 BRIDGE DOCKER ---
 tmux send-keys -t $PANE_BRIDGE "
@@ -61,8 +61,8 @@ unset ROS_STATIC_PEERS
 ros2 run isaac_eff_control eff_control_node
 " C-m
 
-# --- PANE 4: CHECKS ---
-tmux send-keys -t $PANE_CHECK "
+# --- PANE 4: ISAAC ARM CONTROLLER ---
+tmux send-keys -t $PANE_ARM_CONTROL "
 conda deactivate 2>/dev/null || true
 cd $ROS2_WS
 
@@ -74,12 +74,7 @@ export ROS_LOCALHOST_ONLY=0
 export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
 unset ROS_STATIC_PEERS
 
-echo 'Useful checks:'
-echo 'ros2 topic echo /control_robot_hand_position --qos-reliability best_effort'
-echo 'ros2 topic echo /left_hand_joint_command --qos-reliability reliable'
-echo 'ros2 topic echo /right_hand_joint_command --qos-reliability reliable'
-echo ''
-bash
+ros2 run isaac_eff_control arm_control_node
 " C-m
 
 tmux select-pane -t $PANE_BRIDGE

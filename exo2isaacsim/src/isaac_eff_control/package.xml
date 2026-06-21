@@ -3,11 +3,13 @@
 <package format="3">
   <name>isaac_eff_control</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Isaac Sim effector and arm control nodes</description>
   <maintainer email="m0kiets.ivan@gmail.com">lab</maintainer>
-  <license>TODO: License declaration</license>
+  <license>TODO</license>
 
   <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>dynamic_biped</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
