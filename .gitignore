@@ -42,3 +42,5 @@ docker/exo_ros_bridge/.env
 
 # Docker temporary files
 docker/exo_ros_bridge/**/__pycache__/
+
+/assets/assemblies/old
