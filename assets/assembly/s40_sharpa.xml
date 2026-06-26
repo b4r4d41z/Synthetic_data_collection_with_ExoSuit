@@ -1,0 +1,644 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="biped_s40_with_left_sharpa_wave">
+  <compiler angle="radian" meshdir="." />
+  <size njmax="500" nconmax="100" />
+  <default>
+    <joint limited="true" armature="0.05" damping="0.2" frictionloss="0.02" />
+    <motor ctrllimited="true" ctrlrange="-100 100" />
+    <equality solref="0.005 1" />
+    <default class="collision">
+      <geom material="collision" contype="4" conaffinity="4" user="2" rgba="0.9 0.3 0.3 0.2" />
+      <default class="collision-left">
+        <geom contype="1" conaffinity="2" rgba="0.3 0.9 0.3 0.2" />
+      </default>
+      <default class="collision-right">
+        <geom contype="2" conaffinity="1" rgba="0.3 0.3 0.9 0.2" />
+      </default>
+    </default>
+    <!-- Sharpa Wave default classes inserted from left_hand_s40.xml. -->
+    <default class="sharpa">
+      <position inheritrange="1.0" />
+      <site size="0.0025 0.005 0.005" group="5" rgba="1 0 0 1" />
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" density="0" material="silver" />
+        <default class="elastomer_visual">
+          <geom material="green" />
+        </default>
+      </default>
+      <default class="collision">
+        <geom type="mesh" group="3" solref="0.01" rgba="0.2 0.6 0.2 0.25" />
+        <default class="elastomer_collision">
+          <geom solref="0.06 0.9" />
+        </default>
+      </default>
+      <default class="CMC_joint">
+        <joint actuatorfrcrange="-3.3 3.3" armature="0.0032" damping="4.2e-05" frictionloss="0.132" />
+      </default>
+      <default class="PCMC_joint">
+        <joint actuatorfrcrange="-0.5285 0.5285" armature="0.00012" damping="4.2e-05" frictionloss="0.012" />
+      </default>
+      <default class="MCP_joint">
+        <joint actuatorfrcrange="-1.864 1.864" armature="0.00265" damping="2.38e-05" frictionloss="0.07456" />
+      </default>
+      <default class="PIP_joint">
+        <joint actuatorfrcrange="-0.638 0.638" armature="0.0006" damping="4.06e-06" frictionloss="0.01276" />
+      </default>
+      <default class="DIP_joint">
+        <joint actuatorfrcrange="-0.189369 0.189369" armature="0.00042" damping="1.21e-06" frictionloss="0.00378738" />
+      </default>
+    </default>
+  </default>
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.4 0.6 0.8" width="128" height="128" />
+    <texture name="grid" type="2d" builtin="checker" rgb1=".1 .2 .3" rgb2=".2 .3 .4" width="300" height="300" />
+    <material name="grid" texture="grid" texrepeat="8 8" reflectance=".1" />
+    <material name="collision" rgba="0.1 0.5 0.9 0" />
+    <mesh name="base_link" file="../s40/biped_s40/meshes/base_link.STL" />
+    <mesh name="l_leg_roll" file="../s40/biped_s40/meshes/l_leg_roll.STL" />
+    <mesh name="l_leg_yaw" file="../s40/biped_s40/meshes/l_leg_yaw.STL" />
+    <mesh name="l_leg_pitch" file="../s40/biped_s40/meshes/l_leg_pitch.STL" />
+    <mesh name="l_knee" file="../s40/biped_s40/meshes/l_knee.STL" />
+    <mesh name="l_foot_pitch" file="../s40/biped_s40/meshes/l_foot_pitch.STL" />
+    <mesh name="l_foot_roll" file="../s40/biped_s40/meshes/l_foot_roll.STL" />
+    <mesh name="r_leg_roll" file="../s40/biped_s40/meshes/r_leg_roll.STL" />
+    <mesh name="r_leg_yaw" file="../s40/biped_s40/meshes/r_leg_yaw.STL" />
+    <mesh name="r_leg_pitch" file="../s40/biped_s40/meshes/r_leg_pitch.STL" />
+    <mesh name="r_knee" file="../s40/biped_s40/meshes/r_knee.STL" />
+    <mesh name="r_foot_pitch" file="../s40/biped_s40/meshes/r_foot_pitch.STL" />
+    <mesh name="r_foot_roll" file="../s40/biped_s40/meshes/r_foot_roll.STL" />
+    <mesh name="l_arm_pitch" file="../s40/biped_s40/meshes/l_arm_pitch.STL" />
+    <mesh name="l_arm_roll" file="../s40/biped_s40/meshes/l_arm_roll.STL" />
+    <mesh name="l_arm_yaw" file="../s40/biped_s40/meshes/l_arm_yaw.STL" />
+    <mesh name="l_forearm" file="../s40/biped_s40/meshes/l_forearm.STL" />
+    <mesh name="l_hand_yaw" file="../s40/biped_s40/meshes/l_hand_yaw.STL" />
+    <mesh name="l_hand_pitch" file="../s40/biped_s40/meshes/l_hand_pitch.STL" />
+    <mesh name="l_hand_roll" file="../s40/biped_s40/meshes/l_hand_roll.STL" />
+    <mesh name="r_arm_pitch" file="../s40/biped_s40/meshes/r_arm_pitch.STL" />
+    <mesh name="r_arm_roll" file="../s40/biped_s40/meshes/r_arm_roll.STL" />
+    <mesh name="r_arm_yaw" file="../s40/biped_s40/meshes/r_arm_yaw.STL" />
+    <mesh name="r_forearm" file="../s40/biped_s40/meshes/r_forearm.STL" />
+    <mesh name="r_hand_yaw" file="../s40/biped_s40/meshes/r_hand_yaw.STL" />
+    <mesh name="r_hand_pitch" file="../s40/biped_s40/meshes/r_hand_pitch.STL" />
+    <mesh name="r_hand_roll" file="../s40/biped_s40/meshes/r_hand_roll.STL" />
+    <mesh name="head_yaw" file="../s40/biped_s40/meshes/head_yaw.STL" />
+    <mesh name="head_pitch" file="../s40/biped_s40/meshes/head_pitch.STL" />
+    <mesh name="camera" file="../s40/biped_s40/meshes/camera.STL" />
+    <!-- Sharpa Wave left-hand materials and meshes inserted from ../sharpa_wave/left_hand_s40.xml. -->
+    <material name="silver" rgba="0.79 0.82 0.93 1" />
+    <material name="green" rgba="0.2 1 0.2 1" />
+    <mesh name="left_hand_C_MC_visual" file="../sharpa_wave/assets/left/left_hand_C_MC_visual.STL" />
+    <mesh name="left_hand_C_MC" file="../sharpa_wave/assets/left/left_hand_C_MC.STL" />
+    <mesh name="left_thumb_CMC_VL" file="../sharpa_wave/assets/left/left_thumb_CMC_VL.STL" />
+    <mesh name="left_thumb_MC_visual" file="../sharpa_wave/assets/left/left_thumb_MC_visual.STL" />
+    <mesh name="left_thumb_MC" file="../sharpa_wave/assets/left/left_thumb_MC.STL" />
+    <mesh name="left_thumb_MCP_VL_visual" file="../sharpa_wave/assets/left/left_thumb_MCP_VL_visual.STL" />
+    <mesh name="left_thumb_PP_visual" file="../sharpa_wave/assets/left/left_thumb_PP_visual.STL" />
+    <mesh name="left_thumb_PP" file="../sharpa_wave/assets/left/left_thumb_PP.STL" />
+    <mesh name="DP_Visual_HB1_TH" file="../sharpa_wave/assets/left/DP_Visual_HB1_TH.STL" />
+    <mesh name="DP_HB1_TH" file="../sharpa_wave/assets/left/DP_HB1_TH.STL" />
+    <mesh name="elastomer_HB1_TH" file="../sharpa_wave/assets/left/elastomer_HB1_TH.STL" />
+    <mesh name="left_MCP_VL_visual" file="../sharpa_wave/assets/left/left_MCP_VL_visual.STL" />
+    <mesh name="MCP_VL" file="../sharpa_wave/assets/left/MCP_VL.STL" />
+    <mesh name="left_PP_visual" file="../sharpa_wave/assets/left/left_PP_visual.STL" />
+    <mesh name="left_PP" file="../sharpa_wave/assets/left/left_PP.STL" />
+    <mesh name="left_MP_visual" file="../sharpa_wave/assets/left/left_MP_visual.STL" />
+    <mesh name="left_MP" file="../sharpa_wave/assets/left/left_MP.STL" />
+    <mesh name="DP_visual_HB1_4F" file="../sharpa_wave/assets/left/DP_visual_HB1_4F.STL" />
+    <mesh name="DP_HB1_4F" file="../sharpa_wave/assets/left/DP_HB1_4F.STL" />
+    <mesh name="elastomer_HB1_4F" file="../sharpa_wave/assets/left/elastomer_HB1_4F.STL" />
+    <mesh name="left_pinky_MC_visual" file="../sharpa_wave/assets/left/left_pinky_MC_visual.STL" />
+    <mesh name="left_pinky_MC" file="../sharpa_wave/assets/left/left_pinky_MC.STL" />
+    <mesh name="palm000" file="../sharpa_wave/assets/left/palm/palm000.obj" />
+    <mesh name="palm001" file="../sharpa_wave/assets/left/palm/palm001.obj" />
+    <mesh name="palm002" file="../sharpa_wave/assets/left/palm/palm002.obj" />
+    <mesh name="palm003" file="../sharpa_wave/assets/left/palm/palm003.obj" />
+    <mesh name="palm004" file="../sharpa_wave/assets/left/palm/palm004.obj" />
+    <mesh name="palm005" file="../sharpa_wave/assets/left/palm/palm005.obj" />
+    <mesh name="palm006" file="../sharpa_wave/assets/left/palm/palm006.obj" />
+    <mesh name="palm007" file="../sharpa_wave/assets/left/palm/palm007.obj" />
+    <mesh name="palm008" file="../sharpa_wave/assets/left/palm/palm008.obj" />
+    <mesh name="palm009" file="../sharpa_wave/assets/left/palm/palm009.obj" />
+    <mesh name="palm010" file="../sharpa_wave/assets/left/palm/palm010.obj" />
+    <mesh name="palm011" file="../sharpa_wave/assets/left/palm/palm011.obj" />
+    <mesh name="palm012" file="../sharpa_wave/assets/left/palm/palm012.obj" />
+    <mesh name="palm013" file="../sharpa_wave/assets/left/palm/palm013.obj" />
+    <mesh name="palm014" file="../sharpa_wave/assets/left/palm/palm014.obj" />
+    <mesh name="palm015" file="../sharpa_wave/assets/left/palm/palm015.obj" />
+    <mesh name="palm016" file="../sharpa_wave/assets/left/palm/palm016.obj" />
+    <mesh name="palm017" file="../sharpa_wave/assets/left/palm/palm017.obj" />
+    <mesh name="palm018" file="../sharpa_wave/assets/left/palm/palm018.obj" />
+    <mesh name="palm019" file="../sharpa_wave/assets/left/palm/palm019.obj" />
+    <mesh name="palm020" file="../sharpa_wave/assets/left/palm/palm020.obj" />
+    <mesh name="palm021" file="../sharpa_wave/assets/left/palm/palm021.obj" />
+    <mesh name="palm022" file="../sharpa_wave/assets/left/palm/palm022.obj" />
+    <mesh name="palm023" file="../sharpa_wave/assets/left/palm/palm023.obj" />
+    <mesh name="palm024" file="../sharpa_wave/assets/left/palm/palm024.obj" />
+    <mesh name="palm025" file="../sharpa_wave/assets/left/palm/palm025.obj" />
+    <mesh name="palm026" file="../sharpa_wave/assets/left/palm/palm026.obj" />
+    <mesh name="palm027" file="../sharpa_wave/assets/left/palm/palm027.obj" />
+    <mesh name="palm028" file="../sharpa_wave/assets/left/palm/palm028.obj" />
+    <mesh name="palm029" file="../sharpa_wave/assets/left/palm/palm029.obj" />
+    <mesh name="palm030" file="../sharpa_wave/assets/left/palm/palm030.obj" />
+    <mesh name="palm031" file="../sharpa_wave/assets/left/palm/palm031.obj" />
+  </asset>
+  <worldbody>
+    <body name="base_link" pos="0 0 0.82">
+      <freejoint />
+      <site name="imu" pos="0 0 0" />
+      <inertial pos="-0.00505 0.0014 0.18077" quat="0.999267 0.00315171 -0.0381606 0.000529346" mass="17.6816" diaginertia="0.282992 0.205343 0.136495" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="base_link" />
+      <geom type="box" size="0.1 0.12 0.15" pos="0 0 0.15" class="collision" />
+      <geom type="ellipsoid" size="0.12 0.2 0.13" pos="-0.02 0 0.32" class="collision" />
+      <body name="leg_l1_link" pos="-0.0025 0.087 -0.066">
+        <inertial pos="-0.00624961 -5.6e-06 -0.00874166" quat="0.00188006 0.726876 0.00160146 0.686764" mass="1.79207" diaginertia="0.00399995 0.00302946 0.00210995" />
+        <joint name="leg_l1_joint" pos="0 0 0" axis="1 0 0" range="-0.314159 0.663225" actuatorfrcrange="-180 180" damping="2" frictionloss="0.05" armature="0.12" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_leg_roll" />
+        <geom type="cylinder" size="0.06" fromto="-0.14 0 0 -0.07 0 0" class="collision" />
+        <body name="leg_l2_link">
+          <inertial pos="4.471e-05 0.0498588 -0.116823" quat="0.913557 0.406707 0.000303573 -0.00165172" mass="1.67631" diaginertia="0.00548764 0.00471867 0.00369644" />
+          <joint name="leg_l2_joint" pos="0 0 0" axis="0 0 1" range="-1.0472 0.523599" actuatorfrcrange="-100 100" damping="0.5" frictionloss="0.02" armature="0.0508" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_leg_yaw" />
+          <geom type="cylinder" size="0.05" fromto="0 0 -0.025 0 0 0.025" class="collision-left" />
+          <body name="leg_l3_link" pos="0 0.02545 -0.1287">
+            <inertial pos="-0.00238348 -0.0230943 -0.0630496" quat="0.792045 0.0318177 -0.0629198 0.606377" mass="2.46847" diaginertia="0.025188 0.0243737 0.00437707" />
+            <joint name="leg_l3_joint" pos="0 0 0" axis="0 1 0" range="-1.8326 1.0472" actuatorfrcrange="-100 100" damping="0.2" frictionloss="0.02" armature="0.0508" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_leg_pitch" />
+            <geom type="cylinder" size="0.06" fromto="0 -0.07 0 0 0.07 0" class="collision-left" />
+            <geom type="capsule" size="0.03" fromto="0 -0.0 0 0 -0.0 -0.25" class="collision-left" />
+            <body name="leg_l4_link" pos="-0.0103902 0 -0.249784">
+              <inertial pos="0.00304104 -4.1e-05 -0.122139" quat="0.721213 -0.00120644 0.00643611 0.692683" mass="1.86453" diaginertia="0.0156018 0.0153784 0.00122776" />
+              <joint name="leg_l4_joint" pos="0 0 0" axis="0 1 0" range="0 2.18166" actuatorfrcrange="-100 100" damping="0.2" frictionloss="0.02" armature="0.0508" />
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_knee" />
+              <geom type="capsule" size="0.03" fromto="0 0 0 0 0 -0.34" class="collision-left" />
+              <body name="leg_l5_link" pos="0 0 -0.346">
+                <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.0692393" diaginertia="1.172e-05 6.66e-06 6.66e-06" />
+                <joint name="leg_l5_joint" pos="0 0 0" axis="0 1 0" range="-0.610865 0.523599" actuatorfrcrange="-36 36" damping="1" frictionloss="0.05" armature="0.05" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_foot_pitch" />
+                <body name="leg_l6_link">
+                  <site name="l_ft_frame" pos="0 0 0" size="0.02 0.02 0.02" rgba="1 1 1 1" type="box" group="1" />
+                  <inertial pos="-0.0097079 -7.53941e-06 -0.0337935" quat="3.87898e-05 0.764342 -1.67226e-05 0.644812" mass="0.586725" diaginertia="0.00250262 0.00232493 0.000586735" />
+                  <joint name="leg_l6_joint" pos="0 0 0" axis="1 0 0" range="-0.349066 0.349066" actuatorfrcrange="-36 36" damping="1" frictionloss="0.05" armature="0.05" />
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_foot_roll" />
+                  <geom type="box" size="0.12 0.05 0.005" pos="0.018 0 -0.055" class="collision-left" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="leg_r1_link" pos="-0.0025 -0.087 -0.066">
+        <inertial pos="-0.00624961 5.65e-06 -0.00874165" quat="-0.00188006 0.726876 -0.00160146 0.686764" mass="1.79207" diaginertia="0.00399995 0.00302946 0.00210995" />
+        <joint name="leg_r1_joint" pos="0 0 0" axis="1 0 0" range="-0.663225 0.314159" actuatorfrcrange="-180 180" damping="2" frictionloss="0.05" armature="0.12" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_leg_roll" />
+        <geom type="cylinder" size="0.06" fromto="-0.14 0 0 -0.07 0 0" class="collision" />
+        <body name="leg_r2_link">
+          <inertial pos="4.471e-05 -0.0498588 -0.116823" quat="0.406708 0.913557 0.0016517 -0.000303562" mass="1.67631" diaginertia="0.00548765 0.00471867 0.00369646" />
+          <joint name="leg_r2_joint" pos="0 0 0" axis="0 0 1" range="-0.523599 1.0472" actuatorfrcrange="-100 100" damping="0.5" frictionloss="0.02" armature="0.0508" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_leg_yaw" />
+          <geom type="cylinder" size="0.05" fromto="0 0 -0.025 0 0 0.025" class="collision-right" />
+          <body name="leg_r3_link" pos="0 -0.02545 -0.1287">
+            <inertial pos="-0.00238153 0.0230901 -0.0630585" quat="0.606661 -0.0629173 0.0317978 0.791829" mass="2.46917" diaginertia="0.0251885 0.0243726 0.00437975" />
+            <joint name="leg_r3_joint" pos="0 0 0" axis="0 1 0" range="-1.8326 1.0472" actuatorfrcrange="-100 100" damping="0.2" frictionloss="0.02" armature="0.0508" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_leg_pitch" />
+            <geom type="cylinder" size="0.06" fromto="0 -0.07 0 0 0.07 0" class="collision-right" />
+            <geom type="capsule" size="0.03" fromto="0 0.0 0 0 0.0 -0.25" class="collision-right" />
+            <body name="leg_r4_link" pos="-0.0103902 0 -0.249784">
+              <inertial pos="0.00304109 4.102e-05 -0.12214" quat="0.692682 0.00643529 -0.00120668 0.721213" mass="1.86454" diaginertia="0.015602 0.0153785 0.00122777" />
+              <joint name="leg_r4_joint" pos="0 0 0" axis="0 1 0" range="0 2.18166" actuatorfrcrange="-100 100" damping="0.2" frictionloss="0.02" armature="0.0508" />
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_knee" />
+              <geom type="capsule" size="0.03" fromto="0 0 0 0 0 -0.34" class="collision-right" />
+              <body name="leg_r5_link" pos="0 0 -0.346">
+                <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="0.0692393" diaginertia="1.172e-05 6.66e-06 6.66e-06" />
+                <joint name="leg_r5_joint" pos="0 0 0" axis="0 1 0" range="-0.523599 0.523599" actuatorfrcrange="-36 36" damping="1" frictionloss="0.05" armature="0.05" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_foot_pitch" />
+                <body name="leg_r6_link">
+                  <site name="r_ft_frame" pos="0 0 0" size="0.02 0.02 0.02" rgba="1 1 1 1" type="box" group="1" />
+                  <inertial pos="-0.00970783 7.60904e-06 -0.0337935" quat="-3.88055e-05 0.764342 1.67007e-05 0.644812" mass="0.586724" diaginertia="0.00250262 0.00232493 0.000586735" />
+                  <joint name="leg_r6_joint" pos="0 0 0" axis="1 0 0" range="-0.349066 0.349066" actuatorfrcrange="-36 36" damping="1" frictionloss="0.05" armature="0.05" />
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_foot_roll" />
+                  <geom type="box" size="0.12 0.05 0.005" pos="0.018 0 -0.055" class="collision-right" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="zarm_l1_link" pos="-0.0175 0.25886 0.3245">
+        <inertial pos="0.008 -0.00158 0.0036" quat="0.332594 0.613759 -0.488813 0.523205" mass="1.15" diaginertia="0.000715367 0.000616958 0.000447675" />
+        <joint name="zarm_l1_joint" pos="0 0 0" axis="0 1 0" range="-2.61799 0.523599" actuatorfrcrange="-100 100" damping="0.2" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_arm_pitch" />
+        <geom type="box" size="0.01 0.02 0.035" pos="0.025 -0.05 0" class="collision-left" />
+        <body name="zarm_l2_link">
+          <inertial pos="0.00144 0.02159 -0.0202" quat="0.359179 0.644078 0.308133 0.601006" mass="0.226" diaginertia="0.000646532 0.000536446 0.000297022" />
+          <joint name="zarm_l2_joint" pos="0 0 0" axis="1 0 0" range="-0.349066 2.0944" actuatorfrcrange="-50 50" damping="0.2" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_arm_roll" />
+          <geom type="cylinder" size="0.045" fromto="0.04 0 0 -0.02 0 0" class="collision-left" />
+          <body name="zarm_l3_link">
+            <inertial pos="-0.00157 -3e-05 -0.13318" quat="0.999794 -0.000109797 0.00375793 -0.0199494" mass="1.166" diaginertia="0.00245047 0.0021996 0.00111992" />
+            <joint name="zarm_l3_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" actuatorfrcrange="-20 20" damping="0.2" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_arm_yaw" />
+            <geom type="capsule" size="0.03" fromto="0 0 -0.06 0 0 -0.1636" class="collision-left" />
+            <body name="zarm_l4_link" pos="0 0 -0.1646">
+              <inertial pos="-4e-05 0.0098 -0.05283" quat="0.533961 0.845509 0 0" mass="0.575" diaginertia="0.00098 0.000956155 0.000543845" />
+              <joint name="zarm_l4_joint" pos="0 0 0" axis="0 1 0" range="-1.5708 0" actuatorfrcrange="-20 20" damping="0.2" />
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_forearm" />
+              <geom type="capsule" size="0.03" fromto="0 0 0 0 0 -0.19105" class="collision-left" />
+              <body name="zarm_l5_link">
+                <inertial pos="-0.00011 0.00421 -0.11168" quat="0.603182 0.797604 0 0" mass="0.46" diaginertia="0.00077 0.000641322 0.000488678" />
+                <joint name="zarm_l5_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_hand_yaw" />
+                <body name="zarm_l6_link" pos="0 0 -0.13205">
+                  <inertial pos="0.00253 0.00382 -0.05356" quat="0.684588 -0.177029 0.177029 0.684588" mass="0.35" diaginertia="0.00026217 0.00023 0.00016783" />
+                  <joint name="zarm_l6_joint" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_hand_pitch" />
+                  <body name="zarm_l7_link" pos="0 0 -0.059">
+                    <inertial pos="0.00266828 0.00745579 -0.0716836" quat="0.765899 -0.00921466 0.0074656 0.642851" mass="0.810524" diaginertia="0.0012891 0.00117229 0.000360224" />
+                    <joint name="zarm_l7_joint" pos="0 0 0" axis="1 0 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
+                    <!-- Old static left hand/end-effector geoms removed here: mesh="l_hand_roll", terminal marker at pos="0 -0.03 -0.17", and terminal cylinder fromto="0 0 -0.05 0 0 -0.085". zarm_l7_link and zarm_l7_joint are preserved. -->
+                    <!-- Sharpa Wave left hand mounted as a child of zarm_l7_link. Initial pos/quat use the old end-effector marker as a starting estimate and may require manual calibration in Isaac Sim. -->
+                    <body name="left_hand_C_MC" childclass="sharpa" pos="0 -0.03 -0.17" quat="1 0 0 0">
+                      <geom name="left_hand_C_MC_visual" class="visual" mass="0.72045" mesh="left_hand_C_MC_visual" />
+                      <geom name="palm000_collision" class="collision" mesh="palm000" />
+                      <geom name="palm001_collision" class="collision" mesh="palm001" />
+                      <geom name="palm002_collision" class="collision" mesh="palm002" />
+                      <geom name="palm003_collision" class="collision" mesh="palm003" />
+                      <geom name="palm004_collision" class="collision" mesh="palm004" />
+                      <geom name="palm005_collision" class="collision" mesh="palm005" />
+                      <geom name="palm006_collision" class="collision" mesh="palm006" />
+                      <geom name="palm007_collision" class="collision" mesh="palm007" />
+                      <geom name="palm008_collision" class="collision" mesh="palm008" />
+                      <geom name="palm009_collision" class="collision" mesh="palm009" />
+                      <geom name="palm010_collision" class="collision" mesh="palm010" />
+                      <geom name="palm011_collision" class="collision" mesh="palm011" />
+                      <geom name="palm012_collision" class="collision" mesh="palm012" />
+                      <geom name="palm013_collision" class="collision" mesh="palm013" />
+                      <geom name="palm014_collision" class="collision" mesh="palm014" />
+                      <geom name="palm015_collision" class="collision" mesh="palm015" />
+                      <geom name="palm016_collision" class="collision" mesh="palm016" />
+                      <geom name="palm017_collision" class="collision" mesh="palm017" />
+                      <geom name="palm018_collision" class="collision" mesh="palm018" />
+                      <geom name="palm019_collision" class="collision" mesh="palm019" />
+                      <geom name="palm020_collision" class="collision" mesh="palm020" />
+                      <geom name="palm021_collision" class="collision" mesh="palm021" />
+                      <geom name="palm022_collision" class="collision" mesh="palm022" />
+                      <geom name="palm023_collision" class="collision" mesh="palm023" />
+                      <geom name="palm024_collision" class="collision" mesh="palm024" />
+                      <geom name="palm025_collision" class="collision" mesh="palm025" />
+                      <geom name="palm026_collision" class="collision" mesh="palm026" />
+                      <geom name="palm027_collision" class="collision" mesh="palm027" />
+                      <geom name="palm028_collision" class="collision" mesh="palm028" />
+                      <geom name="palm029_collision" class="collision" mesh="palm029" />
+                      <geom name="palm030_collision" class="collision" mesh="palm030" />
+                      <geom name="palm031_collision" class="collision" mesh="palm031" />
+                      <site name="wrist_site" pos="0 0 0" />
+                      <body name="left_thumb_CMC_VL" pos="0.01 -0.026 0.0214" quat="0.707105 0 0 -0.707108">
+                        <inertial pos="-0.00065 -0.0002 0" quat="0.557664 0.434754 -0.557664 0.434754" mass="0.0025" diaginertia="2.6e-07 2.12661e-07 1.34339e-07" />
+                        <joint name="left_thumb_CMC_FE" class="CMC_joint" pos="0 0 0" axis="0 0 1" range="-0.1745 1.9199" />
+                        <geom class="visual" mesh="left_thumb_CMC_VL" />
+                        <geom name="left_thumb_CMC_VL_fit" size="0.0120419 0.00625" pos="0.000957197 0.000412167 1.20218e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                        <body name="left_thumb_MC" pos="0 -0.005 0" quat="0.65328 0.653282 -0.270598 0.270599">
+                          <inertial pos="0.03643 -0.01024 -0.00517" quat="0.154462 0.683763 0.151259 0.696943" mass="0.13587" diaginertia="4.69153e-05 4.29066e-05 1.92101e-05" />
+                          <joint name="left_thumb_CMC_AA" class="CMC_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                          <geom class="visual" mesh="left_thumb_MC_visual" />
+                          <geom name="left_thumb_MC_fit" size="0.0207081 0.0169273" pos="0.0397656 -0.0106861 -0.0110947" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="left_thumb_MCP_VL" pos="0.065 -0.006 -0.010392" quat="0.965926 -0.25882 0 0">
+                            <joint name="left_thumb_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.5236 1.3963" />
+                            <geom class="visual" mass="8e-05" mesh="left_thumb_MCP_VL_visual" />
+                            <body name="left_thumb_PP" quat="0.707105 0.707108 0 0">
+                              <inertial pos="0.021256 -0.00095 0.00092" quat="0.511613 0.44358 0.554609 0.483631" mass="0.03078" diaginertia="6.08344e-06 5.91207e-06 1.22148e-06" />
+                              <joint name="left_thumb_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                              <geom class="visual" mesh="left_thumb_PP_visual" />
+                              <geom name="left_thumb_PP_fit" size="0.011707 0.0137066" pos="0.0237179 -8.06477e-10 0.0012143" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                              <body name="left_thumb_DP" pos="0.039 0 0" quat="0.707105 -0.707108 0 0">
+                                <inertial pos="0.00823663 -0.00178196 -0.00099988" quat="-0.255956 0.713878 -0.187417 0.624291" mass="0.00998" diaginertia="1.09014e-06 1.041e-06 2.95174e-07" />
+                                <joint name="left_thumb_IP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.7453" />
+                                <geom class="visual" mesh="DP_Visual_HB1_TH" />
+                                <geom class="visual" quat="0.5 0.5 -0.5 0.5" material="green" mesh="elastomer_HB1_TH" />
+                                <geom class="elastomer_collision" size="0.00943065 0.00677499" pos="0.0163733 -0.00176519 2.7474e-08" quat="0.508797 0.508797 0.491045 0.491045" type="capsule" />
+                                <site name="left_thumb_fingertip" pos="0.0276109 0 0" quat="0.5 0.5 0.5 0.5" />
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                      <body name="left_index_MCP_VL" pos="0.001 -0.0303 0.0959" quat="0.499998 -0.500002 -0.5 -0.5">
+                        <inertial pos="-0.0092 -0.0013 0" quat="0.479506 0.519686 -0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                        <joint name="left_index_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.174533 1.5708" />
+                        <geom class="visual" mesh="left_MCP_VL_visual" />
+                        <geom name="left_index_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                        <body name="left_index_PP" quat="0.707105 0.707108 0 0">
+                          <inertial pos="0.027 -0.00055 -0.00068" quat="0.502719 0.479286 0.512565 0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                          <joint name="left_index_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                          <geom class="visual" mesh="left_PP_visual" />
+                          <geom name="left_index_PP_fit" size="0.0104766 0.0172474" pos="0.0305371 8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="left_index_MP" pos="0.047 0 0" quat="0.707105 -0.707108 0 0">
+                            <inertial pos="0.01212 -0.00116 0.00058" quat="-0.0266408 0.732558 -0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                            <joint name="left_index_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.7453" />
+                            <geom class="visual" mesh="left_MP_visual" />
+                            <geom name="left_index_MP_fit" size="0.0104174 0.0147236" pos="0.0147146 -0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="left_index_DP" pos="0.0315 0 0">
+                              <inertial pos="0.0124856 -0.00257344 -0.000107634" quat="-0.0491898 0.71664 -0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                              <joint name="left_index_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.3963" />
+                              <geom class="visual" mesh="DP_visual_HB1_4F" />
+                              <geom class="visual" quat="0.5 0.5 -0.5 0.5" material="green" mesh="elastomer_HB1_4F" />
+                              <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 -0.00086892 -1.32248e-06" quat="-0.0228873 0.706736 0.0228873 0.706736" type="capsule" />
+                              <site name="left_index_fingertip" pos="0.0260093 0 0" quat="0.5 0.5 0.5 0.5" />
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                      <body name="left_middle_MCP_VL" pos="0 -0.01 0.0989" quat="0.499998 -0.500002 -0.5 -0.5">
+                        <inertial pos="-0.0092 -0.0013 0" quat="0.479506 0.519686 -0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                        <joint name="left_middle_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.174533 1.5708" />
+                        <geom class="visual" mesh="left_MCP_VL_visual" />
+                        <geom name="left_middle_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                        <body name="left_middle_PP" quat="0.707105 0.707108 0 0">
+                          <inertial pos="0.027 -0.00055 -0.00068" quat="0.502719 0.479286 0.512565 0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                          <joint name="left_middle_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                          <geom class="visual" mesh="left_PP_visual" />
+                          <geom name="left_middle_PP_fit" size="0.00934798 0.0172474" pos="0.0305371 8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="left_middle_MP" pos="0.047 0 0" quat="0.707105 -0.707108 0 0">
+                            <inertial pos="0.01212 -0.00116 0.00058" quat="-0.0266408 0.732558 -0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                            <joint name="left_middle_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.7453" />
+                            <geom class="visual" mesh="left_MP_visual" />
+                            <geom name="left_middle_MP_fit" size="0.00940724 0.0147236" pos="0.0147146 -0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="left_middle_DP" pos="0.0315 0 0">
+                              <inertial pos="0.0124856 -0.00257344 -0.000107634" quat="-0.0491898 0.71664 -0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                              <joint name="left_middle_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.3963" />
+                              <geom class="visual" mesh="DP_visual_HB1_4F" />
+                              <geom class="visual" quat="0.5 0.5 -0.5 0.5" material="green" mesh="elastomer_HB1_4F" />
+                              <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 -0.00086892 -1.32248e-06" quat="-0.0228873 0.706736 0.0228873 0.706736" type="capsule" />
+                              <site name="left_middle_fingertip" pos="0.0260093 0 0" quat="0.5 0.5 0.5 0.5" />
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                      <body name="left_ring_MCP_VL" pos="0.0015 0.0103 0.0929" quat="0.499998 -0.500002 -0.5 -0.5">
+                        <inertial pos="-0.0092 -0.0013 0" quat="0.479506 0.519686 -0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                        <joint name="left_ring_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.174533 1.5708" />
+                        <geom class="visual" mesh="left_MCP_VL_visual" />
+                        <geom name="left_ring_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                        <body name="left_ring_PP" quat="0.707105 0.707108 0 0">
+                          <inertial pos="0.027 -0.00055 -0.00068" quat="0.502719 0.479286 0.512565 0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                          <joint name="left_ring_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                          <geom class="visual" mesh="left_PP_visual" />
+                          <geom name="left_ring_PP_fit" size="0.00970157 0.0172474" pos="0.0305371 8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="left_ring_MP" pos="0.047 0 0" quat="0.707105 -0.707108 0 0">
+                            <inertial pos="0.01212 -0.00116 0.00058" quat="-0.0266408 0.732558 -0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                            <joint name="left_ring_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.7453" />
+                            <geom class="visual" mesh="left_MP_visual" />
+                            <geom name="left_ring_MP_fit" size="0.0104481 0.0147236" pos="0.0147146 -0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="left_ring_DP" pos="0.0315 0 0">
+                              <inertial pos="0.0124856 -0.00257344 -0.000107634" quat="-0.0491898 0.71664 -0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                              <joint name="left_ring_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.3963" />
+                              <geom class="visual" mesh="DP_visual_HB1_4F" />
+                              <geom class="visual" quat="0.499998 0.5 -0.5 0.500002" material="green" mesh="elastomer_HB1_4F" />
+                              <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 -0.00086892 -1.32248e-06" quat="-0.0228873 0.706736 0.0228873 0.706736" type="capsule" />
+                              <site name="left_ring_fingertip" pos="0.0260093 1.04037e-07 1.04037e-07" quat="0.5 0.499998 0.5 0.500002" />
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                      <body name="left_pinky_MC" pos="0.01136 0.0263 0.0869" quat="1.34924e-11 3.67321e-06 -1 -3.67321e-06">
+                        <joint name="left_pinky_CMC" class="PCMC_joint" pos="0 0 0" axis="0 0 1" range="0 0.2618" />
+                        <geom class="visual" mass="0.12541" mesh="left_pinky_MC_visual" />
+                        <geom class="collision" mesh="left_pinky_MC" />
+                        <body name="left_pinky_MCP_VL" pos="0.00836 0.0048 0" quat="0.499998 -0.5 0.5 0.500002">
+                          <inertial pos="-0.0092 -0.0013 0" quat="0.479506 0.519686 -0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                          <joint name="left_pinky_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.174533 1.5708" />
+                          <geom class="visual" mesh="left_MCP_VL_visual" />
+                          <geom name="left_pinky_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="left_pinky_PP" quat="0.707105 0.707108 0 0">
+                            <inertial pos="0.027 -0.00055 -0.00068" quat="0.502719 0.479286 0.512565 0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                            <joint name="left_pinky_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                            <geom class="visual" mesh="left_PP_visual" />
+                            <geom name="left_pinky_PP_fit" size="0.0106522 0.0172474" pos="0.0305371 8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="left_pinky_MP" pos="0.047 0 0" quat="0.707105 -0.707108 0 0">
+                              <inertial pos="0.01212 -0.00116 0.00058" quat="-0.0266408 0.732558 -0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                              <joint name="left_pinky_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.7453" />
+                              <geom class="visual" mesh="left_MP_visual" />
+                              <geom name="left_pinky_MP_fit" size="0.00990499 0.0147236" pos="0.0147146 -0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                              <body name="left_pinky_DP" pos="0.0315 0 0">
+                                <inertial pos="0.0124856 -0.00257344 -0.000107634" quat="-0.0491898 0.71664 -0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                                <joint name="left_pinky_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="0 1.3963" />
+                                <geom class="visual" mesh="DP_visual_HB1_4F" />
+                                <geom class="visual" quat="0.5 0.5 -0.5 0.5" material="green" mesh="elastomer_HB1_4F" />
+                                <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 -0.00086892 -1.32248e-06" quat="-0.0228873 0.706736 0.0228873 0.706736" type="capsule" />
+                                <site name="left_pinky_fingertip" pos="0.0260093 0 0" quat="0.5 0.5 0.5 0.5" />
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="zarm_r1_link" pos="-0.0175 -0.25886 0.3245">
+        <inertial pos="0.008 0.00158 -0.0036" quat="0.523205 0.488813 -0.613759 0.332594" mass="1.15" diaginertia="0.000715367 0.000616958 0.000447675" />
+        <joint name="zarm_r1_joint" pos="0 0 0" axis="0 1 0" range="-2.61799 0.523599" actuatorfrcrange="-100 100" damping="0.2" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_arm_pitch" />
+        <geom type="box" size="0.01 0.02 0.035" pos="0.025 0.05 0" class="collision-right" />
+        <body name="zarm_r2_link">
+          <inertial pos="0.00144 -0.02159 -0.02021" quat="0.601006 0.308133 0.644078 0.359179" mass="0.226" diaginertia="0.000646532 0.000536446 0.000297022" />
+          <joint name="zarm_r2_joint" pos="0 0 0" axis="1 0 0" range="-2.0944 0.349066" actuatorfrcrange="-50 50" damping="0.2" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_arm_roll" />
+          <geom type="cylinder" size="0.045" fromto="0.04 0 0 -0.02 0 0" class="collision-right" />
+          <body name="zarm_r3_link">
+            <inertial pos="-0.00157 3e-05 -0.13318" quat="0.999794 0.000109797 0.00375793 0.0199494" mass="1.166" diaginertia="0.00245047 0.0021996 0.00111992" />
+            <joint name="zarm_r3_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" actuatorfrcrange="-20 20" damping="0.2" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_arm_yaw" />
+            <geom type="capsule" size="0.03" fromto="0 0 -0.06 0 0 -0.1636" class="collision-right" />
+            <body name="zarm_r4_link" pos="0 0 -0.1646">
+              <inertial pos="-4e-05 -0.0098 -0.05283" quat="0.845509 0.533961 0 0" mass="0.575" diaginertia="0.00098 0.000956155 0.000543845" />
+              <joint name="zarm_r4_joint" pos="0 0 0" axis="0 1 0" range="-1.5708 0" actuatorfrcrange="-20 20" damping="0.2" />
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_forearm" />
+              <geom type="capsule" size="0.03" fromto="0 0 0 0 0 -0.19105" class="collision-right" />
+              <body name="zarm_r5_link">
+                <inertial pos="-0.00011 -0.00421 -0.11168" quat="0.797604 0.603182 0 0" mass="0.46" diaginertia="0.00077 0.000641322 0.000488678" />
+                <joint name="zarm_r5_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_yaw" />
+                <body name="zarm_r6_link" pos="0 0 -0.13205">
+                  <inertial pos="0.00253 -0.00382 -0.05356" quat="0.684588 0.177029 -0.177029 0.684588" mass="0.35" diaginertia="0.00026217 0.00023 0.00016783" />
+                  <joint name="zarm_r6_joint" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_pitch" />
+                  <body name="zarm_r7_link" pos="0 0 -0.059">
+                    <inertial pos="0.00266828 -0.00745579 -0.0716836" quat="0.648539 -0.000276918 -0.0104684 0.761109" mass="0.810524" diaginertia="0.00104683 0.00098437 0.00027042" />
+                    <joint name="zarm_r7_joint" pos="0 0 0" axis="1 0 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_roll" />
+                    <geom size="0.005" pos="0 0.03 -0.17" />
+                    <geom type="cylinder" size="0.03" fromto="0 0 -0.05 0 0 -0.085" class="collision-right" />
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="zhead_1_link" pos="-0.0175 0 0.5014">
+        <inertial pos="0 0.01245 -0.02982" quat="0.344336 0.617602 -0.617602 0.344336" mass="0.082" diaginertia="9.23607e-05 7e-05 4.76393e-05" />
+        <joint name="zhead_1_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" actuatorfrcrange="-1.5 1.5" damping="0.2" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="head_yaw" />
+        <body name="zhead_2_link">
+          <inertial pos="0.0123346 0.000671872 0.0592112" quat="0.945604 0.00240626 -0.318832 0.064608" mass="1.426" diaginertia="0.00432759 0.00400037 0.00326928" />
+          <joint name="zhead_2_joint" pos="0 0 0" axis="0 1 0" range="-0.523599 0.523599" actuatorfrcrange="-6 6" damping="0.2" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="head_pitch" />
+          <geom pos="0.0919101 0.0175 0.0617839" quat="0.953717 0 0.300706 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="camera" />
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <!-- Sharpa Wave left-hand contact exclusions inserted from left_hand_s40.xml. -->
+  <contact>
+    <exclude body1="left_hand_C_MC" body2="left_thumb_CMC_VL" />
+    <exclude body1="left_hand_C_MC" body2="left_thumb_MC" />
+    <exclude body1="left_hand_C_MC" body2="left_index_MCP_VL" />
+    <exclude body1="left_hand_C_MC" body2="left_middle_MCP_VL" />
+    <exclude body1="left_hand_C_MC" body2="left_ring_MCP_VL" />
+    <exclude body1="left_hand_C_MC" body2="left_pinky_MC" />
+    <exclude body1="left_hand_C_MC" body2="left_pinky_MCP_VL" />
+    <exclude body1="left_thumb_CMC_VL" body2="left_thumb_MC" />
+    <exclude body1="left_thumb_MC" body2="left_thumb_PP" />
+    <exclude body1="left_thumb_PP" body2="left_thumb_DP" />
+    <exclude body1="left_index_MCP_VL" body2="left_index_PP" />
+    <exclude body1="left_index_MCP_VL" body2="left_middle_MCP_VL" />
+    <exclude body1="left_index_PP" body2="left_index_MP" />
+    <exclude body1="left_index_MP" body2="left_index_DP" />
+    <exclude body1="left_middle_MCP_VL" body2="left_middle_PP" />
+    <exclude body1="left_middle_MCP_VL" body2="left_ring_MCP_VL" />
+    <exclude body1="left_middle_PP" body2="left_middle_MP" />
+    <exclude body1="left_middle_MP" body2="left_middle_DP" />
+    <exclude body1="left_ring_MCP_VL" body2="left_ring_PP" />
+    <exclude body1="left_ring_MCP_VL" body2="left_pinky_MCP_VL" />
+    <exclude body1="left_ring_PP" body2="left_ring_MP" />
+    <exclude body1="left_ring_MP" body2="left_ring_DP" />
+    <exclude body1="left_pinky_MC" body2="left_pinky_MCP_VL" />
+    <exclude body1="left_pinky_MCP_VL" body2="left_pinky_PP" />
+    <exclude body1="left_pinky_PP" body2="left_pinky_MP" />
+    <exclude body1="left_pinky_MP" body2="left_pinky_DP" />
+  </contact>
+  <actuator>
+    <motor gear="1" joint="leg_l1_joint" name="leg_l1_joint_motor" ctrllimited="true" ctrlrange="-180 180" />
+    <motor gear="1" joint="leg_l2_joint" name="leg_l2_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="leg_l3_joint" name="leg_l3_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="leg_l4_joint" name="leg_l4_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="leg_l5_joint" name="leg_l5_joint_motor" ctrllimited="true" ctrlrange="-36 36" />
+    <motor gear="1" joint="leg_l6_joint" name="leg_l6_joint_motor" ctrllimited="true" ctrlrange="-36 36" />
+    <motor gear="1" joint="leg_r1_joint" name="leg_r1_joint_motor" ctrllimited="true" ctrlrange="-180 180" />
+    <motor gear="1" joint="leg_r2_joint" name="leg_r2_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="leg_r3_joint" name="leg_r3_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="leg_r4_joint" name="leg_r4_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="leg_r5_joint" name="leg_r5_joint_motor" ctrllimited="true" ctrlrange="-36 36" />
+    <motor gear="1" joint="leg_r6_joint" name="leg_r6_joint_motor" ctrllimited="true" ctrlrange="-36 36" />
+    <motor gear="1" joint="zarm_l1_joint" name="zarm_l1_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="zarm_l2_joint" name="zarm_l2_joint_motor" ctrllimited="true" ctrlrange="-50 50" />
+    <motor gear="1" joint="zarm_l3_joint" name="zarm_l3_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
+    <motor gear="1" joint="zarm_l4_joint" name="zarm_l4_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
+    <motor gear="1" joint="zarm_l5_joint" name="zarm_l5_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <motor gear="1" joint="zarm_l6_joint" name="zarm_l6_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <motor gear="1" joint="zarm_l7_joint" name="zarm_l7_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <motor gear="1" joint="zarm_r1_joint" name="zarm_r1_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
+    <motor gear="1" joint="zarm_r2_joint" name="zarm_r2_joint_motor" ctrllimited="true" ctrlrange="-50 50" />
+    <motor gear="1" joint="zarm_r3_joint" name="zarm_r3_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
+    <motor gear="1" joint="zarm_r4_joint" name="zarm_r4_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
+    <motor gear="1" joint="zarm_r5_joint" name="zarm_r5_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <motor gear="1" joint="zarm_r6_joint" name="zarm_r6_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <motor gear="1" joint="zarm_r7_joint" name="zarm_r7_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <motor gear="1" joint="zhead_1_joint" name="zhead_1_joint_motor" ctrllimited="true" ctrlrange="-1.5 1.5" />
+    <motor gear="1" joint="zhead_2_joint" name="zhead_2_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <!-- Sharpa Wave left-hand finger actuators inserted from left_hand_s40.xml; original finger joint names are preserved. -->
+    <position class="sharpa" name="left_thumb_CMC_FE" joint="left_thumb_CMC_FE" kp="6.95" dampratio="0.9" />
+    <position class="sharpa" name="left_thumb_CMC_AA" joint="left_thumb_CMC_AA" kp="13.2" dampratio="0.9" />
+    <position class="sharpa" name="left_thumb_MCP_FE" joint="left_thumb_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="left_thumb_MCP_AA" joint="left_thumb_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="left_thumb_IP" joint="left_thumb_IP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_index_MCP_FE" joint="left_index_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="left_index_MCP_AA" joint="left_index_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="left_index_PIP" joint="left_index_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_index_DIP" joint="left_index_DIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_middle_MCP_FE" joint="left_middle_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="left_middle_MCP_AA" joint="left_middle_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="left_middle_PIP" joint="left_middle_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_middle_DIP" joint="left_middle_DIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_ring_MCP_FE" joint="left_ring_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="left_ring_MCP_AA" joint="left_ring_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="left_ring_PIP" joint="left_ring_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_ring_DIP" joint="left_ring_DIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_pinky_CMC" joint="left_pinky_CMC" kp="1.38" dampratio="0.9" />
+    <position class="sharpa" name="left_pinky_MCP_FE" joint="left_pinky_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="left_pinky_MCP_AA" joint="left_pinky_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="left_pinky_PIP" joint="left_pinky_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="left_pinky_DIP" joint="left_pinky_DIP" kp="0.9" dampratio="0.9" />
+  </actuator>
+  <sensor>
+    <accelerometer name="BodyAcc" site="imu" />
+    <velocimeter name="BodyVel" site="imu" />
+    <gyro name="BodyGyro" site="imu" />
+    <framepos name="BodyPos" objtype="site" objname="imu" />
+    <framequat name="BodyQuat" objtype="site" objname="imu" />
+    <force name="l_force" site="l_ft_frame" />
+    <torque name="l_torque" site="l_ft_frame" />
+    <force name="r_force" site="r_ft_frame" />
+    <torque name="r_torque" site="r_ft_frame" />
+    <jointpos name="leg_l1_joint_pos" joint="leg_l1_joint" />
+    <jointpos name="leg_l2_joint_pos" joint="leg_l2_joint" />
+    <jointpos name="leg_l3_joint_pos" joint="leg_l3_joint" />
+    <jointpos name="leg_l4_joint_pos" joint="leg_l4_joint" />
+    <jointpos name="leg_l5_joint_pos" joint="leg_l5_joint" />
+    <jointpos name="leg_l6_joint_pos" joint="leg_l6_joint" />
+    <jointpos name="leg_r1_joint_pos" joint="leg_r1_joint" />
+    <jointpos name="leg_r2_joint_pos" joint="leg_r2_joint" />
+    <jointpos name="leg_r3_joint_pos" joint="leg_r3_joint" />
+    <jointpos name="leg_r4_joint_pos" joint="leg_r4_joint" />
+    <jointpos name="leg_r5_joint_pos" joint="leg_r5_joint" />
+    <jointpos name="leg_r6_joint_pos" joint="leg_r6_joint" />
+    <jointpos name="zarm_l1_joint_pos" joint="zarm_l1_joint" />
+    <jointpos name="zarm_l2_joint_pos" joint="zarm_l2_joint" />
+    <jointpos name="zarm_l3_joint_pos" joint="zarm_l3_joint" />
+    <jointpos name="zarm_l4_joint_pos" joint="zarm_l4_joint" />
+    <jointpos name="zarm_l5_joint_pos" joint="zarm_l5_joint" />
+    <jointpos name="zarm_l6_joint_pos" joint="zarm_l6_joint" />
+    <jointpos name="zarm_l7_joint_pos" joint="zarm_l7_joint" />
+    <jointpos name="zarm_r1_joint_pos" joint="zarm_r1_joint" />
+    <jointpos name="zarm_r2_joint_pos" joint="zarm_r2_joint" />
+    <jointpos name="zarm_r3_joint_pos" joint="zarm_r3_joint" />
+    <jointpos name="zarm_r4_joint_pos" joint="zarm_r4_joint" />
+    <jointpos name="zarm_r5_joint_pos" joint="zarm_r5_joint" />
+    <jointpos name="zarm_r6_joint_pos" joint="zarm_r6_joint" />
+    <jointpos name="zarm_r7_joint_pos" joint="zarm_r7_joint" />
+    <jointpos name="zhead_1_joint_pos" joint="zhead_1_joint" />
+    <jointpos name="zhead_2_joint_pos" joint="zhead_2_joint" />
+    <jointvel name="leg_l1_joint_vel" joint="leg_l1_joint" />
+    <jointvel name="leg_l2_joint_vel" joint="leg_l2_joint" />
+    <jointvel name="leg_l3_joint_vel" joint="leg_l3_joint" />
+    <jointvel name="leg_l4_joint_vel" joint="leg_l4_joint" />
+    <jointvel name="leg_l5_joint_vel" joint="leg_l5_joint" />
+    <jointvel name="leg_l6_joint_vel" joint="leg_l6_joint" />
+    <jointvel name="leg_r1_joint_vel" joint="leg_r1_joint" />
+    <jointvel name="leg_r2_joint_vel" joint="leg_r2_joint" />
+    <jointvel name="leg_r3_joint_vel" joint="leg_r3_joint" />
+    <jointvel name="leg_r4_joint_vel" joint="leg_r4_joint" />
+    <jointvel name="leg_r5_joint_vel" joint="leg_r5_joint" />
+    <jointvel name="leg_r6_joint_vel" joint="leg_r6_joint" />
+    <jointvel name="zarm_l1_joint_vel" joint="zarm_l1_joint" />
+    <jointvel name="zarm_l2_joint_vel" joint="zarm_l2_joint" />
+    <jointvel name="zarm_l3_joint_vel" joint="zarm_l3_joint" />
+    <jointvel name="zarm_l4_joint_vel" joint="zarm_l4_joint" />
+    <jointvel name="zarm_l5_joint_vel" joint="zarm_l5_joint" />
+    <jointvel name="zarm_l6_joint_vel" joint="zarm_l6_joint" />
+    <jointvel name="zarm_l7_joint_vel" joint="zarm_l7_joint" />
+    <jointvel name="zarm_r1_joint_vel" joint="zarm_r1_joint" />
+    <jointvel name="zarm_r2_joint_vel" joint="zarm_r2_joint" />
+    <jointvel name="zarm_r3_joint_vel" joint="zarm_r3_joint" />
+    <jointvel name="zarm_r4_joint_vel" joint="zarm_r4_joint" />
+    <jointvel name="zarm_r5_joint_vel" joint="zarm_r5_joint" />
+    <jointvel name="zarm_r6_joint_vel" joint="zarm_r6_joint" />
+    <jointvel name="zarm_r7_joint_vel" joint="zarm_r7_joint" />
+    <jointvel name="zhead_1_joint_vel" joint="zhead_1_joint" />
+    <jointvel name="zhead_2_joint_vel" joint="zhead_2_joint" />
+  </sensor>
+</mujoco>
