@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
-<mujoco model="biped_s40_with_left_sharpa_wave">
+<mujoco model="biped_s40_with_sharpa_wave_hands">
   <compiler angle="radian" meshdir="." />
   <size njmax="500" nconmax="100" />
   <default>
@@ -139,6 +138,60 @@
     <mesh name="palm029" file="../sharpa_wave/assets/left/palm/palm029.obj" />
     <mesh name="palm030" file="../sharpa_wave/assets/left/palm/palm030.obj" />
     <mesh name="palm031" file="../sharpa_wave/assets/left/palm/palm031.obj" />
+    <mesh name="right_sharpa_right_hand_C_MC_visual" file="../sharpa_wave/assets/right/right_hand_C_MC_visual.STL" />
+    <mesh name="right_sharpa_right_hand_C_MC" file="../sharpa_wave/assets/right/right_hand_C_MC.STL" />
+    <mesh name="right_sharpa_right_thumb_CMC_VL" file="../sharpa_wave/assets/right/right_thumb_CMC_VL.STL" />
+    <mesh name="right_sharpa_right_thumb_MC_visual" file="../sharpa_wave/assets/right/right_thumb_MC_visual.STL" />
+    <mesh name="right_sharpa_right_thumb_MC" file="../sharpa_wave/assets/right/right_thumb_MC.STL" />
+    <mesh name="right_sharpa_right_thumb_MCP_VL_visual" file="../sharpa_wave/assets/right/right_thumb_MCP_VL_visual.STL" />
+    <mesh name="right_sharpa_right_thumb_PP_visual" file="../sharpa_wave/assets/right/right_thumb_PP_visual.STL" />
+    <mesh name="right_sharpa_right_thumb_PP" file="../sharpa_wave/assets/right/right_thumb_PP.STL" />
+    <mesh name="right_sharpa_DP_Visual_HB1_TH" file="../sharpa_wave/assets/right/DP_Visual_HB1_TH.STL" />
+    <mesh name="right_sharpa_DP_HB1_TH" file="../sharpa_wave/assets/right/DP_HB1_TH.STL" />
+    <mesh name="right_sharpa_elastomer_HB1_TH" file="../sharpa_wave/assets/right/elastomer_HB1_TH.STL" />
+    <mesh name="right_sharpa_right_MCP_VL_visual" file="../sharpa_wave/assets/right/right_MCP_VL_visual.STL" />
+    <mesh name="right_sharpa_MCP_VL" file="../sharpa_wave/assets/right/MCP_VL.STL" />
+    <mesh name="right_sharpa_right_PP_visual" file="../sharpa_wave/assets/right/right_PP_visual.STL" />
+    <mesh name="right_sharpa_right_PP" file="../sharpa_wave/assets/right/right_PP.STL" />
+    <mesh name="right_sharpa_right_MP_visual" file="../sharpa_wave/assets/right/right_MP_visual.STL" />
+    <mesh name="right_sharpa_right_MP" file="../sharpa_wave/assets/right/right_MP.STL" />
+    <mesh name="right_sharpa_DP_visual_HB1_4F" file="../sharpa_wave/assets/right/DP_visual_HB1_4F.STL" />
+    <mesh name="right_sharpa_DP_HB1_4F" file="../sharpa_wave/assets/right/DP_HB1_4F.STL" />
+    <mesh name="right_sharpa_elastomer_HB1_4F" file="../sharpa_wave/assets/right/elastomer_HB1_4F.STL" />
+    <mesh name="right_sharpa_right_pinky_MC_visual" file="../sharpa_wave/assets/right/right_pinky_MC_visual.STL" />
+    <mesh name="right_sharpa_right_pinky_MC" file="../sharpa_wave/assets/right/right_pinky_MC.STL" />
+    <mesh name="right_sharpa_palm000" file="../sharpa_wave/assets/right/palm/palm000.obj" />
+    <mesh name="right_sharpa_palm001" file="../sharpa_wave/assets/right/palm/palm001.obj" />
+    <mesh name="right_sharpa_palm002" file="../sharpa_wave/assets/right/palm/palm002.obj" />
+    <mesh name="right_sharpa_palm003" file="../sharpa_wave/assets/right/palm/palm003.obj" />
+    <mesh name="right_sharpa_palm004" file="../sharpa_wave/assets/right/palm/palm004.obj" />
+    <mesh name="right_sharpa_palm005" file="../sharpa_wave/assets/right/palm/palm005.obj" />
+    <mesh name="right_sharpa_palm006" file="../sharpa_wave/assets/right/palm/palm006.obj" />
+    <mesh name="right_sharpa_palm007" file="../sharpa_wave/assets/right/palm/palm007.obj" />
+    <mesh name="right_sharpa_palm008" file="../sharpa_wave/assets/right/palm/palm008.obj" />
+    <mesh name="right_sharpa_palm009" file="../sharpa_wave/assets/right/palm/palm009.obj" />
+    <mesh name="right_sharpa_palm010" file="../sharpa_wave/assets/right/palm/palm010.obj" />
+    <mesh name="right_sharpa_palm011" file="../sharpa_wave/assets/right/palm/palm011.obj" />
+    <mesh name="right_sharpa_palm012" file="../sharpa_wave/assets/right/palm/palm012.obj" />
+    <mesh name="right_sharpa_palm013" file="../sharpa_wave/assets/right/palm/palm013.obj" />
+    <mesh name="right_sharpa_palm014" file="../sharpa_wave/assets/right/palm/palm014.obj" />
+    <mesh name="right_sharpa_palm015" file="../sharpa_wave/assets/right/palm/palm015.obj" />
+    <mesh name="right_sharpa_palm016" file="../sharpa_wave/assets/right/palm/palm016.obj" />
+    <mesh name="right_sharpa_palm017" file="../sharpa_wave/assets/right/palm/palm017.obj" />
+    <mesh name="right_sharpa_palm018" file="../sharpa_wave/assets/right/palm/palm018.obj" />
+    <mesh name="right_sharpa_palm019" file="../sharpa_wave/assets/right/palm/palm019.obj" />
+    <mesh name="right_sharpa_palm020" file="../sharpa_wave/assets/right/palm/palm020.obj" />
+    <mesh name="right_sharpa_palm021" file="../sharpa_wave/assets/right/palm/palm021.obj" />
+    <mesh name="right_sharpa_palm022" file="../sharpa_wave/assets/right/palm/palm022.obj" />
+    <mesh name="right_sharpa_palm023" file="../sharpa_wave/assets/right/palm/palm023.obj" />
+    <mesh name="right_sharpa_palm024" file="../sharpa_wave/assets/right/palm/palm024.obj" />
+    <mesh name="right_sharpa_palm025" file="../sharpa_wave/assets/right/palm/palm025.obj" />
+    <mesh name="right_sharpa_palm026" file="../sharpa_wave/assets/right/palm/palm026.obj" />
+    <mesh name="right_sharpa_palm027" file="../sharpa_wave/assets/right/palm/palm027.obj" />
+    <mesh name="right_sharpa_palm028" file="../sharpa_wave/assets/right/palm/palm028.obj" />
+    <mesh name="right_sharpa_palm029" file="../sharpa_wave/assets/right/palm/palm029.obj" />
+    <mesh name="right_sharpa_palm030" file="../sharpa_wave/assets/right/palm/palm030.obj" />
+    <mesh name="right_sharpa_palm031" file="../sharpa_wave/assets/right/palm/palm031.obj" />
   </asset>
   <worldbody>
     <body name="base_link" pos="0 0 0.82">
@@ -471,9 +524,186 @@
                   <body name="zarm_r7_link" pos="0 0 -0.059">
                     <inertial pos="0.00266828 -0.00745579 -0.0716836" quat="0.648539 -0.000276918 -0.0104684 0.761109" mass="0.810524" diaginertia="0.00104683 0.00098437 0.00027042" />
                     <joint name="zarm_r7_joint" pos="0 0 0" axis="1 0 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
+                    <!-- Replacement wrist-roll visual kept from the S40 model so the link between zarm_r7_joint and the Sharpa hand remains visible. -->
                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_roll" />
-                    <geom size="0.005" pos="0 0.03 -0.17" />
-                    <geom type="cylinder" size="0.03" fromto="0 0 -0.05 0 0 -0.085" class="collision-right" />
+                    <body name="right_sharpa_mount" pos="0 0 0" quat="1 0 0 0">
+                      <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler/quat. -->
+                      <body name="right_hand_C_MC" childclass="sharpa">
+                        <geom name="right_hand_C_MC_visual" class="visual" mass="0.72045" mesh="right_sharpa_right_hand_C_MC_visual" />
+                        <geom name="right_palm000_collision" class="collision" mesh="right_sharpa_palm000" />
+                        <geom name="right_palm001_collision" class="collision" mesh="right_sharpa_palm001" />
+                        <geom name="right_palm002_collision" class="collision" mesh="right_sharpa_palm002" />
+                        <geom name="right_palm003_collision" class="collision" mesh="right_sharpa_palm003" />
+                        <geom name="right_palm004_collision" class="collision" mesh="right_sharpa_palm004" />
+                        <geom name="right_palm005_collision" class="collision" mesh="right_sharpa_palm005" />
+                        <geom name="right_palm006_collision" class="collision" mesh="right_sharpa_palm006" />
+                        <geom name="right_palm007_collision" class="collision" mesh="right_sharpa_palm007" />
+                        <geom name="right_palm008_collision" class="collision" mesh="right_sharpa_palm008" />
+                        <geom name="right_palm009_collision" class="collision" mesh="right_sharpa_palm009" />
+                        <geom name="right_palm010_collision" class="collision" mesh="right_sharpa_palm010" />
+                        <geom name="right_palm011_collision" class="collision" mesh="right_sharpa_palm011" />
+                        <geom name="right_palm012_collision" class="collision" mesh="right_sharpa_palm012" />
+                        <geom name="right_palm013_collision" class="collision" mesh="right_sharpa_palm013" />
+                        <geom name="right_palm014_collision" class="collision" mesh="right_sharpa_palm014" />
+                        <geom name="right_palm015_collision" class="collision" mesh="right_sharpa_palm015" />
+                        <geom name="right_palm016_collision" class="collision" mesh="right_sharpa_palm016" />
+                        <geom name="right_palm017_collision" class="collision" mesh="right_sharpa_palm017" />
+                        <geom name="right_palm018_collision" class="collision" mesh="right_sharpa_palm018" />
+                        <geom name="right_palm019_collision" class="collision" mesh="right_sharpa_palm019" />
+                        <geom name="right_palm020_collision" class="collision" mesh="right_sharpa_palm020" />
+                        <geom name="right_palm021_collision" class="collision" mesh="right_sharpa_palm021" />
+                        <geom name="right_palm022_collision" class="collision" mesh="right_sharpa_palm022" />
+                        <geom name="right_palm023_collision" class="collision" mesh="right_sharpa_palm023" />
+                        <geom name="right_palm024_collision" class="collision" mesh="right_sharpa_palm024" />
+                        <geom name="right_palm025_collision" class="collision" mesh="right_sharpa_palm025" />
+                        <geom name="right_palm026_collision" class="collision" mesh="right_sharpa_palm026" />
+                        <geom name="right_palm027_collision" class="collision" mesh="right_sharpa_palm027" />
+                        <geom name="right_palm028_collision" class="collision" mesh="right_sharpa_palm028" />
+                        <geom name="right_palm029_collision" class="collision" mesh="right_sharpa_palm029" />
+                        <geom name="right_palm030_collision" class="collision" mesh="right_sharpa_palm030" />
+                        <geom name="right_palm031_collision" class="collision" mesh="right_sharpa_palm031" />
+                        <site name="right_wrist_site" pos="0 0 0" />
+                        <body name="right_thumb_CMC_VL" pos="0.01 0.026 0.0214" quat="0.707105 0 0 0.707108">
+                          <inertial pos="-0.00065 0.0002 0" quat="0.557664 -0.434754 -0.557664 -0.434754" mass="0.0025" diaginertia="2.6e-07 2.12661e-07 1.34339e-07" />
+                          <joint name="right_thumb_CMC_FE" class="CMC_joint" pos="0 0 0" axis="0 0 1" range="-1.9199 0.1745" />
+                          <geom class="visual" mesh="right_sharpa_right_thumb_CMC_VL" />
+                          <geom name="right_thumb_CMC_VL_fit" size="0.0120419 0.00625" pos="0.000957197 -0.000412167 1.20218e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="right_thumb_MC" pos="0 0.005 0" quat="0.65328 -0.653282 -0.270598 -0.270599">
+                            <inertial pos="0.03643 0.01024 -0.00517" quat="-0.154462 0.683763 -0.151259 0.696943" mass="0.13587" diaginertia="4.69153e-05 4.29066e-05 1.92101e-05" />
+                            <joint name="right_thumb_CMC_AA" class="CMC_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                            <geom class="visual" mesh="right_sharpa_right_thumb_MC_visual" />
+                            <geom name="right_thumb_MC_fit" size="0.0207081 0.0169273" pos="0.0397656 0.0106861 -0.0110947" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="right_thumb_MCP_VL" pos="0.065 0.006 -0.010392" quat="0.965926 0.25882 0 0">
+                              <joint name="right_thumb_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-1.3963 0.5236" />
+                              <geom class="visual" mass="8e-05" mesh="right_sharpa_right_thumb_MCP_VL_visual" />
+                              <body name="right_thumb_PP" quat="0.707105 -0.707108 0 0">
+                                <inertial pos="0.021256 0.00095 0.00092" quat="0.511613 -0.44358 0.554609 -0.483631" mass="0.03078" diaginertia="6.08344e-06 5.91207e-06 1.22148e-06" />
+                                <joint name="right_thumb_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                                <geom class="visual" mesh="right_sharpa_right_thumb_PP_visual" />
+                                <geom name="right_thumb_PP_fit" size="0.011707 0.0137066" pos="0.0237179 8.06477e-10 0.0012143" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                                <body name="right_thumb_DP" pos="0.039 0 0" quat="0.707105 0.707108 0 0">
+                                  <inertial pos="0.00823663 0.00178196 -0.00099988" quat="0.255956 0.713878 0.187417 0.624291" mass="0.00998" diaginertia="1.09014e-06 1.041e-06 2.95174e-07" />
+                                  <joint name="right_thumb_IP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="-1.7453 0" />
+                                  <geom class="visual" mesh="right_sharpa_DP_Visual_HB1_TH" />
+                                  <geom class="visual" quat="-0.5 0.5 0.5 0.5" material="green" mesh="right_sharpa_elastomer_HB1_TH" />
+                                  <geom class="elastomer_collision" size="0.00943065 0.00677499" pos="0.0163733 0.00176519 2.7474e-08" quat="0.508797 -0.508797 0.491045 -0.491045" type="capsule" />
+                                  <site name="right_thumb_fingertip" pos="0.0276109 0 0" quat="-0.5 0.5 -0.5 0.5" />
+                                </body>
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                        <body name="right_index_MCP_VL" pos="0.001 0.0303 0.0959" quat="0.499998 0.500002 -0.5 0.5">
+                          <inertial pos="-0.0092 0.0013 0" quat="-0.479506 0.519686 0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                          <joint name="right_index_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 0.174533" />
+                          <geom class="visual" mesh="right_sharpa_right_MCP_VL_visual" />
+                          <geom name="right_index_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 -0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="right_index_PP" quat="0.707105 -0.707108 0 0">
+                            <inertial pos="0.027 0.00055 -0.00068" quat="0.502719 -0.479286 0.512565 -0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                            <joint name="right_index_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                            <geom class="visual" mesh="right_sharpa_right_PP_visual" />
+                            <geom name="right_index_PP_fit" size="0.0104766 0.0172474" pos="0.0305371 -8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="right_index_MP" pos="0.047 0 0" quat="0.707105 0.707108 0 0">
+                              <inertial pos="0.01212 0.00116 0.00058" quat="0.0266408 0.732558 0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                              <joint name="right_index_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="-1.7453 0" />
+                              <geom class="visual" mesh="right_sharpa_right_MP_visual" />
+                              <geom name="right_index_MP_fit" size="0.0104174 0.0147236" pos="0.0147146 0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                              <body name="right_index_DP" pos="0.0315 0 0">
+                                <inertial pos="0.0124856 0.00257344 -0.000107634" quat="0.0491898 0.71664 0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                                <joint name="right_index_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="-1.3963 0" />
+                                <geom class="visual" mesh="right_sharpa_DP_visual_HB1_4F" />
+                                <geom class="visual" quat="-0.5 0.5 0.5 0.5" material="green" mesh="right_sharpa_elastomer_HB1_4F" />
+                                <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 0.00086892 -1.32248e-06" quat="0.0228873 0.706736 -0.0228873 0.706736" type="capsule" />
+                                <site name="right_index_fingertip" pos="0.0260093 0 0" quat="-0.5 0.5 -0.5 0.5" />
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                        <body name="right_middle_MCP_VL" pos="0 0.01 0.0989" quat="0.499998 0.500002 -0.5 0.5">
+                          <inertial pos="-0.0092 0.0013 0" quat="-0.479506 0.519686 0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                          <joint name="right_middle_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 0.174533" />
+                          <geom class="visual" mesh="right_sharpa_right_MCP_VL_visual" />
+                          <geom name="right_middle_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 -0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="right_middle_PP" quat="0.707105 -0.707108 0 0">
+                            <inertial pos="0.027 0.00055 -0.00068" quat="0.502719 -0.479286 0.512565 -0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                            <joint name="right_middle_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                            <geom class="visual" mesh="right_sharpa_right_PP_visual" />
+                            <geom name="right_middle_PP_fit" size="0.00934798 0.0172474" pos="0.0305371 -8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="right_middle_MP" pos="0.047 0 0" quat="0.707105 0.707108 0 0">
+                              <inertial pos="0.01212 0.00116 0.00058" quat="0.0266408 0.732558 0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                              <joint name="right_middle_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="-1.7453 0" />
+                              <geom class="visual" mesh="right_sharpa_right_MP_visual" />
+                              <geom name="right_middle_MP_fit" size="0.00940724 0.0147236" pos="0.0147146 0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                              <body name="right_middle_DP" pos="0.0315 0 0">
+                                <inertial pos="0.0124856 0.00257344 -0.000107634" quat="0.0491898 0.71664 0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                                <joint name="right_middle_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="-1.3963 0" />
+                                <geom class="visual" mesh="right_sharpa_DP_visual_HB1_4F" />
+                                <geom class="visual" quat="-0.5 0.5 0.5 0.5" material="green" mesh="right_sharpa_elastomer_HB1_4F" />
+                                <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 0.00086892 -1.32248e-06" quat="0.0228873 0.706736 -0.0228873 0.706736" type="capsule" />
+                                <site name="right_middle_fingertip" pos="0.0260093 0 0" quat="-0.5 0.5 -0.5 0.5" />
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                        <body name="right_ring_MCP_VL" pos="0.0015 -0.0103 0.0929" quat="0.499998 0.500002 -0.5 0.5">
+                          <inertial pos="-0.0092 0.0013 0" quat="-0.479506 0.519686 0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                          <joint name="right_ring_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 0.174533" />
+                          <geom class="visual" mesh="right_sharpa_right_MCP_VL_visual" />
+                          <geom name="right_ring_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 -0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                          <body name="right_ring_PP" quat="0.707105 -0.707108 0 0">
+                            <inertial pos="0.027 0.00055 -0.00068" quat="0.502719 -0.479286 0.512565 -0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                            <joint name="right_ring_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                            <geom class="visual" mesh="right_sharpa_right_PP_visual" />
+                            <geom name="right_ring_PP_fit" size="0.00970157 0.0172474" pos="0.0305371 -8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="right_ring_MP" pos="0.047 0 0" quat="0.707105 0.707108 0 0">
+                              <inertial pos="0.01212 0.00116 0.00058" quat="0.0266408 0.732558 0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                              <joint name="right_ring_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="-1.7453 0" />
+                              <geom class="visual" mesh="right_sharpa_right_MP_visual" />
+                              <geom name="right_ring_MP_fit" size="0.0104481 0.0147236" pos="0.0147146 0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                              <body name="right_ring_DP" pos="0.0315 0 0">
+                                <inertial pos="0.0124856 0.00257344 -0.000107634" quat="0.0491898 0.71664 0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                                <joint name="right_ring_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="-1.3963 0" />
+                                <geom class="visual" mesh="right_sharpa_DP_visual_HB1_4F" />
+                                <geom class="visual" quat="-0.499998 0.5 0.5 0.500002" material="green" mesh="right_sharpa_elastomer_HB1_4F" />
+                                <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 0.00086892 -1.32248e-06" quat="0.0228873 0.706736 -0.0228873 0.706736" type="capsule" />
+                                <site name="right_ring_fingertip" pos="0.0260093 -1.04037e-07 1.04037e-07" quat="-0.5 0.499998 -0.5 0.500002" />
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                        <body name="right_pinky_MC" pos="0.01136 -0.0263 0.0869" quat="-1.34924e-11 3.67321e-06 1 -3.67321e-06">
+                          <joint name="right_pinky_CMC" class="PCMC_joint" pos="0 0 0" axis="0 0 1" range="-0.2618 0" />
+                          <geom class="visual" mass="0.12541" mesh="right_sharpa_right_pinky_MC_visual" />
+                          <geom class="collision" mesh="right_sharpa_right_pinky_MC" />
+                          <body name="right_pinky_MCP_VL" pos="0.00836 -0.0048 0" quat="-0.499998 -0.5 -0.5 0.500002">
+                            <inertial pos="-0.0092 0.0013 0" quat="-0.479506 0.519686 0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
+                            <joint name="right_pinky_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 0.174533" />
+                            <geom class="visual" mesh="right_sharpa_right_MCP_VL_visual" />
+                            <geom name="right_pinky_MCP_VL_fit" size="0.0125535 0.0057" pos="0.00165159 -0.00045 1.0897e-10" type="cylinder" group="3" rgba="0.2 0.6 0.2 0.35" />
+                            <body name="right_pinky_PP" quat="0.707105 -0.707108 0 0">
+                              <inertial pos="0.027 0.00055 -0.00068" quat="0.502719 -0.479286 0.512565 -0.504813" mass="0.04741" diaginertia="1.14061e-05 1.10467e-05 2.15425e-06" />
+                              <joint name="right_pinky_MCP_AA" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.3491 0.3491" />
+                              <geom class="visual" mesh="right_sharpa_right_PP_visual" />
+                              <geom name="right_pinky_PP_fit" size="0.0106522 0.0172474" pos="0.0305371 -8.5591e-06 0.000140714" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                              <body name="right_pinky_MP" pos="0.047 0 0" quat="0.707105 0.707108 0 0">
+                                <inertial pos="0.01212 0.00116 0.00058" quat="0.0266408 0.732558 0.0189273 0.67992" mass="0.01824" diaginertia="2.00683e-06 1.9229e-06 5.68878e-07" />
+                                <joint name="right_pinky_PIP" class="PIP_joint" pos="0 0 0" axis="0 0 1" range="-1.7453 0" />
+                                <geom class="visual" mesh="right_sharpa_right_MP_visual" />
+                                <geom name="right_pinky_MP_fit" size="0.00990499 0.0147236" pos="0.0147146 0.00118535 -4.70523e-07" quat="0.707107 0 0.707107 0" type="capsule" group="3" rgba="0.2 0.6 0.2 0.35" />
+                                <body name="right_pinky_DP" pos="0.0315 0 0">
+                                  <inertial pos="0.0124856 0.00257344 -0.000107634" quat="0.0491898 0.71664 0.0584115 0.69325" mass="0.00465" diaginertia="3.15145e-07 3.09574e-07 1.34852e-07" />
+                                  <joint name="right_pinky_DIP" class="DIP_joint" pos="0 0 0" axis="0 0 1" range="-1.3963 0" />
+                                  <geom class="visual" mesh="right_sharpa_DP_visual_HB1_4F" />
+                                  <geom class="visual" quat="-0.5 0.5 0.5 0.5" material="green" mesh="right_sharpa_elastomer_HB1_4F" />
+                                  <geom class="elastomer_collision" size="0.00806303 0.00535098" pos="0.0139214 0.00086892 -1.32248e-06" quat="0.0228873 0.706736 -0.0228873 0.706736" type="capsule" />
+                                  <site name="right_pinky_fingertip" pos="0.0260093 0 0" quat="-0.5 0.5 -0.5 0.5" />
+                                </body>
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
                   </body>
                 </body>
               </body>
@@ -521,6 +751,32 @@
     <exclude body1="left_pinky_MCP_VL" body2="left_pinky_PP" />
     <exclude body1="left_pinky_PP" body2="left_pinky_MP" />
     <exclude body1="left_pinky_MP" body2="left_pinky_DP" />
+    <exclude body1="right_hand_C_MC" body2="right_thumb_CMC_VL" />
+    <exclude body1="right_hand_C_MC" body2="right_thumb_MC" />
+    <exclude body1="right_hand_C_MC" body2="right_index_MCP_VL" />
+    <exclude body1="right_hand_C_MC" body2="right_middle_MCP_VL" />
+    <exclude body1="right_hand_C_MC" body2="right_ring_MCP_VL" />
+    <exclude body1="right_hand_C_MC" body2="right_pinky_MC" />
+    <exclude body1="right_hand_C_MC" body2="right_pinky_MCP_VL" />
+    <exclude body1="right_thumb_CMC_VL" body2="right_thumb_MC" />
+    <exclude body1="right_thumb_MC" body2="right_thumb_PP" />
+    <exclude body1="right_thumb_PP" body2="right_thumb_DP" />
+    <exclude body1="right_index_MCP_VL" body2="right_index_PP" />
+    <exclude body1="right_index_MCP_VL" body2="right_middle_MCP_VL" />
+    <exclude body1="right_index_PP" body2="right_index_MP" />
+    <exclude body1="right_index_MP" body2="right_index_DP" />
+    <exclude body1="right_middle_MCP_VL" body2="right_middle_PP" />
+    <exclude body1="right_middle_MCP_VL" body2="right_ring_MCP_VL" />
+    <exclude body1="right_middle_PP" body2="right_middle_MP" />
+    <exclude body1="right_middle_MP" body2="right_middle_DP" />
+    <exclude body1="right_ring_MCP_VL" body2="right_ring_PP" />
+    <exclude body1="right_ring_MCP_VL" body2="right_pinky_MCP_VL" />
+    <exclude body1="right_ring_PP" body2="right_ring_MP" />
+    <exclude body1="right_ring_MP" body2="right_ring_DP" />
+    <exclude body1="right_pinky_MC" body2="right_pinky_MCP_VL" />
+    <exclude body1="right_pinky_MCP_VL" body2="right_pinky_PP" />
+    <exclude body1="right_pinky_PP" body2="right_pinky_MP" />
+    <exclude body1="right_pinky_MP" body2="right_pinky_DP" />
   </contact>
   <actuator>
     <motor gear="1" joint="leg_l1_joint" name="leg_l1_joint_motor" ctrllimited="true" ctrlrange="-180 180" />
@@ -573,6 +829,28 @@
     <position class="sharpa" name="left_pinky_MCP_AA" joint="left_pinky_MCP_AA" kp="6.62" dampratio="0.9" />
     <position class="sharpa" name="left_pinky_PIP" joint="left_pinky_PIP" kp="0.9" dampratio="0.9" />
     <position class="sharpa" name="left_pinky_DIP" joint="left_pinky_DIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_thumb_CMC_FE" joint="right_thumb_CMC_FE" kp="6.95" dampratio="0.9" />
+    <position class="sharpa" name="right_thumb_CMC_AA" joint="right_thumb_CMC_AA" kp="13.2" dampratio="0.9" />
+    <position class="sharpa" name="right_thumb_MCP_FE" joint="right_thumb_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="right_thumb_MCP_AA" joint="right_thumb_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="right_thumb_IP" joint="right_thumb_IP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_index_MCP_FE" joint="right_index_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="right_index_MCP_AA" joint="right_index_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="right_index_PIP" joint="right_index_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_index_DIP" joint="right_index_DIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_middle_MCP_FE" joint="right_middle_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="right_middle_MCP_AA" joint="right_middle_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="right_middle_PIP" joint="right_middle_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_middle_DIP" joint="right_middle_DIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_ring_MCP_FE" joint="right_ring_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="right_ring_MCP_AA" joint="right_ring_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="right_ring_PIP" joint="right_ring_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_ring_DIP" joint="right_ring_DIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_pinky_CMC" joint="right_pinky_CMC" kp="1.38" dampratio="0.9" />
+    <position class="sharpa" name="right_pinky_MCP_FE" joint="right_pinky_MCP_FE" kp="4.76" dampratio="0.9" />
+    <position class="sharpa" name="right_pinky_MCP_AA" joint="right_pinky_MCP_AA" kp="6.62" dampratio="0.9" />
+    <position class="sharpa" name="right_pinky_PIP" joint="right_pinky_PIP" kp="0.9" dampratio="0.9" />
+    <position class="sharpa" name="right_pinky_DIP" joint="right_pinky_DIP" kp="0.9" dampratio="0.9" />
   </actuator>
   <sensor>
     <accelerometer name="BodyAcc" site="imu" />
