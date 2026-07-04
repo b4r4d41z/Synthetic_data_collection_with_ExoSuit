@@ -79,6 +79,7 @@
     <mesh name="r_hand_yaw" file="../s40/biped_s40/meshes/r_hand_yaw.STL" />
     <mesh name="r_hand_pitch" file="../s40/biped_s40/meshes/r_hand_pitch.STL" />
     <mesh name="r_hand_roll" file="../s40/biped_s40/meshes/r_hand_roll.STL" />
+    <mesh name="r_hand_roll_no_gripper" file="../s40/biped_s40/meshes/r_hand_roll_no_gripper.STL" />
     <mesh name="head_yaw" file="../s40/biped_s40/meshes/head_yaw.STL" />
     <mesh name="head_pitch" file="../s40/biped_s40/meshes/head_pitch.STL" />
     <mesh name="camera" file="../s40/biped_s40/meshes/camera.STL" />
@@ -524,11 +525,11 @@
                   <body name="zarm_r7_link" pos="0 0 -0.059">
                     <inertial pos="0.00266828 -0.00745579 -0.0716836" quat="0.648539 -0.000276918 -0.0104684 0.761109" mass="0.810524" diaginertia="0.00104683 0.00098437 0.00027042" />
                     <joint name="zarm_r7_joint" pos="0 0 0" axis="1 0 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
-                    <!-- Replacement wrist-roll visual kept from the S40 model so the link between zarm_r7_joint and the Sharpa hand remains visible. -->
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_roll" />
-                    <body name="right_sharpa_mount" pos="0 0 0" quat="1 0 0 0">
-                      <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler/quat. -->
-                      <body name="right_hand_C_MC" childclass="sharpa">
+                    <!-- Replacement wrist-roll visual kept from the no-gripper S40 model so the link between zarm_r7_joint and the Sharpa hand remains visible. -->
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_roll_no_gripper" />
+                    <body name="zarm_r7_end_effector" pos="0 0 -0.085" euler="-3.14159 0 -1.5708">
+                      <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler. pos translates from zarm_r7_link; euler rotates the Sharpa hand about this attachment point (radian XYZ order). -->
+                      <body name="right_hand_C_MC" childclass="sharpa" pos="0 0 0" quat="1 0 0 0">
                         <geom name="right_hand_C_MC_visual" class="visual" mass="0.72045" mesh="right_sharpa_right_hand_C_MC_visual" />
                         <geom name="right_palm000_collision" class="collision" mesh="right_sharpa_palm000" />
                         <geom name="right_palm001_collision" class="collision" mesh="right_sharpa_palm001" />
@@ -791,20 +792,20 @@
     <motor gear="1" joint="leg_r4_joint" name="leg_r4_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
     <motor gear="1" joint="leg_r5_joint" name="leg_r5_joint_motor" ctrllimited="true" ctrlrange="-36 36" />
     <motor gear="1" joint="leg_r6_joint" name="leg_r6_joint_motor" ctrllimited="true" ctrlrange="-36 36" />
-    <motor gear="1" joint="zarm_l1_joint" name="zarm_l1_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
-    <motor gear="1" joint="zarm_l2_joint" name="zarm_l2_joint_motor" ctrllimited="true" ctrlrange="-50 50" />
-    <motor gear="1" joint="zarm_l3_joint" name="zarm_l3_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
-    <motor gear="1" joint="zarm_l4_joint" name="zarm_l4_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
-    <motor gear="1" joint="zarm_l5_joint" name="zarm_l5_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
-    <motor gear="1" joint="zarm_l6_joint" name="zarm_l6_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
-    <motor gear="1" joint="zarm_l7_joint" name="zarm_l7_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
-    <motor gear="1" joint="zarm_r1_joint" name="zarm_r1_joint_motor" ctrllimited="true" ctrlrange="-100 100" />
-    <motor gear="1" joint="zarm_r2_joint" name="zarm_r2_joint_motor" ctrllimited="true" ctrlrange="-50 50" />
-    <motor gear="1" joint="zarm_r3_joint" name="zarm_r3_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
-    <motor gear="1" joint="zarm_r4_joint" name="zarm_r4_joint_motor" ctrllimited="true" ctrlrange="-20 20" />
-    <motor gear="1" joint="zarm_r5_joint" name="zarm_r5_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
-    <motor gear="1" joint="zarm_r6_joint" name="zarm_r6_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
-    <motor gear="1" joint="zarm_r7_joint" name="zarm_r7_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
+    <position joint="zarm_l1_joint" name="zarm_l1_joint_position" kp="500" dampratio="0.9" ctrllimited="true" ctrlrange="-2.61799 0.523599" />
+    <position joint="zarm_l2_joint" name="zarm_l2_joint_position" kp="500" dampratio="0.9" ctrllimited="true" ctrlrange="-0.349066 2.0944" />
+    <position joint="zarm_l3_joint" name="zarm_l3_joint_position" kp="300" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
+    <position joint="zarm_l4_joint" name="zarm_l4_joint_position" kp="300" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 0" />
+    <position joint="zarm_l5_joint" name="zarm_l5_joint_position" kp="150" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
+    <position joint="zarm_l6_joint" name="zarm_l6_joint_position" kp="150" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
+    <position joint="zarm_l7_joint" name="zarm_l7_joint_position" kp="150" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
+    <position joint="zarm_r1_joint" name="zarm_r1_joint_position" kp="500" dampratio="0.9" ctrllimited="true" ctrlrange="-2.61799 0.523599" />
+    <position joint="zarm_r2_joint" name="zarm_r2_joint_position" kp="500" dampratio="0.9" ctrllimited="true" ctrlrange="-2.0944 0.349066" />
+    <position joint="zarm_r3_joint" name="zarm_r3_joint_position" kp="300" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
+    <position joint="zarm_r4_joint" name="zarm_r4_joint_position" kp="300" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 0" />
+    <position joint="zarm_r5_joint" name="zarm_r5_joint_position" kp="150" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
+    <position joint="zarm_r6_joint" name="zarm_r6_joint_position" kp="150" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
+    <position joint="zarm_r7_joint" name="zarm_r7_joint_position" kp="150" dampratio="0.9" ctrllimited="true" ctrlrange="-1.5708 1.5708" />
     <motor gear="1" joint="zhead_1_joint" name="zhead_1_joint_motor" ctrllimited="true" ctrlrange="-1.5 1.5" />
     <motor gear="1" joint="zhead_2_joint" name="zhead_2_joint_motor" ctrllimited="true" ctrlrange="-6 6" />
     <position class="sharpa" name="left_thumb_CMC_FE" joint="left_thumb_CMC_FE" kp="6.95" dampratio="0.9" />
