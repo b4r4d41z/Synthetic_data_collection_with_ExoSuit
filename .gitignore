@@ -1,3 +1,4 @@
+
 # ROS2 / colcon build artifacts
 exo2isaacsim/build/
 exo2isaacsim/install/
@@ -43,4 +44,6 @@ docker/exo_ros_bridge/.env
 # Docker temporary files
 docker/exo_ros_bridge/**/__pycache__/
 
-/assets/assemblies/old
+
+# Legacy models
+/models/legacy/
