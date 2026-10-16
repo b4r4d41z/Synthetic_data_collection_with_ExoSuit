@@ -1,0 +1,827 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "MuJoCo USD Converter v0.5.0"
+    }
+    defaultPrim = "biped_s40_with_sharpa_wave_hands"
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @./physics.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "biped_s40_with_sharpa_wave_hands"
+{
+    over "Geometry"
+    {
+        over "base_link"
+        {
+            over "leg_l1_link"
+            {
+                over "leg_l2_link"
+                {
+                    over "leg_l3_link"
+                    {
+                        over "leg_l4_link"
+                        {
+                            over "leg_l5_link"
+                            {
+                                over "leg_l6_link"
+                                {
+                                    over "leg_l6_joint" (
+                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                    )
+                                    {
+                                        float physxJoint:armature = 0.05
+                                        float physxJoint:jointFriction = 0.05
+                                    }
+                                }
+
+                                over "leg_l5_joint" (
+                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                )
+                                {
+                                    float physxJoint:armature = 0.05
+                                    float physxJoint:jointFriction = 0.05
+                                }
+                            }
+
+                            over "leg_l4_joint" (
+                                prepend apiSchemas = ["PhysxJointAPI"]
+                            )
+                            {
+                                float physxJoint:armature = 0.0508
+                                float physxJoint:jointFriction = 0.02
+                            }
+                        }
+
+                        over "leg_l3_joint" (
+                            prepend apiSchemas = ["PhysxJointAPI"]
+                        )
+                        {
+                            float physxJoint:armature = 0.0508
+                            float physxJoint:jointFriction = 0.02
+                        }
+                    }
+
+                    over "leg_l2_joint" (
+                        prepend apiSchemas = ["PhysxJointAPI"]
+                    )
+                    {
+                        float physxJoint:armature = 0.0508
+                        float physxJoint:jointFriction = 0.02
+                    }
+                }
+
+                over "leg_l1_joint" (
+                    prepend apiSchemas = ["PhysxJointAPI"]
+                )
+                {
+                    float physxJoint:armature = 0.12
+                    float physxJoint:jointFriction = 0.05
+                }
+            }
+
+            over "leg_r1_link"
+            {
+                over "leg_r2_link"
+                {
+                    over "leg_r3_link"
+                    {
+                        over "leg_r4_link"
+                        {
+                            over "leg_r5_link"
+                            {
+                                over "leg_r6_link"
+                                {
+                                    over "leg_r6_joint" (
+                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                    )
+                                    {
+                                        float physxJoint:armature = 0.05
+                                        float physxJoint:jointFriction = 0.05
+                                    }
+                                }
+
+                                over "leg_r5_joint" (
+                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                )
+                                {
+                                    float physxJoint:armature = 0.05
+                                    float physxJoint:jointFriction = 0.05
+                                }
+                            }
+
+                            over "leg_r4_joint" (
+                                prepend apiSchemas = ["PhysxJointAPI"]
+                            )
+                            {
+                                float physxJoint:armature = 0.0508
+                                float physxJoint:jointFriction = 0.02
+                            }
+                        }
+
+                        over "leg_r3_joint" (
+                            prepend apiSchemas = ["PhysxJointAPI"]
+                        )
+                        {
+                            float physxJoint:armature = 0.0508
+                            float physxJoint:jointFriction = 0.02
+                        }
+                    }
+
+                    over "leg_r2_joint" (
+                        prepend apiSchemas = ["PhysxJointAPI"]
+                    )
+                    {
+                        float physxJoint:armature = 0.0508
+                        float physxJoint:jointFriction = 0.02
+                    }
+                }
+
+                over "leg_r1_joint" (
+                    prepend apiSchemas = ["PhysxJointAPI"]
+                )
+                {
+                    float physxJoint:armature = 0.12
+                    float physxJoint:jointFriction = 0.05
+                }
+            }
+
+            over "zarm_l1_link"
+            {
+                over "zarm_l2_link"
+                {
+                    over "zarm_l3_link"
+                    {
+                        over "zarm_l4_link"
+                        {
+                            over "zarm_l5_link"
+                            {
+                                over "zarm_l6_link"
+                                {
+                                    over "zarm_l7_link"
+                                    {
+                                        over "zarm_l7_end_effector"
+                                        {
+                                            over "left_hand_C_MC"
+                                            {
+                                                over "left_thumb_CMC_VL"
+                                                {
+                                                    over "left_thumb_MC"
+                                                    {
+                                                        over "left_thumb_MCP_VL"
+                                                        {
+                                                            over "left_thumb_PP"
+                                                            {
+                                                                over "left_thumb_DP"
+                                                                {
+                                                                    over "left_thumb_IP" (
+                                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physxJoint:armature = 0.0006
+                                                                        float physxJoint:jointFriction = 0.01276
+                                                                    }
+                                                                }
+
+                                                                over "left_thumb_MCP_AA" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00265
+                                                                    float physxJoint:jointFriction = 0.07456
+                                                                }
+                                                            }
+
+                                                            over "left_thumb_MCP_FE" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.00265
+                                                                float physxJoint:jointFriction = 0.07456
+                                                            }
+                                                        }
+
+                                                        over "left_thumb_CMC_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.0032
+                                                            float physxJoint:jointFriction = 0.132
+                                                        }
+                                                    }
+
+                                                    over "left_thumb_CMC_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.0032
+                                                        float physxJoint:jointFriction = 0.132
+                                                    }
+                                                }
+
+                                                over "left_index_MCP_VL"
+                                                {
+                                                    over "left_index_PP"
+                                                    {
+                                                        over "left_index_MP"
+                                                        {
+                                                            over "left_index_DP"
+                                                            {
+                                                                over "left_index_DIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00042
+                                                                    float physxJoint:jointFriction = 0.00378738
+                                                                }
+                                                            }
+
+                                                            over "left_index_PIP" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.0006
+                                                                float physxJoint:jointFriction = 0.01276
+                                                            }
+                                                        }
+
+                                                        over "left_index_MCP_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "left_index_MCP_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00265
+                                                        float physxJoint:jointFriction = 0.07456
+                                                    }
+                                                }
+
+                                                over "left_middle_MCP_VL"
+                                                {
+                                                    over "left_middle_PP"
+                                                    {
+                                                        over "left_middle_MP"
+                                                        {
+                                                            over "left_middle_DP"
+                                                            {
+                                                                over "left_middle_DIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00042
+                                                                    float physxJoint:jointFriction = 0.00378738
+                                                                }
+                                                            }
+
+                                                            over "left_middle_PIP" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.0006
+                                                                float physxJoint:jointFriction = 0.01276
+                                                            }
+                                                        }
+
+                                                        over "left_middle_MCP_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "left_middle_MCP_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00265
+                                                        float physxJoint:jointFriction = 0.07456
+                                                    }
+                                                }
+
+                                                over "left_ring_MCP_VL"
+                                                {
+                                                    over "left_ring_PP"
+                                                    {
+                                                        over "left_ring_MP"
+                                                        {
+                                                            over "left_ring_DP"
+                                                            {
+                                                                over "left_ring_DIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00042
+                                                                    float physxJoint:jointFriction = 0.00378738
+                                                                }
+                                                            }
+
+                                                            over "left_ring_PIP" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.0006
+                                                                float physxJoint:jointFriction = 0.01276
+                                                            }
+                                                        }
+
+                                                        over "left_ring_MCP_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "left_ring_MCP_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00265
+                                                        float physxJoint:jointFriction = 0.07456
+                                                    }
+                                                }
+
+                                                over "left_pinky_MC"
+                                                {
+                                                    over "left_pinky_MCP_VL"
+                                                    {
+                                                        over "left_pinky_PP"
+                                                        {
+                                                            over "left_pinky_MP"
+                                                            {
+                                                                over "left_pinky_DP"
+                                                                {
+                                                                    over "left_pinky_DIP" (
+                                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physxJoint:armature = 0.00042
+                                                                        float physxJoint:jointFriction = 0.00378738
+                                                                    }
+                                                                }
+
+                                                                over "left_pinky_PIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.0006
+                                                                    float physxJoint:jointFriction = 0.01276
+                                                                }
+                                                            }
+
+                                                            over "left_pinky_MCP_AA" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.00265
+                                                                float physxJoint:jointFriction = 0.07456
+                                                            }
+                                                        }
+
+                                                        over "left_pinky_MCP_FE" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "left_pinky_CMC" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00012
+                                                        float physxJoint:jointFriction = 0.012
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        over "zarm_l7_joint" (
+                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                        )
+                                        {
+                                            float physxJoint:armature = 0.05
+                                            float physxJoint:jointFriction = 0.02
+                                        }
+                                    }
+
+                                    over "zarm_l6_joint" (
+                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                    )
+                                    {
+                                        float physxJoint:armature = 0.05
+                                        float physxJoint:jointFriction = 0.02
+                                    }
+                                }
+
+                                over "zarm_l5_joint" (
+                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                )
+                                {
+                                    float physxJoint:armature = 0.05
+                                    float physxJoint:jointFriction = 0.02
+                                }
+                            }
+
+                            over "zarm_l4_joint" (
+                                prepend apiSchemas = ["PhysxJointAPI"]
+                            )
+                            {
+                                float physxJoint:armature = 0.05
+                                float physxJoint:jointFriction = 0.02
+                            }
+                        }
+
+                        over "zarm_l3_joint" (
+                            prepend apiSchemas = ["PhysxJointAPI"]
+                        )
+                        {
+                            float physxJoint:armature = 0.05
+                            float physxJoint:jointFriction = 0.02
+                        }
+                    }
+
+                    over "zarm_l2_joint" (
+                        prepend apiSchemas = ["PhysxJointAPI"]
+                    )
+                    {
+                        float physxJoint:armature = 0.05
+                        float physxJoint:jointFriction = 0.02
+                    }
+                }
+
+                over "zarm_l1_joint" (
+                    prepend apiSchemas = ["PhysxJointAPI"]
+                )
+                {
+                    float physxJoint:armature = 0.05
+                    float physxJoint:jointFriction = 0.02
+                }
+            }
+
+            over "zarm_r1_link"
+            {
+                over "zarm_r2_link"
+                {
+                    over "zarm_r3_link"
+                    {
+                        over "zarm_r4_link"
+                        {
+                            over "zarm_r5_link"
+                            {
+                                over "zarm_r6_link"
+                                {
+                                    over "zarm_r7_link"
+                                    {
+                                        over "zarm_r7_end_effector"
+                                        {
+                                            over "right_hand_C_MC"
+                                            {
+                                                over "right_thumb_CMC_VL"
+                                                {
+                                                    over "right_thumb_MC"
+                                                    {
+                                                        over "right_thumb_MCP_VL"
+                                                        {
+                                                            over "right_thumb_PP"
+                                                            {
+                                                                over "right_thumb_DP"
+                                                                {
+                                                                    over "right_thumb_IP" (
+                                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physxJoint:armature = 0.0006
+                                                                        float physxJoint:jointFriction = 0.01276
+                                                                    }
+                                                                }
+
+                                                                over "right_thumb_MCP_AA" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00265
+                                                                    float physxJoint:jointFriction = 0.07456
+                                                                }
+                                                            }
+
+                                                            over "right_thumb_MCP_FE" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.00265
+                                                                float physxJoint:jointFriction = 0.07456
+                                                            }
+                                                        }
+
+                                                        over "right_thumb_CMC_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.0032
+                                                            float physxJoint:jointFriction = 0.132
+                                                        }
+                                                    }
+
+                                                    over "right_thumb_CMC_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.0032
+                                                        float physxJoint:jointFriction = 0.132
+                                                    }
+                                                }
+
+                                                over "right_index_MCP_VL"
+                                                {
+                                                    over "right_index_PP"
+                                                    {
+                                                        over "right_index_MP"
+                                                        {
+                                                            over "right_index_DP"
+                                                            {
+                                                                over "right_index_DIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00042
+                                                                    float physxJoint:jointFriction = 0.00378738
+                                                                }
+                                                            }
+
+                                                            over "right_index_PIP" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.0006
+                                                                float physxJoint:jointFriction = 0.01276
+                                                            }
+                                                        }
+
+                                                        over "right_index_MCP_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "right_index_MCP_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00265
+                                                        float physxJoint:jointFriction = 0.07456
+                                                    }
+                                                }
+
+                                                over "right_middle_MCP_VL"
+                                                {
+                                                    over "right_middle_PP"
+                                                    {
+                                                        over "right_middle_MP"
+                                                        {
+                                                            over "right_middle_DP"
+                                                            {
+                                                                over "right_middle_DIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00042
+                                                                    float physxJoint:jointFriction = 0.00378738
+                                                                }
+                                                            }
+
+                                                            over "right_middle_PIP" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.0006
+                                                                float physxJoint:jointFriction = 0.01276
+                                                            }
+                                                        }
+
+                                                        over "right_middle_MCP_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "right_middle_MCP_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00265
+                                                        float physxJoint:jointFriction = 0.07456
+                                                    }
+                                                }
+
+                                                over "right_ring_MCP_VL"
+                                                {
+                                                    over "right_ring_PP"
+                                                    {
+                                                        over "right_ring_MP"
+                                                        {
+                                                            over "right_ring_DP"
+                                                            {
+                                                                over "right_ring_DIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.00042
+                                                                    float physxJoint:jointFriction = 0.00378738
+                                                                }
+                                                            }
+
+                                                            over "right_ring_PIP" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.0006
+                                                                float physxJoint:jointFriction = 0.01276
+                                                            }
+                                                        }
+
+                                                        over "right_ring_MCP_AA" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "right_ring_MCP_FE" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00265
+                                                        float physxJoint:jointFriction = 0.07456
+                                                    }
+                                                }
+
+                                                over "right_pinky_MC"
+                                                {
+                                                    over "right_pinky_MCP_VL"
+                                                    {
+                                                        over "right_pinky_PP"
+                                                        {
+                                                            over "right_pinky_MP"
+                                                            {
+                                                                over "right_pinky_DP"
+                                                                {
+                                                                    over "right_pinky_DIP" (
+                                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physxJoint:armature = 0.00042
+                                                                        float physxJoint:jointFriction = 0.00378738
+                                                                    }
+                                                                }
+
+                                                                over "right_pinky_PIP" (
+                                                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                                                )
+                                                                {
+                                                                    float physxJoint:armature = 0.0006
+                                                                    float physxJoint:jointFriction = 0.01276
+                                                                }
+                                                            }
+
+                                                            over "right_pinky_MCP_AA" (
+                                                                prepend apiSchemas = ["PhysxJointAPI"]
+                                                            )
+                                                            {
+                                                                float physxJoint:armature = 0.00265
+                                                                float physxJoint:jointFriction = 0.07456
+                                                            }
+                                                        }
+
+                                                        over "right_pinky_MCP_FE" (
+                                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                                        )
+                                                        {
+                                                            float physxJoint:armature = 0.00265
+                                                            float physxJoint:jointFriction = 0.07456
+                                                        }
+                                                    }
+
+                                                    over "right_pinky_CMC" (
+                                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                                    )
+                                                    {
+                                                        float physxJoint:armature = 0.00012
+                                                        float physxJoint:jointFriction = 0.012
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        over "zarm_r7_joint" (
+                                            prepend apiSchemas = ["PhysxJointAPI"]
+                                        )
+                                        {
+                                            float physxJoint:armature = 0.05
+                                            float physxJoint:jointFriction = 0.02
+                                        }
+                                    }
+
+                                    over "zarm_r6_joint" (
+                                        prepend apiSchemas = ["PhysxJointAPI"]
+                                    )
+                                    {
+                                        float physxJoint:armature = 0.05
+                                        float physxJoint:jointFriction = 0.02
+                                    }
+                                }
+
+                                over "zarm_r5_joint" (
+                                    prepend apiSchemas = ["PhysxJointAPI"]
+                                )
+                                {
+                                    float physxJoint:armature = 0.05
+                                    float physxJoint:jointFriction = 0.02
+                                }
+                            }
+
+                            over "zarm_r4_joint" (
+                                prepend apiSchemas = ["PhysxJointAPI"]
+                            )
+                            {
+                                float physxJoint:armature = 0.05
+                                float physxJoint:jointFriction = 0.02
+                            }
+                        }
+
+                        over "zarm_r3_joint" (
+                            prepend apiSchemas = ["PhysxJointAPI"]
+                        )
+                        {
+                            float physxJoint:armature = 0.05
+                            float physxJoint:jointFriction = 0.02
+                        }
+                    }
+
+                    over "zarm_r2_joint" (
+                        prepend apiSchemas = ["PhysxJointAPI"]
+                    )
+                    {
+                        float physxJoint:armature = 0.05
+                        float physxJoint:jointFriction = 0.02
+                    }
+                }
+
+                over "zarm_r1_joint" (
+                    prepend apiSchemas = ["PhysxJointAPI"]
+                )
+                {
+                    float physxJoint:armature = 0.05
+                    float physxJoint:jointFriction = 0.02
+                }
+            }
+
+            over "zhead_1_link"
+            {
+                over "zhead_2_link"
+                {
+                    over "zhead_2_joint" (
+                        prepend apiSchemas = ["PhysxJointAPI"]
+                    )
+                    {
+                        float physxJoint:armature = 0.05
+                        float physxJoint:jointFriction = 0.02
+                    }
+                }
+
+                over "zhead_1_joint" (
+                    prepend apiSchemas = ["PhysxJointAPI"]
+                )
+                {
+                    float physxJoint:armature = 0.05
+                    float physxJoint:jointFriction = 0.02
+                }
+            }
+        }
+    }
+}
+

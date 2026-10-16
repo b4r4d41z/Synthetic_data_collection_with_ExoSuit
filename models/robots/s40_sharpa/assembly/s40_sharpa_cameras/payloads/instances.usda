@@ -1,0 +1,1027 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "MuJoCo USD Converter v0.5.0"
+    }
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Scope "Instances"
+{
+    def Xform "base_link" (
+        prepend references = @./geometries.usd@</Geometries/base_link>
+    )
+    {
+        over "base_link" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_leg_roll" (
+        prepend references = @./geometries.usd@</Geometries/l_leg_roll>
+    )
+    {
+        over "l_leg_roll" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_leg_yaw" (
+        prepend references = @./geometries.usd@</Geometries/l_leg_yaw>
+    )
+    {
+        over "l_leg_yaw" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_leg_pitch" (
+        prepend references = @./geometries.usd@</Geometries/l_leg_pitch>
+    )
+    {
+        over "l_leg_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_knee" (
+        prepend references = @./geometries.usd@</Geometries/l_knee>
+    )
+    {
+        over "l_knee" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_foot_pitch" (
+        prepend references = @./geometries.usd@</Geometries/l_foot_pitch>
+    )
+    {
+        over "l_foot_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_foot_roll" (
+        prepend references = @./geometries.usd@</Geometries/l_foot_roll>
+    )
+    {
+        over "l_foot_roll" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_leg_yaw" (
+        prepend references = @./geometries.usd@</Geometries/r_leg_yaw>
+    )
+    {
+        over "r_leg_yaw" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_leg_pitch" (
+        prepend references = @./geometries.usd@</Geometries/r_leg_pitch>
+    )
+    {
+        over "r_leg_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_knee" (
+        prepend references = @./geometries.usd@</Geometries/r_knee>
+    )
+    {
+        over "r_knee" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_foot_pitch" (
+        prepend references = @./geometries.usd@</Geometries/r_foot_pitch>
+    )
+    {
+        over "r_foot_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_arm_pitch" (
+        prepend references = @./geometries.usd@</Geometries/l_arm_pitch>
+    )
+    {
+        over "l_arm_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_arm_roll" (
+        prepend references = @./geometries.usd@</Geometries/l_arm_roll>
+    )
+    {
+        over "l_arm_roll" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_arm_yaw" (
+        prepend references = @./geometries.usd@</Geometries/l_arm_yaw>
+    )
+    {
+        over "l_arm_yaw" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_forearm" (
+        prepend references = @./geometries.usd@</Geometries/l_forearm>
+    )
+    {
+        over "l_forearm" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_hand_yaw" (
+        prepend references = @./geometries.usd@</Geometries/l_hand_yaw>
+    )
+    {
+        over "l_hand_yaw" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_hand_pitch" (
+        prepend references = @./geometries.usd@</Geometries/l_hand_pitch>
+    )
+    {
+        over "l_hand_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "l_hand_roll_no_gripper" (
+        prepend references = @./geometries.usd@</Geometries/l_hand_roll_no_gripper>
+    )
+    {
+        over "l_hand_roll_no_gripper" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "left_hand_C_MC_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_hand_C_MC_visual>
+    )
+    {
+        over "left_hand_C_MC_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_hand_C_MC_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_thumb_CMC_VL" (
+        prepend references = @./geometries.usd@</Geometries/left_thumb_CMC_VL>
+    )
+    {
+        over "left_thumb_CMC_VL" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_thumb_CMC_VL/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_thumb_MC_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_thumb_MC_visual>
+    )
+    {
+        over "left_thumb_MC_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_thumb_MC_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_thumb_MCP_VL_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_thumb_MCP_VL_visual>
+    )
+    {
+        over "left_thumb_MCP_VL_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_thumb_MCP_VL_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_thumb_PP_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_thumb_PP_visual>
+    )
+    {
+        over "left_thumb_PP_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_thumb_PP_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "DP_Visual_HB1_TH" (
+        prepend references = @./geometries.usd@</Geometries/DP_Visual_HB1_TH>
+    )
+    {
+        over "DP_Visual_HB1_TH" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/DP_Visual_HB1_TH/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "elastomer_HB1_TH" (
+        prepend references = @./geometries.usd@</Geometries/elastomer_HB1_TH>
+    )
+    {
+        over "elastomer_HB1_TH" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/elastomer_HB1_TH/VisualMaterials/green>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "green" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/green>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_MCP_VL_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_MCP_VL_visual>
+    )
+    {
+        over "left_MCP_VL_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_MCP_VL_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_PP_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_PP_visual>
+    )
+    {
+        over "left_PP_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_PP_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_MP_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_MP_visual>
+    )
+    {
+        over "left_MP_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_MP_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "DP_visual_HB1_4F" (
+        prepend references = @./geometries.usd@</Geometries/DP_visual_HB1_4F>
+    )
+    {
+        over "DP_visual_HB1_4F" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/DP_visual_HB1_4F/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "elastomer_HB1_4F" (
+        prepend references = @./geometries.usd@</Geometries/elastomer_HB1_4F>
+    )
+    {
+        over "elastomer_HB1_4F" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/elastomer_HB1_4F/VisualMaterials/green>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "green" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/green>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "left_pinky_MC_visual" (
+        prepend references = @./geometries.usd@</Geometries/left_pinky_MC_visual>
+    )
+    {
+        over "left_pinky_MC_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/left_pinky_MC_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "r_arm_pitch" (
+        prepend references = @./geometries.usd@</Geometries/r_arm_pitch>
+    )
+    {
+        over "r_arm_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_arm_roll" (
+        prepend references = @./geometries.usd@</Geometries/r_arm_roll>
+    )
+    {
+        over "r_arm_roll" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_arm_yaw" (
+        prepend references = @./geometries.usd@</Geometries/r_arm_yaw>
+    )
+    {
+        over "r_arm_yaw" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_forearm" (
+        prepend references = @./geometries.usd@</Geometries/r_forearm>
+    )
+    {
+        over "r_forearm" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_hand_yaw" (
+        prepend references = @./geometries.usd@</Geometries/r_hand_yaw>
+    )
+    {
+        over "r_hand_yaw" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_hand_pitch" (
+        prepend references = @./geometries.usd@</Geometries/r_hand_pitch>
+    )
+    {
+        over "r_hand_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "r_hand_roll_no_gripper" (
+        prepend references = @./geometries.usd@</Geometries/r_hand_roll_no_gripper>
+    )
+    {
+        over "r_hand_roll_no_gripper" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "right_hand_C_MC_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_hand_C_MC_visual>
+    )
+    {
+        over "right_hand_C_MC_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_hand_C_MC_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_thumb_CMC_VL" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_thumb_CMC_VL>
+    )
+    {
+        over "right_sharpa_right_thumb_CMC_VL" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_thumb_CMC_VL/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_thumb_MC_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_thumb_MC_visual>
+    )
+    {
+        over "right_sharpa_right_thumb_MC_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_thumb_MC_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_thumb_MCP_VL_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_thumb_MCP_VL_visual>
+    )
+    {
+        over "right_sharpa_right_thumb_MCP_VL_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_thumb_MCP_VL_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_thumb_PP_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_thumb_PP_visual>
+    )
+    {
+        over "right_sharpa_right_thumb_PP_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_thumb_PP_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_DP_Visual_HB1_TH" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_DP_Visual_HB1_TH>
+    )
+    {
+        over "right_sharpa_DP_Visual_HB1_TH" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_DP_Visual_HB1_TH/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_elastomer_HB1_TH" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_elastomer_HB1_TH>
+    )
+    {
+        over "right_sharpa_elastomer_HB1_TH" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_elastomer_HB1_TH/VisualMaterials/green>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "green" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/green>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_MCP_VL_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_MCP_VL_visual>
+    )
+    {
+        over "right_sharpa_right_MCP_VL_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_MCP_VL_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_PP_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_PP_visual>
+    )
+    {
+        over "right_sharpa_right_PP_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_PP_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_MP_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_MP_visual>
+    )
+    {
+        over "right_sharpa_right_MP_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_MP_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_DP_visual_HB1_4F" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_DP_visual_HB1_4F>
+    )
+    {
+        over "right_sharpa_DP_visual_HB1_4F" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_DP_visual_HB1_4F/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_elastomer_HB1_4F" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_elastomer_HB1_4F>
+    )
+    {
+        over "right_sharpa_elastomer_HB1_4F" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_elastomer_HB1_4F/VisualMaterials/green>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "green" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/green>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "right_sharpa_right_pinky_MC_visual" (
+        prepend references = @./geometries.usd@</Geometries/right_sharpa_right_pinky_MC_visual>
+    )
+    {
+        over "right_sharpa_right_pinky_MC_visual" (
+            apiSchemas = ["MaterialBindingAPI", "MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/right_sharpa_right_pinky_MC_visual/VisualMaterials/silver>
+            int mjc:group = 2
+            token physics:approximation = "convexHull"
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "silver" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/silver>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "head_yaw" (
+        prepend references = @./geometries.usd@</Geometries/head_yaw>
+    )
+    {
+        over "head_yaw" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "head_pitch" (
+        prepend references = @./geometries.usd@</Geometries/head_pitch>
+    )
+    {
+        over "head_pitch" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+
+    def Xform "camera" (
+        prepend references = @./geometries.usd@</Geometries/camera>
+    )
+    {
+        over "camera" (
+            apiSchemas = ["MjcImageableAPI", "PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        )
+        {
+            int mjc:group = 1
+            token physics:approximation = "convexHull"
+        }
+    }
+}
+

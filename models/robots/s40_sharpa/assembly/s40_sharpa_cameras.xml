@@ -22,7 +22,7 @@
           <geom material="green" />
         </default>
       </default>
-      <default class="collision">
+      <default class="sharpa_collision">
         <geom type="mesh" group="3" solref="0.01" rgba="0.2 0.6 0.2 0.25" />
         <default class="elastomer_collision">
           <geom solref="0.06 0.9" />
@@ -312,38 +312,38 @@
                       <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler. pos translates from zarm_l7_link; euler rotates the Sharpa hand about this attachment point (radian XYZ order). -->
                       <body name="left_hand_C_MC" childclass="sharpa" pos="0 0 0" quat="1 0 0 0">
                         <geom name="left_hand_C_MC_visual" class="visual" mass="0.72045" mesh="left_hand_C_MC_visual" />
-                        <geom name="palm000_collision" class="collision" mesh="palm000" />
-                        <geom name="palm001_collision" class="collision" mesh="palm001" />
-                        <geom name="palm002_collision" class="collision" mesh="palm002" />
-                        <geom name="palm003_collision" class="collision" mesh="palm003" />
-                        <geom name="palm004_collision" class="collision" mesh="palm004" />
-                        <geom name="palm005_collision" class="collision" mesh="palm005" />
-                        <geom name="palm006_collision" class="collision" mesh="palm006" />
-                        <geom name="palm007_collision" class="collision" mesh="palm007" />
-                        <geom name="palm008_collision" class="collision" mesh="palm008" />
-                        <geom name="palm009_collision" class="collision" mesh="palm009" />
-                        <geom name="palm010_collision" class="collision" mesh="palm010" />
-                        <geom name="palm011_collision" class="collision" mesh="palm011" />
-                        <geom name="palm012_collision" class="collision" mesh="palm012" />
-                        <geom name="palm013_collision" class="collision" mesh="palm013" />
-                        <geom name="palm014_collision" class="collision" mesh="palm014" />
-                        <geom name="palm015_collision" class="collision" mesh="palm015" />
-                        <geom name="palm016_collision" class="collision" mesh="palm016" />
-                        <geom name="palm017_collision" class="collision" mesh="palm017" />
-                        <geom name="palm018_collision" class="collision" mesh="palm018" />
-                        <geom name="palm019_collision" class="collision" mesh="palm019" />
-                        <geom name="palm020_collision" class="collision" mesh="palm020" />
-                        <geom name="palm021_collision" class="collision" mesh="palm021" />
-                        <geom name="palm022_collision" class="collision" mesh="palm022" />
-                        <geom name="palm023_collision" class="collision" mesh="palm023" />
-                        <geom name="palm024_collision" class="collision" mesh="palm024" />
-                        <geom name="palm025_collision" class="collision" mesh="palm025" />
-                        <geom name="palm026_collision" class="collision" mesh="palm026" />
-                        <geom name="palm027_collision" class="collision" mesh="palm027" />
-                        <geom name="palm028_collision" class="collision" mesh="palm028" />
-                        <geom name="palm029_collision" class="collision" mesh="palm029" />
-                        <geom name="palm030_collision" class="collision" mesh="palm030" />
-                        <geom name="palm031_collision" class="collision" mesh="palm031" />
+                        <geom name="palm000_collision" class="sharpa_collision" mesh="palm000" />
+                        <geom name="palm001_collision" class="sharpa_collision" mesh="palm001" />
+                        <geom name="palm002_collision" class="sharpa_collision" mesh="palm002" />
+                        <geom name="palm003_collision" class="sharpa_collision" mesh="palm003" />
+                        <geom name="palm004_collision" class="sharpa_collision" mesh="palm004" />
+                        <geom name="palm005_collision" class="sharpa_collision" mesh="palm005" />
+                        <geom name="palm006_collision" class="sharpa_collision" mesh="palm006" />
+                        <geom name="palm007_collision" class="sharpa_collision" mesh="palm007" />
+                        <geom name="palm008_collision" class="sharpa_collision" mesh="palm008" />
+                        <geom name="palm009_collision" class="sharpa_collision" mesh="palm009" />
+                        <geom name="palm010_collision" class="sharpa_collision" mesh="palm010" />
+                        <geom name="palm011_collision" class="sharpa_collision" mesh="palm011" />
+                        <geom name="palm012_collision" class="sharpa_collision" mesh="palm012" />
+                        <geom name="palm013_collision" class="sharpa_collision" mesh="palm013" />
+                        <geom name="palm014_collision" class="sharpa_collision" mesh="palm014" />
+                        <geom name="palm015_collision" class="sharpa_collision" mesh="palm015" />
+                        <geom name="palm016_collision" class="sharpa_collision" mesh="palm016" />
+                        <geom name="palm017_collision" class="sharpa_collision" mesh="palm017" />
+                        <geom name="palm018_collision" class="sharpa_collision" mesh="palm018" />
+                        <geom name="palm019_collision" class="sharpa_collision" mesh="palm019" />
+                        <geom name="palm020_collision" class="sharpa_collision" mesh="palm020" />
+                        <geom name="palm021_collision" class="sharpa_collision" mesh="palm021" />
+                        <geom name="palm022_collision" class="sharpa_collision" mesh="palm022" />
+                        <geom name="palm023_collision" class="sharpa_collision" mesh="palm023" />
+                        <geom name="palm024_collision" class="sharpa_collision" mesh="palm024" />
+                        <geom name="palm025_collision" class="sharpa_collision" mesh="palm025" />
+                        <geom name="palm026_collision" class="sharpa_collision" mesh="palm026" />
+                        <geom name="palm027_collision" class="sharpa_collision" mesh="palm027" />
+                        <geom name="palm028_collision" class="sharpa_collision" mesh="palm028" />
+                        <geom name="palm029_collision" class="sharpa_collision" mesh="palm029" />
+                        <geom name="palm030_collision" class="sharpa_collision" mesh="palm030" />
+                        <geom name="palm031_collision" class="sharpa_collision" mesh="palm031" />
                         <site name="wrist_site" pos="0 0 0" />
                         <body name="left_thumb_CMC_VL" pos="0.01 -0.026 0.0214" quat="0.707105 0 0 -0.707108">
                           <inertial pos="-0.00065 -0.0002 0" quat="0.557664 0.434754 -0.557664 0.434754" mass="0.0025" diaginertia="2.6e-07 2.12661e-07 1.34339e-07" />
@@ -456,7 +456,7 @@
                         <body name="left_pinky_MC" pos="0.01136 0.0263 0.0869" quat="1.34924e-11 3.67321e-06 -1 -3.67321e-06">
                           <joint name="left_pinky_CMC" class="PCMC_joint" pos="0 0 0" axis="0 0 1" range="0 0.2618" />
                           <geom class="visual" mass="0.12541" mesh="left_pinky_MC_visual" />
-                          <geom class="collision" mesh="left_pinky_MC" />
+                          <geom class="sharpa_collision" mesh="left_pinky_MC" />
                           <body name="left_pinky_MCP_VL" pos="0.00836 0.0048 0" quat="0.499998 -0.5 0.5 0.500002">
                             <inertial pos="-0.0092 -0.0013 0" quat="0.479506 0.519686 -0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
                             <joint name="left_pinky_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-0.174533 1.5708" />
@@ -537,38 +537,38 @@
                       <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler. pos translates from zarm_r7_link; euler rotates the Sharpa hand about this attachment point (radian XYZ order). -->
                       <body name="right_hand_C_MC" childclass="sharpa" pos="0 0 0" quat="1 0 0 0">
                         <geom name="right_hand_C_MC_visual" class="visual" mass="0.72045" mesh="right_sharpa_right_hand_C_MC_visual" />
-                        <geom name="right_palm000_collision" class="collision" mesh="right_sharpa_palm000" />
-                        <geom name="right_palm001_collision" class="collision" mesh="right_sharpa_palm001" />
-                        <geom name="right_palm002_collision" class="collision" mesh="right_sharpa_palm002" />
-                        <geom name="right_palm003_collision" class="collision" mesh="right_sharpa_palm003" />
-                        <geom name="right_palm004_collision" class="collision" mesh="right_sharpa_palm004" />
-                        <geom name="right_palm005_collision" class="collision" mesh="right_sharpa_palm005" />
-                        <geom name="right_palm006_collision" class="collision" mesh="right_sharpa_palm006" />
-                        <geom name="right_palm007_collision" class="collision" mesh="right_sharpa_palm007" />
-                        <geom name="right_palm008_collision" class="collision" mesh="right_sharpa_palm008" />
-                        <geom name="right_palm009_collision" class="collision" mesh="right_sharpa_palm009" />
-                        <geom name="right_palm010_collision" class="collision" mesh="right_sharpa_palm010" />
-                        <geom name="right_palm011_collision" class="collision" mesh="right_sharpa_palm011" />
-                        <geom name="right_palm012_collision" class="collision" mesh="right_sharpa_palm012" />
-                        <geom name="right_palm013_collision" class="collision" mesh="right_sharpa_palm013" />
-                        <geom name="right_palm014_collision" class="collision" mesh="right_sharpa_palm014" />
-                        <geom name="right_palm015_collision" class="collision" mesh="right_sharpa_palm015" />
-                        <geom name="right_palm016_collision" class="collision" mesh="right_sharpa_palm016" />
-                        <geom name="right_palm017_collision" class="collision" mesh="right_sharpa_palm017" />
-                        <geom name="right_palm018_collision" class="collision" mesh="right_sharpa_palm018" />
-                        <geom name="right_palm019_collision" class="collision" mesh="right_sharpa_palm019" />
-                        <geom name="right_palm020_collision" class="collision" mesh="right_sharpa_palm020" />
-                        <geom name="right_palm021_collision" class="collision" mesh="right_sharpa_palm021" />
-                        <geom name="right_palm022_collision" class="collision" mesh="right_sharpa_palm022" />
-                        <geom name="right_palm023_collision" class="collision" mesh="right_sharpa_palm023" />
-                        <geom name="right_palm024_collision" class="collision" mesh="right_sharpa_palm024" />
-                        <geom name="right_palm025_collision" class="collision" mesh="right_sharpa_palm025" />
-                        <geom name="right_palm026_collision" class="collision" mesh="right_sharpa_palm026" />
-                        <geom name="right_palm027_collision" class="collision" mesh="right_sharpa_palm027" />
-                        <geom name="right_palm028_collision" class="collision" mesh="right_sharpa_palm028" />
-                        <geom name="right_palm029_collision" class="collision" mesh="right_sharpa_palm029" />
-                        <geom name="right_palm030_collision" class="collision" mesh="right_sharpa_palm030" />
-                        <geom name="right_palm031_collision" class="collision" mesh="right_sharpa_palm031" />
+                        <geom name="right_palm000_collision" class="sharpa_collision" mesh="right_sharpa_palm000" />
+                        <geom name="right_palm001_collision" class="sharpa_collision" mesh="right_sharpa_palm001" />
+                        <geom name="right_palm002_collision" class="sharpa_collision" mesh="right_sharpa_palm002" />
+                        <geom name="right_palm003_collision" class="sharpa_collision" mesh="right_sharpa_palm003" />
+                        <geom name="right_palm004_collision" class="sharpa_collision" mesh="right_sharpa_palm004" />
+                        <geom name="right_palm005_collision" class="sharpa_collision" mesh="right_sharpa_palm005" />
+                        <geom name="right_palm006_collision" class="sharpa_collision" mesh="right_sharpa_palm006" />
+                        <geom name="right_palm007_collision" class="sharpa_collision" mesh="right_sharpa_palm007" />
+                        <geom name="right_palm008_collision" class="sharpa_collision" mesh="right_sharpa_palm008" />
+                        <geom name="right_palm009_collision" class="sharpa_collision" mesh="right_sharpa_palm009" />
+                        <geom name="right_palm010_collision" class="sharpa_collision" mesh="right_sharpa_palm010" />
+                        <geom name="right_palm011_collision" class="sharpa_collision" mesh="right_sharpa_palm011" />
+                        <geom name="right_palm012_collision" class="sharpa_collision" mesh="right_sharpa_palm012" />
+                        <geom name="right_palm013_collision" class="sharpa_collision" mesh="right_sharpa_palm013" />
+                        <geom name="right_palm014_collision" class="sharpa_collision" mesh="right_sharpa_palm014" />
+                        <geom name="right_palm015_collision" class="sharpa_collision" mesh="right_sharpa_palm015" />
+                        <geom name="right_palm016_collision" class="sharpa_collision" mesh="right_sharpa_palm016" />
+                        <geom name="right_palm017_collision" class="sharpa_collision" mesh="right_sharpa_palm017" />
+                        <geom name="right_palm018_collision" class="sharpa_collision" mesh="right_sharpa_palm018" />
+                        <geom name="right_palm019_collision" class="sharpa_collision" mesh="right_sharpa_palm019" />
+                        <geom name="right_palm020_collision" class="sharpa_collision" mesh="right_sharpa_palm020" />
+                        <geom name="right_palm021_collision" class="sharpa_collision" mesh="right_sharpa_palm021" />
+                        <geom name="right_palm022_collision" class="sharpa_collision" mesh="right_sharpa_palm022" />
+                        <geom name="right_palm023_collision" class="sharpa_collision" mesh="right_sharpa_palm023" />
+                        <geom name="right_palm024_collision" class="sharpa_collision" mesh="right_sharpa_palm024" />
+                        <geom name="right_palm025_collision" class="sharpa_collision" mesh="right_sharpa_palm025" />
+                        <geom name="right_palm026_collision" class="sharpa_collision" mesh="right_sharpa_palm026" />
+                        <geom name="right_palm027_collision" class="sharpa_collision" mesh="right_sharpa_palm027" />
+                        <geom name="right_palm028_collision" class="sharpa_collision" mesh="right_sharpa_palm028" />
+                        <geom name="right_palm029_collision" class="sharpa_collision" mesh="right_sharpa_palm029" />
+                        <geom name="right_palm030_collision" class="sharpa_collision" mesh="right_sharpa_palm030" />
+                        <geom name="right_palm031_collision" class="sharpa_collision" mesh="right_sharpa_palm031" />
                         <site name="right_wrist_site" pos="0 0 0" />
                         <body name="right_thumb_CMC_VL" pos="0.01 0.026 0.0214" quat="0.707105 0 0 0.707108">
                           <inertial pos="-0.00065 0.0002 0" quat="0.557664 -0.434754 -0.557664 -0.434754" mass="0.0025" diaginertia="2.6e-07 2.12661e-07 1.34339e-07" />
@@ -681,7 +681,7 @@
                         <body name="right_pinky_MC" pos="0.01136 -0.0263 0.0869" quat="-1.34924e-11 3.67321e-06 1 -3.67321e-06">
                           <joint name="right_pinky_CMC" class="PCMC_joint" pos="0 0 0" axis="0 0 1" range="-0.2618 0" />
                           <geom class="visual" mass="0.12541" mesh="right_sharpa_right_pinky_MC_visual" />
-                          <geom class="collision" mesh="right_sharpa_right_pinky_MC" />
+                          <geom class="sharpa_collision" mesh="right_sharpa_right_pinky_MC" />
                           <body name="right_pinky_MCP_VL" pos="0.00836 -0.0048 0" quat="-0.499998 -0.5 -0.5 0.500002">
                             <inertial pos="-0.0092 0.0013 0" quat="-0.479506 0.519686 0.479506 0.519686" mass="0.00221" diaginertia="2.23e-07 1.77435e-07 1.09965e-07" />
                             <joint name="right_pinky_MCP_FE" class="MCP_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 0.174533" />
