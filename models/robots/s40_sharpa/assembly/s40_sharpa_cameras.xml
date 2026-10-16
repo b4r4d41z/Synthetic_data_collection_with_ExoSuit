@@ -3,7 +3,6 @@
   <size njmax="500" nconmax="100" />
   <default>
     <joint limited="true" armature="0.05" damping="0.2" frictionloss="0.02" />
-    <motor ctrllimited="true" ctrlrange="-100 100" />
     <equality solref="0.005 1" />
     <default class="collision">
       <geom material="collision" contype="4" conaffinity="4" user="2" rgba="0.9 0.3 0.3 0.2" />
@@ -527,6 +526,13 @@
                     <joint name="zarm_r7_joint" pos="0 0 0" axis="1 0 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
                     <!-- Replacement wrist-roll visual kept from the no-gripper S40 model so the link between zarm_r7_joint and the Sharpa hand remains visible. -->
                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_roll_no_gripper" />
+                    <geom name="right_hand_camera_bracket_1" type="cylinder" fromto="0 0 0 0.04 0 0" size="0.003" contype="0" conaffinity="0" mass="0" density="0" group="1" rgba="0.45 0.45 0.45 1" />
+                    <geom name="right_hand_camera_bracket_2" type="cylinder" fromto="0.04 0 0 0.075 0 -0.035" size="0.003" contype="0" conaffinity="0" mass="0" density="0" group="1" rgba="0.45 0.45 0.45 1" />
+                    <geom name="right_hand_camera_housing" type="box" pos="0.0781058285 0 -0.0234088901" quat="0.7010573846 -0.0922959556 0.0922959556 -0.7010573846" size="0.018 0.012 0.012" contype="0" conaffinity="0" mass="0" density="0" group="1" rgba="0.08 0.08 0.08 1" />
+                    <camera name="right_hand_camera"
+                            pos="0.075 0 -0.035"
+                            quat="0.7010573846 -0.0922959556 0.0922959556 -0.7010573846"
+                            fovy="60" />
                     <body name="zarm_r7_end_effector" pos="0 0 -0.085" euler="-3.14159 0 -1.5708">
                       <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler. pos translates from zarm_r7_link; euler rotates the Sharpa hand about this attachment point (radian XYZ order). -->
                       <body name="right_hand_C_MC" childclass="sharpa" pos="0 0 0" quat="1 0 0 0">
