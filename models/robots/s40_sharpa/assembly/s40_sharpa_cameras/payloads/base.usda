@@ -880,6 +880,390 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                 }
 
+                                                def Xform "palm000_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm000_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm001_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm001_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm002_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm002_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm003_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm003_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm004_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm004_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm005_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm005_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm006_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm006_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm007_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm007_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm008_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm008_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm009_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm009_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm010_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm010_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm011_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm011_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm012_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm012_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm013_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm013_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm014_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm014_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm015_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm015_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm016_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm016_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm017_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm017_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm018_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm018_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm019_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm019_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm020_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm020_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm021_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm021_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm022_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm022_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm023_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm023_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm024_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm024_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm025_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm025_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm026_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm026_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm027_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm027_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm028_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm028_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm029_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm029_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm030_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm030_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "palm031_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/palm031_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
                                                 def Sphere "wrist_site"
                                                 {
                                                     float3[] extent = [(-0.0025, -0.0025, -0.0025), (0.0025, 0.0025, 0.0025)]
@@ -917,6 +1301,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "left_thumb_CMC_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0120419, -0.0120419, -0.00625), (0.0120419, 0.0120419, 0.00625)]
+                                                        double height = 0.0125
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0120419
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.000957197, 0.000412167, 1.20218e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "left_thumb_MC"
                                                     {
                                                         quatf xformOp:orient = (0.65328026, 0.6532822, -0.27059808, 0.2705991)
@@ -932,6 +1340,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             quatd xformOp:orient = (1, 0, 0, 0)
                                                             double3 xformOp:scale = (1, 1, 1)
                                                             double3 xformOp:translate = (0, 0, 0)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
+                                                        def Capsule "left_thumb_MC_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.0207081, -0.0207081, -0.0376354), (0.0207081, 0.0207081, 0.0376354)]
+                                                            double height = 0.0338546
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.0207081
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0397656, -0.0106861, -0.0110947)
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
@@ -971,6 +1403,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
+                                                                def Capsule "left_thumb_PP_fit" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.011707, -0.011707, -0.0254136), (0.011707, 0.011707, 0.0254136)]
+                                                                    double height = 0.0274132
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.35] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.011707
+                                                                    quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0237179, -8.06477e-10, 0.0012143)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
                                                                 def Xform "left_thumb_DP"
                                                                 {
                                                                     quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -997,6 +1453,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                         quatd xformOp:orient = (0.5, 0.5, -0.5, 0.5)
                                                                         double3 xformOp:scale = (1, 1, 1)
                                                                         double3 xformOp:translate = (0, 0, 0)
+                                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                    }
+
+                                                                    def Capsule "Capsule" (
+                                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform token axis = "Z"
+                                                                        float3[] extent = [(-0.00943065, -0.00943065, -0.01620564), (0.00943065, 0.00943065, 0.01620564)]
+                                                                        double height = 0.01354998
+                                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_2>
+                                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayColor:indices = None
+                                                                        float[] primvars:displayOpacity = [0.25] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayOpacity:indices = None
+                                                                        uniform token purpose = "guide"
+                                                                        double radius = 0.00943065
+                                                                        quatf xformOp:orient = (0.5087972, 0.5087972, 0.4910452, 0.4910452)
+                                                                        float3 xformOp:scale = (1, 1, 1)
+                                                                        double3 xformOp:translate = (0.0163733, -0.00176519, 2.7474e-8)
                                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                     }
 
@@ -1042,6 +1522,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "left_index_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                        double height = 0.0114
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0125535
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.00165159, 0.00045, 1.0897e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "left_index_PP"
                                                     {
                                                         quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -1060,6 +1564,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
+                                                        def Capsule "left_index_PP_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.0104766, -0.0104766, -0.027724), (0.0104766, 0.0104766, 0.027724)]
+                                                            double height = 0.0344948
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.0104766
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0305371, 0.0000085591, 0.000140714)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
                                                         def Xform "left_index_MP"
                                                         {
                                                             quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -1075,6 +1603,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 quatd xformOp:orient = (1, 0, 0, 0)
                                                                 double3 xformOp:scale = (1, 1, 1)
                                                                 double3 xformOp:translate = (0, 0, 0)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
+                                                            def Capsule "left_index_MP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.0104174, -0.0104174, -0.025141), (0.0104174, 0.0104174, 0.025141)]
+                                                                double height = 0.0294472
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.0104174
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0147146, -0.00118535, -4.70523e-7)
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
@@ -1104,6 +1656,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (0.5, 0.5, -0.5, 0.5)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "Capsule" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                    double height = 0.01070196
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_3>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.25] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00806303
+                                                                    quatf xformOp:orient = (-0.022887308, 0.70673627, 0.022887308, 0.70673627)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0139214, -0.00086892, -0.00000132248)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -1148,6 +1724,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "left_middle_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                        double height = 0.0114
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0125535
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.00165159, 0.00045, 1.0897e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "left_middle_PP"
                                                     {
                                                         quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -1166,6 +1766,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
+                                                        def Capsule "left_middle_PP_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.00934798, -0.00934798, -0.02659538), (0.00934798, 0.00934798, 0.02659538)]
+                                                            double height = 0.0344948
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.00934798
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0305371, 0.0000085591, 0.000140714)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
                                                         def Xform "left_middle_MP"
                                                         {
                                                             quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -1181,6 +1805,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 quatd xformOp:orient = (1, 0, 0, 0)
                                                                 double3 xformOp:scale = (1, 1, 1)
                                                                 double3 xformOp:translate = (0, 0, 0)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
+                                                            def Capsule "left_middle_MP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.00940724, -0.00940724, -0.02413084), (0.00940724, 0.00940724, 0.02413084)]
+                                                                double height = 0.0294472
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.00940724
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0147146, -0.00118535, -4.70523e-7)
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
@@ -1210,6 +1858,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (0.5, 0.5, -0.5, 0.5)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "Capsule" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                    double height = 0.01070196
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_4>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.25] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00806303
+                                                                    quatf xformOp:orient = (-0.022887308, 0.70673627, 0.022887308, 0.70673627)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0139214, -0.00086892, -0.00000132248)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -1254,6 +1926,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "left_ring_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                        double height = 0.0114
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0125535
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.00165159, 0.00045, 1.0897e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "left_ring_PP"
                                                     {
                                                         quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -1272,6 +1968,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
+                                                        def Capsule "left_ring_PP_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.00970157, -0.00970157, -0.02694897), (0.00970157, 0.00970157, 0.02694897)]
+                                                            double height = 0.0344948
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.00970157
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0305371, 0.0000085591, 0.000140714)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
                                                         def Xform "left_ring_MP"
                                                         {
                                                             quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -1287,6 +2007,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 quatd xformOp:orient = (1, 0, 0, 0)
                                                                 double3 xformOp:scale = (1, 1, 1)
                                                                 double3 xformOp:translate = (0, 0, 0)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
+                                                            def Capsule "left_ring_MP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.0104481, -0.0104481, -0.0251717), (0.0104481, 0.0104481, 0.0251717)]
+                                                                double height = 0.0294472
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.0104481
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0147146, -0.00118535, -4.70523e-7)
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
@@ -1316,6 +2060,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (0.4999980032, 0.5, -0.5, 0.5000020266)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "Capsule" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                    double height = 0.01070196
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_5>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.25] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00806303
+                                                                    quatf xformOp:orient = (-0.022887308, 0.70673627, 0.022887308, 0.70673627)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0139214, -0.00086892, -0.00000132248)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -1360,6 +2128,17 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Xform "left_pinky_MC" (
+                                                        instanceable = true
+                                                        prepend references = @./instances.usda@</Instances/left_pinky_MC>
+                                                    )
+                                                    {
+                                                        quatd xformOp:orient = (1, 0, 0, 0)
+                                                        double3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0, 0, 0)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "left_pinky_MCP_VL"
                                                     {
                                                         quatf xformOp:orient = (0.499998, -0.5, 0.5, 0.500002)
@@ -1375,6 +2154,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             quatd xformOp:orient = (1, 0, 0, 0)
                                                             double3 xformOp:scale = (1, 1, 1)
                                                             double3 xformOp:translate = (0, 0, 0)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
+                                                        def Cylinder "left_pinky_MCP_VL_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                            double height = 0.0114
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.0125535
+                                                            quatf xformOp:orient = (1, 0, 0, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.00165159, 0.00045, 1.0897e-10)
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
@@ -1396,6 +2199,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
+                                                            def Capsule "left_pinky_PP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.0106522, -0.0106522, -0.0278996), (0.0106522, 0.0106522, 0.0278996)]
+                                                                double height = 0.0344948
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.0106522
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0305371, 0.0000085591, 0.000140714)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
                                                             def Xform "left_pinky_MP"
                                                             {
                                                                 quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -1411,6 +2238,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (1, 0, 0, 0)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "left_pinky_MP_fit" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00990499, -0.00990499, -0.02462859), (0.00990499, 0.00990499, 0.02462859)]
+                                                                    double height = 0.0294472
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.35] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00990499
+                                                                    quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0147146, -0.00118535, -4.70523e-7)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -1440,6 +2291,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                         quatd xformOp:orient = (0.5, 0.5, -0.5, 0.5)
                                                                         double3 xformOp:scale = (1, 1, 1)
                                                                         double3 xformOp:translate = (0, 0, 0)
+                                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                    }
+
+                                                                    def Capsule "Capsule" (
+                                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform token axis = "Z"
+                                                                        float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                        double height = 0.01070196
+                                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_6>
+                                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayColor:indices = None
+                                                                        float[] primvars:displayOpacity = [0.25] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayOpacity:indices = None
+                                                                        uniform token purpose = "guide"
+                                                                        double radius = 0.00806303
+                                                                        quatf xformOp:orient = (-0.022887308, 0.70673627, 0.022887308, 0.70673627)
+                                                                        float3 xformOp:scale = (1, 1, 1)
+                                                                        double3 xformOp:translate = (0.0139214, -0.00086892, -0.00000132248)
                                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                     }
 
@@ -1696,68 +2571,74 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                         }
 
-                                        def Cylinder "right_hand_camera_bracket_1" (
-                                            prepend apiSchemas = ["PhysicsCollisionAPI"]
-                                        )
+                                        def Xform "right_hand_camera_mount"
                                         {
-                                            uniform token axis = "Z"
-                                            float3[] extent = [(-0.003, -0.003, -0.02), (0.003, 0.003, 0.02)]
-                                            double height = 0.04
-                                            color3f[] primvars:displayColor = [(0.45, 0.45, 0.45)] (
-                                                interpolation = "constant"
-                                            )
-                                            int[] primvars:displayColor:indices = None
-                                            float[] primvars:displayOpacity = [1] (
-                                                interpolation = "constant"
-                                            )
-                                            int[] primvars:displayOpacity:indices = None
-                                            double radius = 0.003
-                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                            quatf xformOp:orient = (1, 0, 0, 0)
                                             float3 xformOp:scale = (1, 1, 1)
-                                            double3 xformOp:translate = (0.02, 0, 0)
+                                            double3 xformOp:translate = (0.03088, 0, -0.0672)
                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
-                                        }
 
-                                        def Cylinder "right_hand_camera_bracket_2" (
-                                            prepend apiSchemas = ["PhysicsCollisionAPI"]
-                                        )
-                                        {
-                                            uniform token axis = "Z"
-                                            float3[] extent = [(-0.003, -0.003, -0.024748737), (0.003, 0.003, 0.024748737)]
-                                            double height = 0.049497474683058325
-                                            color3f[] primvars:displayColor = [(0.45, 0.45, 0.45)] (
-                                                interpolation = "constant"
-                                            )
-                                            int[] primvars:displayColor:indices = None
-                                            float[] primvars:displayOpacity = [1] (
-                                                interpolation = "constant"
-                                            )
-                                            int[] primvars:displayOpacity:indices = None
-                                            double radius = 0.003
-                                            quatf xformOp:orient = (0.38268346, 0, 0.9238795, 0)
-                                            float3 xformOp:scale = (1, 1, 1)
-                                            double3 xformOp:translate = (0.057499999999999996, 0, -0.0175)
-                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
-                                        }
+                                            def Cube "right_hand_camera_bracket_1"
+                                            {
+                                                float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+                                                color3f[] primvars:displayColor = [(0.45, 0.45, 0.45)] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayColor:indices = None
+                                                float[] primvars:displayOpacity = [1] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayOpacity:indices = None
+                                                double size = 2
+                                                quatf xformOp:orient = (1, 0, 0, 0)
+                                                float3 xformOp:scale = (0.02, 0.003, 0.003)
+                                                double3 xformOp:translate = (0.02, 0, 0)
+                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                            }
 
-                                        def Cube "right_hand_camera_housing" (
-                                            prepend apiSchemas = ["PhysicsCollisionAPI"]
-                                        )
-                                        {
-                                            float3[] extent = [(-1, -1, -1), (1, 1, 1)]
-                                            color3f[] primvars:displayColor = [(0.08, 0.08, 0.08)] (
-                                                interpolation = "constant"
-                                            )
-                                            int[] primvars:displayColor:indices = None
-                                            float[] primvars:displayOpacity = [1] (
-                                                interpolation = "constant"
-                                            )
-                                            int[] primvars:displayOpacity:indices = None
-                                            double size = 2
-                                            quatf xformOp:orient = (-0.7010574, 0.09229595, -0.09229595, 0.7010574)
-                                            float3 xformOp:scale = (0.018, 0.012, 0.012)
-                                            double3 xformOp:translate = (0.0781058285, 0, -0.0234088901)
-                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                            def Cube "right_hand_camera_bracket_2"
+                                            {
+                                                float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+                                                color3f[] primvars:displayColor = [(0.45, 0.45, 0.45)] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayColor:indices = None
+                                                float[] primvars:displayOpacity = [1] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayOpacity:indices = None
+                                                double size = 2
+                                                quatf xformOp:orient = (0.9269945, -1.122805e-17, 0.3520184, 0.12947686)
+                                                float3 xformOp:scale = (0.02651545, 0.003, 0.003)
+                                                double3 xformOp:translate = (0.059055, 0.006365, -0.017305)
+                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                            }
+
+                                            def Xform "right_hand_camera_head"
+                                            {
+                                                quatf xformOp:orient = (0.6532815, -0.27059802, 0.27059802, -0.65328145)
+                                                float3 xformOp:scale = (1, 1, 1)
+                                                double3 xformOp:translate = (0.07811, 0.01273, -0.03461)
+                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+                                                def Cube "right_hand_camera_housing"
+                                                {
+                                                    float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+                                                    color3f[] primvars:displayColor = [(0.08, 0.08, 0.08)] (
+                                                        interpolation = "constant"
+                                                    )
+                                                    int[] primvars:displayColor:indices = None
+                                                    float[] primvars:displayOpacity = [1] (
+                                                        interpolation = "constant"
+                                                    )
+                                                    int[] primvars:displayOpacity:indices = None
+                                                    double size = 2
+                                                    quatf xformOp:orient = (1, 0, 0, 0)
+                                                    float3 xformOp:scale = (0.005, 0.005, 0.005)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+                                            }
                                         }
 
                                         def Xform "zarm_r7_end_effector"
@@ -1778,6 +2659,390 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                     displayName = ""
                                                     instanceable = true
                                                     prepend references = @./instances.usda@</Instances/right_hand_C_MC_visual>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm000_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm000_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm001_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm001_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm002_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm002_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm003_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm003_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm004_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm004_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm005_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm005_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm006_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm006_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm007_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm007_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm008_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm008_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm009_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm009_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm010_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm010_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm011_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm011_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm012_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm012_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm013_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm013_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm014_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm014_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm015_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm015_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm016_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm016_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm017_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm017_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm018_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm018_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm019_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm019_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm020_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm020_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm021_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm021_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm022_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm022_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm023_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm023_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm024_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm024_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm025_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm025_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm026_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm026_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm027_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm027_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm028_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm028_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm029_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm029_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm030_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm030_collision>
+                                                )
+                                                {
+                                                    quatd xformOp:orient = (1, 0, 0, 0)
+                                                    double3 xformOp:scale = (1, 1, 1)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+
+                                                def Xform "right_palm031_collision" (
+                                                    displayName = ""
+                                                    instanceable = true
+                                                    prepend references = @./instances.usda@</Instances/right_palm031_collision>
                                                 )
                                                 {
                                                     quatd xformOp:orient = (1, 0, 0, 0)
@@ -1823,6 +3088,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "right_thumb_CMC_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0120419, -0.0120419, -0.00625), (0.0120419, 0.0120419, 0.00625)]
+                                                        double height = 0.0125
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0120419
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.000957197, -0.000412167, 1.20218e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "right_thumb_MC"
                                                     {
                                                         quatf xformOp:orient = (-0.65328026, 0.6532822, 0.27059808, 0.2705991)
@@ -1838,6 +3127,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             quatd xformOp:orient = (1, 0, 0, 0)
                                                             double3 xformOp:scale = (1, 1, 1)
                                                             double3 xformOp:translate = (0, 0, 0)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
+                                                        def Capsule "right_thumb_MC_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.0207081, -0.0207081, -0.0376354), (0.0207081, 0.0207081, 0.0376354)]
+                                                            double height = 0.0338546
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.0207081
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0397656, 0.0106861, -0.0110947)
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
@@ -1877,6 +3190,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
+                                                                def Capsule "right_thumb_PP_fit" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.011707, -0.011707, -0.0254136), (0.011707, 0.011707, 0.0254136)]
+                                                                    double height = 0.0274132
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.35] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.011707
+                                                                    quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0237179, 8.06477e-10, 0.0012143)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
                                                                 def Xform "right_thumb_DP"
                                                                 {
                                                                     quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -1903,6 +3240,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                         quatd xformOp:orient = (0.5, -0.5, -0.5, -0.5)
                                                                         double3 xformOp:scale = (1, 1, 1)
                                                                         double3 xformOp:translate = (0, 0, 0)
+                                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                    }
+
+                                                                    def Capsule "Capsule" (
+                                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform token axis = "Z"
+                                                                        float3[] extent = [(-0.00943065, -0.00943065, -0.01620564), (0.00943065, 0.00943065, 0.01620564)]
+                                                                        double height = 0.01354998
+                                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_7>
+                                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayColor:indices = None
+                                                                        float[] primvars:displayOpacity = [0.25] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayOpacity:indices = None
+                                                                        uniform token purpose = "guide"
+                                                                        double radius = 0.00943065
+                                                                        quatf xformOp:orient = (0.5087972, -0.5087972, 0.4910452, -0.4910452)
+                                                                        float3 xformOp:scale = (1, 1, 1)
+                                                                        double3 xformOp:translate = (0.0163733, 0.00176519, 2.7474e-8)
                                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                     }
 
@@ -1948,6 +3309,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "right_index_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                        double height = 0.0114
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0125535
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.00165159, -0.00045, 1.0897e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "right_index_PP"
                                                     {
                                                         quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -1966,6 +3351,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
+                                                        def Capsule "right_index_PP_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.0104766, -0.0104766, -0.027724), (0.0104766, 0.0104766, 0.027724)]
+                                                            double height = 0.0344948
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.0104766
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0305371, -0.0000085591, 0.000140714)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
                                                         def Xform "right_index_MP"
                                                         {
                                                             quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -1981,6 +3390,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 quatd xformOp:orient = (1, 0, 0, 0)
                                                                 double3 xformOp:scale = (1, 1, 1)
                                                                 double3 xformOp:translate = (0, 0, 0)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
+                                                            def Capsule "right_index_MP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.0104174, -0.0104174, -0.025141), (0.0104174, 0.0104174, 0.025141)]
+                                                                double height = 0.0294472
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.0104174
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0147146, 0.00118535, -4.70523e-7)
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
@@ -2010,6 +3443,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (0.5, -0.5, -0.5, -0.5)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "Capsule" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                    double height = 0.01070196
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_8>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.25] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00806303
+                                                                    quatf xformOp:orient = (0.022887308, 0.70673627, -0.022887308, 0.70673627)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0139214, 0.00086892, -0.00000132248)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -2054,6 +3511,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "right_middle_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                        double height = 0.0114
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0125535
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.00165159, -0.00045, 1.0897e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "right_middle_PP"
                                                     {
                                                         quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -2072,6 +3553,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
+                                                        def Capsule "right_middle_PP_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.00934798, -0.00934798, -0.02659538), (0.00934798, 0.00934798, 0.02659538)]
+                                                            double height = 0.0344948
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.00934798
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0305371, -0.0000085591, 0.000140714)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
                                                         def Xform "right_middle_MP"
                                                         {
                                                             quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -2087,6 +3592,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 quatd xformOp:orient = (1, 0, 0, 0)
                                                                 double3 xformOp:scale = (1, 1, 1)
                                                                 double3 xformOp:translate = (0, 0, 0)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
+                                                            def Capsule "right_middle_MP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.00940724, -0.00940724, -0.02413084), (0.00940724, 0.00940724, 0.02413084)]
+                                                                double height = 0.0294472
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.00940724
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0147146, 0.00118535, -4.70523e-7)
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
@@ -2116,6 +3645,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (0.5, -0.5, -0.5, -0.5)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "Capsule" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                    double height = 0.01070196
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_9>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.25] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00806303
+                                                                    quatf xformOp:orient = (0.022887308, 0.70673627, -0.022887308, 0.70673627)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0139214, 0.00086892, -0.00000132248)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -2160,6 +3713,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Cylinder "right_ring_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                    )
+                                                    {
+                                                        uniform token axis = "Z"
+                                                        float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                        double height = 0.0114
+                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayColor:indices = None
+                                                        float[] primvars:displayOpacity = [0.35] (
+                                                            interpolation = "constant"
+                                                        )
+                                                        int[] primvars:displayOpacity:indices = None
+                                                        uniform token purpose = "guide"
+                                                        double radius = 0.0125535
+                                                        quatf xformOp:orient = (1, 0, 0, 0)
+                                                        float3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0.00165159, -0.00045, 1.0897e-10)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "right_ring_PP"
                                                     {
                                                         quatf xformOp:orient = (-0.7071053, 0.70710826, 0, 0)
@@ -2178,6 +3755,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
+                                                        def Capsule "right_ring_PP_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.00970157, -0.00970157, -0.02694897), (0.00970157, 0.00970157, 0.02694897)]
+                                                            double height = 0.0344948
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.00970157
+                                                            quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.0305371, -0.0000085591, 0.000140714)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
                                                         def Xform "right_ring_MP"
                                                         {
                                                             quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -2193,6 +3794,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 quatd xformOp:orient = (1, 0, 0, 0)
                                                                 double3 xformOp:scale = (1, 1, 1)
                                                                 double3 xformOp:translate = (0, 0, 0)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
+                                                            def Capsule "right_ring_MP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.0104481, -0.0104481, -0.0251717), (0.0104481, 0.0104481, 0.0251717)]
+                                                                double height = 0.0294472
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.0104481
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0147146, 0.00118535, -4.70523e-7)
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
@@ -2222,6 +3847,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (0.4999980032, -0.5, -0.5, -0.5000020266)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "Capsule" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                    double height = 0.01070196
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_10>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.25] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00806303
+                                                                    quatf xformOp:orient = (0.022887308, 0.70673627, -0.022887308, 0.70673627)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0139214, 0.00086892, -0.00000132248)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -2266,6 +3915,17 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                     }
 
+                                                    def Xform "right_sharpa_right_pinky_MC" (
+                                                        instanceable = true
+                                                        prepend references = @./instances.usda@</Instances/right_sharpa_right_pinky_MC>
+                                                    )
+                                                    {
+                                                        quatd xformOp:orient = (1, 0, 0, 0)
+                                                        double3 xformOp:scale = (1, 1, 1)
+                                                        double3 xformOp:translate = (0, 0, 0)
+                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                    }
+
                                                     def Xform "right_pinky_MCP_VL"
                                                     {
                                                         quatf xformOp:orient = (-0.499998, -0.5, -0.5, 0.500002)
@@ -2281,6 +3941,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                             quatd xformOp:orient = (1, 0, 0, 0)
                                                             double3 xformOp:scale = (1, 1, 1)
                                                             double3 xformOp:translate = (0, 0, 0)
+                                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                        }
+
+                                                        def Cylinder "right_pinky_MCP_VL_fit" (
+                                                            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                        )
+                                                        {
+                                                            uniform token axis = "Z"
+                                                            float3[] extent = [(-0.0125535, -0.0125535, -0.0057), (0.0125535, 0.0125535, 0.0057)]
+                                                            double height = 0.0114
+                                                            rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                            color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayColor:indices = None
+                                                            float[] primvars:displayOpacity = [0.35] (
+                                                                interpolation = "constant"
+                                                            )
+                                                            int[] primvars:displayOpacity:indices = None
+                                                            uniform token purpose = "guide"
+                                                            double radius = 0.0125535
+                                                            quatf xformOp:orient = (1, 0, 0, 0)
+                                                            float3 xformOp:scale = (1, 1, 1)
+                                                            double3 xformOp:translate = (0.00165159, -0.00045, 1.0897e-10)
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                         }
 
@@ -2302,6 +3986,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                             }
 
+                                                            def Capsule "right_pinky_PP_fit" (
+                                                                prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                            )
+                                                            {
+                                                                uniform token axis = "Z"
+                                                                float3[] extent = [(-0.0106522, -0.0106522, -0.0278996), (0.0106522, 0.0106522, 0.0278996)]
+                                                                double height = 0.0344948
+                                                                rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayColor:indices = None
+                                                                float[] primvars:displayOpacity = [0.35] (
+                                                                    interpolation = "constant"
+                                                                )
+                                                                int[] primvars:displayOpacity:indices = None
+                                                                uniform token purpose = "guide"
+                                                                double radius = 0.0106522
+                                                                quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                float3 xformOp:scale = (1, 1, 1)
+                                                                double3 xformOp:translate = (0.0305371, -0.0000085591, 0.000140714)
+                                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                            }
+
                                                             def Xform "right_pinky_MP"
                                                             {
                                                                 quatf xformOp:orient = (0.7071053, 0.70710826, 0, 0)
@@ -2317,6 +4025,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                     quatd xformOp:orient = (1, 0, 0, 0)
                                                                     double3 xformOp:scale = (1, 1, 1)
                                                                     double3 xformOp:translate = (0, 0, 0)
+                                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                }
+
+                                                                def Capsule "right_pinky_MP_fit" (
+                                                                    prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                )
+                                                                {
+                                                                    uniform token axis = "Z"
+                                                                    float3[] extent = [(-0.00990499, -0.00990499, -0.02462859), (0.00990499, 0.00990499, 0.02462859)]
+                                                                    double height = 0.0294472
+                                                                    rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial>
+                                                                    color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayColor:indices = None
+                                                                    float[] primvars:displayOpacity = [0.35] (
+                                                                        interpolation = "constant"
+                                                                    )
+                                                                    int[] primvars:displayOpacity:indices = None
+                                                                    uniform token purpose = "guide"
+                                                                    double radius = 0.00990499
+                                                                    quatf xformOp:orient = (0.7071068, 0, 0.7071067, 0)
+                                                                    float3 xformOp:scale = (1, 1, 1)
+                                                                    double3 xformOp:translate = (0.0147146, 0.00118535, -4.70523e-7)
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                 }
 
@@ -2346,6 +4078,30 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                                                         quatd xformOp:orient = (0.5, -0.5, -0.5, -0.5)
                                                                         double3 xformOp:scale = (1, 1, 1)
                                                                         double3 xformOp:translate = (0, 0, 0)
+                                                                        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                                    }
+
+                                                                    def Capsule "Capsule" (
+                                                                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform token axis = "Z"
+                                                                        float3[] extent = [(-0.00806303, -0.00806303, -0.01341401), (0.00806303, 0.00806303, 0.01341401)]
+                                                                        double height = 0.01070196
+                                                                        rel material:binding:physics = </biped_s40_with_sharpa_wave_hands/Physics/PhysicsMaterial_11>
+                                                                        color3f[] primvars:displayColor = [(0.2, 0.6, 0.2)] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayColor:indices = None
+                                                                        float[] primvars:displayOpacity = [0.25] (
+                                                                            interpolation = "constant"
+                                                                        )
+                                                                        int[] primvars:displayOpacity:indices = None
+                                                                        uniform token purpose = "guide"
+                                                                        double radius = 0.00806303
+                                                                        quatf xformOp:orient = (0.022887308, 0.70673627, -0.022887308, 0.70673627)
+                                                                        float3 xformOp:scale = (1, 1, 1)
+                                                                        double3 xformOp:translate = (0.0139214, 0.00086892, -0.00000132248)
                                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                                                     }
 

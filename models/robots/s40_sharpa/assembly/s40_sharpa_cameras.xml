@@ -525,17 +525,79 @@
                     <inertial pos="0.00266828 -0.00745579 -0.0716836" quat="0.648539 -0.000276918 -0.0104684 0.761109" mass="0.810524" diaginertia="0.00104683 0.00098437 0.00027042" />
                     <joint name="zarm_r7_joint" pos="0 0 0" axis="1 0 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
                     <!-- Replacement wrist-roll visual kept from the no-gripper S40 model so the link between zarm_r7_joint and the Sharpa hand remains visible. -->
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="r_hand_roll_no_gripper" />
-                    <geom name="right_hand_camera_bracket_1" type="cylinder" fromto="0 0 0 0.04 0 0" size="0.003" contype="0" conaffinity="0" mass="0" density="0" group="1" rgba="0.45 0.45 0.45 1" />
-                    <geom name="right_hand_camera_bracket_2" type="cylinder" fromto="0.04 0 0 0.075 0 -0.035" size="0.003" contype="0" conaffinity="0" mass="0" density="0" group="1" rgba="0.45 0.45 0.45 1" />
-                    <geom name="right_hand_camera_housing" type="box" pos="0.0781058285 0 -0.0234088901" quat="0.7010573846 -0.0922959556 0.0922959556 -0.7010573846" size="0.018 0.012 0.012" contype="0" conaffinity="0" mass="0" density="0" group="1" rgba="0.08 0.08 0.08 1" />
-                    <camera name="right_hand_camera"
-                            pos="0.075 0 -0.035"
-                            quat="0.7010573846 -0.0922959556 0.0922959556 -0.7010573846"
-                            fovy="60" />
-                    <body name="zarm_r7_end_effector" pos="0 0 -0.085" euler="-3.14159 0 -1.5708">
+                    <geom type="mesh"
+                          contype="0"
+                          conaffinity="0"
+                          group="1"
+                          density="0"
+                          rgba="1 1 1 1"
+                          mesh="r_hand_roll_no_gripper" />
+
+                    <!-- Complete right-hand camera assembly.
+                         Move this body to move the entire bracket + housing + sensor together. -->
+                    <body name="right_hand_camera_mount"
+                          pos="0.03088 0 -0.0672">
+
+                      <!-- First 40 mm rectangular bracket section -->
+                      <geom name="right_hand_camera_bracket_1"
+                            type="box"
+                            pos="0.02 0 0"
+                            size="0.02 0.003 0.003"
+                            contype="0"
+                            conaffinity="0"
+                            mass="0"
+                            density="0"
+                            group="1"
+                            rgba="0.45 0.45 0.45 1" />
+
+                      <!-- Second rectangular bracket section.
+                           Starts at the end of bracket_1 and reaches the current camera-holder position. -->
+                      <geom name="right_hand_camera_bracket_2"
+                            type="box"
+                            pos="0.059055 0.006365 -0.017305"
+                            quat="0.92699448 0 0.35201843 0.12947687"
+                            size="0.02651545 0.003 0.003"
+                            contype="0"
+                            conaffinity="0"
+                            mass="0"
+                            density="0"
+                            group="1"
+                            rgba="0.45 0.45 0.45 1" />
+
+                      <!-- Camera holder.
+                           Housing and optical sensor are children of the same body. -->
+                      <body name="right_hand_camera_head"
+                            pos="0.07811 0.01273 -0.03461"
+                            euler="0 0.7853981634 -1.5707963268">
+
+                        <geom name="right_hand_camera_housing"
+                              type="box"
+                              pos="0 0 0"
+                              size="0.005 0.005 0.005"
+                              contype="0"
+                              conaffinity="0"
+                              mass="0"
+                              density="0"
+                              group="1"
+                              rgba="0.08 0.08 0.08 1" />
+
+                        <camera name="right_hand_camera"
+                                pos="0 0 -0.005"
+                                quat="1 0 0 0"
+                                fovy="60" />
+
+                      </body>
+
+                    </body>
+
+                    <body name="zarm_r7_end_effector"
+                          pos="0 0 -0.085"
+                          euler="-3.14159 0 -1.5708">
                       <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler. pos translates from zarm_r7_link; euler rotates the Sharpa hand about this attachment point (radian XYZ order). -->
-                      <body name="right_hand_C_MC" childclass="sharpa" pos="0 0 0" quat="1 0 0 0">
+                      <body name="right_hand_C_MC"
+                            childclass="sharpa"
+                            pos="0 0 0"
+                            quat="1 0 0 0">                        
                         <geom name="right_hand_C_MC_visual" class="visual" mass="0.72045" mesh="right_sharpa_right_hand_C_MC_visual" />
                         <geom name="right_palm000_collision" class="sharpa_collision" mesh="right_sharpa_palm000" />
                         <geom name="right_palm001_collision" class="sharpa_collision" mesh="right_sharpa_palm001" />

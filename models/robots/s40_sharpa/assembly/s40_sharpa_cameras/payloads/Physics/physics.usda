@@ -14,11 +14,9 @@ over "biped_s40_with_sharpa_wave_hands"
     over "Geometry"
     {
         over "base_link" (
-            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsArticulationRootAPI", "NewtonArticulationRootAPI"]
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
         )
         {
-            uniform bool newton:jointsAddMobility = 1
-            bool newton:selfCollisionEnabled = 0
             point3f physics:centerOfMass = (-0.00505, 0.0014, 0.18077)
             float3 physics:diagonalInertia = (0.282992, 0.205343, 0.136495)
             float physics:mass = 17.6816
@@ -622,6 +620,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.0025
                                                     quatf physics:principalAxes = (0.5576639, 0.43475395, -0.5576639, 0.43475395)
 
+                                                    over "left_thumb_CMC_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "left_thumb_MC" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -631,6 +636,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_MCP_VL/left_thumb_PP>
                                                         float physics:mass = 0.13587
                                                         quatf physics:principalAxes = (0.15446205, 0.6837633, 0.15125906, 0.6969433)
+
+                                                        over "left_thumb_MC_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "left_thumb_MCP_VL" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
@@ -651,6 +663,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float physics:mass = 0.03078
                                                                 quatf physics:principalAxes = (0.5116127, 0.44357973, 0.55460864, 0.48363072)
 
+                                                                over "left_thumb_PP_fit" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
+
                                                                 over "left_thumb_DP" (
                                                                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                                 )
@@ -659,6 +678,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     float3 physics:diagonalInertia = (0.00000109014, 0.000001041, 2.95174e-7)
                                                                     float physics:mass = 0.00998
                                                                     quatf physics:principalAxes = (-0.25595605, 0.7138781, -0.18741703, 0.6242911)
+
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physics:density = 1000
+                                                                    }
 
                                                                     over "left_thumb_fingertip" (
                                                                         prepend apiSchemas = ["NewtonSiteAPI"]
@@ -784,6 +810,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.00221
                                                     quatf physics:principalAxes = (0.47950622, 0.5196862, -0.47950622, 0.5196862)
 
+                                                    over "left_index_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "left_index_PP" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -793,6 +826,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_PP/left_index_MP>
                                                         float physics:mass = 0.04741
                                                         quatf physics:principalAxes = (0.50271887, 0.47928587, 0.5125649, 0.5048129)
+
+                                                        over "left_index_PP_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "left_index_MP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -804,6 +844,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             float physics:mass = 0.01824
                                                             quatf physics:principalAxes = (-0.026640795, 0.73255783, -0.018927297, 0.67991984)
 
+                                                            over "left_index_MP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
+
                                                             over "left_index_DP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                             )
@@ -812,6 +859,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                 float physics:mass = 0.00465
                                                                 quatf physics:principalAxes = (-0.049189802, 0.71664006, -0.058411505, 0.69325006)
+
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
 
                                                                 over "left_index_fingertip" (
                                                                     prepend apiSchemas = ["NewtonSiteAPI"]
@@ -916,6 +970,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.00221
                                                     quatf physics:principalAxes = (0.47950622, 0.5196862, -0.47950622, 0.5196862)
 
+                                                    over "left_middle_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "left_middle_PP" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -925,6 +986,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_PP/left_middle_MP>
                                                         float physics:mass = 0.04741
                                                         quatf physics:principalAxes = (0.50271887, 0.47928587, 0.5125649, 0.5048129)
+
+                                                        over "left_middle_PP_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "left_middle_MP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -936,6 +1004,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             float physics:mass = 0.01824
                                                             quatf physics:principalAxes = (-0.026640795, 0.73255783, -0.018927297, 0.67991984)
 
+                                                            over "left_middle_MP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
+
                                                             over "left_middle_DP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                             )
@@ -944,6 +1019,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                 float physics:mass = 0.00465
                                                                 quatf physics:principalAxes = (-0.049189802, 0.71664006, -0.058411505, 0.69325006)
+
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
 
                                                                 over "left_middle_fingertip" (
                                                                     prepend apiSchemas = ["NewtonSiteAPI"]
@@ -1048,6 +1130,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.00221
                                                     quatf physics:principalAxes = (0.47950622, 0.5196862, -0.47950622, 0.5196862)
 
+                                                    over "left_ring_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "left_ring_PP" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -1057,6 +1146,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_PP/left_ring_MP>
                                                         float physics:mass = 0.04741
                                                         quatf physics:principalAxes = (0.50271887, 0.47928587, 0.5125649, 0.5048129)
+
+                                                        over "left_ring_PP_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "left_ring_MP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -1068,6 +1164,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             float physics:mass = 0.01824
                                                             quatf physics:principalAxes = (-0.026640795, 0.73255783, -0.018927297, 0.67991984)
 
+                                                            over "left_ring_MP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
+
                                                             over "left_ring_DP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                             )
@@ -1076,6 +1179,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                 float physics:mass = 0.00465
                                                                 quatf physics:principalAxes = (-0.049189802, 0.71664006, -0.058411505, 0.69325006)
+
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
 
                                                                 over "left_ring_fingertip" (
                                                                     prepend apiSchemas = ["NewtonSiteAPI"]
@@ -1187,6 +1297,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         float physics:mass = 0.00221
                                                         quatf physics:principalAxes = (0.47950622, 0.5196862, -0.47950622, 0.5196862)
 
+                                                        over "left_pinky_MCP_VL_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
+
                                                         over "left_pinky_PP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                         )
@@ -1196,6 +1313,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_PP/left_pinky_MP>
                                                             float physics:mass = 0.04741
                                                             quatf physics:principalAxes = (0.50271887, 0.47928587, 0.5125649, 0.5048129)
+
+                                                            over "left_pinky_PP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
 
                                                             over "left_pinky_MP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -1207,6 +1331,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float physics:mass = 0.01824
                                                                 quatf physics:principalAxes = (-0.026640795, 0.73255783, -0.018927297, 0.67991984)
 
+                                                                over "left_pinky_MP_fit" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
+
                                                                 over "left_pinky_DP" (
                                                                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                                 )
@@ -1215,6 +1346,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                     float physics:mass = 0.00465
                                                                     quatf physics:principalAxes = (-0.049189802, 0.71664006, -0.058411505, 0.69325006)
+
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physics:density = 1000
+                                                                    }
 
                                                                     over "left_pinky_fingertip" (
                                                                         prepend apiSchemas = ["NewtonSiteAPI"]
@@ -1591,6 +1729,40 @@ over "biped_s40_with_sharpa_wave_hands"
                                         float physics:mass = 0.810524
                                         quatf physics:principalAxes = (0.6485392, -0.0002769181, -0.010468403, 0.76110923)
 
+                                        over "right_hand_camera_mount" (
+                                            prepend apiSchemas = ["PhysicsRigidBodyAPI"]
+                                        )
+                                        {
+                                            over "right_hand_camera_head" (
+                                                prepend apiSchemas = ["PhysicsRigidBodyAPI"]
+                                            )
+                                            {
+                                                def PhysicsFixedJoint "PhysicsFixedJoint"
+                                                {
+                                                    custom rel physics:body0
+                                                    append rel physics:body0 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount>
+                                                    custom rel physics:body1
+                                                    append rel physics:body1 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head>
+                                                    point3f physics:localPos0 = (0.07811, 0.01273, -0.03461)
+                                                    point3f physics:localPos1 = (0, 0, 0)
+                                                    quatf physics:localRot0 = (0.6532815, -0.27059802, 0.27059802, -0.65328145)
+                                                    quatf physics:localRot1 = (1, 0, 0, 0)
+                                                }
+                                            }
+
+                                            def PhysicsFixedJoint "PhysicsFixedJoint"
+                                            {
+                                                custom rel physics:body0
+                                                append rel physics:body0 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link>
+                                                custom rel physics:body1
+                                                append rel physics:body1 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount>
+                                                point3f physics:localPos0 = (0.03088, 0, -0.0672)
+                                                point3f physics:localPos1 = (0, 0, 0)
+                                                quatf physics:localRot0 = (1, 0, 0, 0)
+                                                quatf physics:localRot1 = (1, 0, 0, 0)
+                                            }
+                                        }
+
                                         over "zarm_r7_end_effector" (
                                             prepend apiSchemas = ["PhysicsRigidBodyAPI"]
                                         )
@@ -1629,6 +1801,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.0025
                                                     quatf physics:principalAxes = (0.5576639, -0.43475395, -0.5576639, -0.43475395)
 
+                                                    over "right_thumb_CMC_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "right_thumb_MC" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -1638,6 +1817,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_MCP_VL/right_thumb_PP>
                                                         float physics:mass = 0.13587
                                                         quatf physics:principalAxes = (-0.15446205, 0.6837633, -0.15125906, 0.6969433)
+
+                                                        over "right_thumb_MC_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "right_thumb_MCP_VL" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
@@ -1658,6 +1844,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float physics:mass = 0.03078
                                                                 quatf physics:principalAxes = (0.5116127, -0.44357973, 0.55460864, -0.48363072)
 
+                                                                over "right_thumb_PP_fit" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
+
                                                                 over "right_thumb_DP" (
                                                                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                                 )
@@ -1666,6 +1859,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     float3 physics:diagonalInertia = (0.00000109014, 0.000001041, 2.95174e-7)
                                                                     float physics:mass = 0.00998
                                                                     quatf physics:principalAxes = (0.25595605, 0.7138781, 0.18741703, 0.6242911)
+
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physics:density = 1000
+                                                                    }
 
                                                                     over "right_thumb_fingertip" (
                                                                         prepend apiSchemas = ["NewtonSiteAPI"]
@@ -1791,6 +1991,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.00221
                                                     quatf physics:principalAxes = (-0.47950622, 0.5196862, 0.47950622, 0.5196862)
 
+                                                    over "right_index_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "right_index_PP" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -1800,6 +2007,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_PP/right_index_MP>
                                                         float physics:mass = 0.04741
                                                         quatf physics:principalAxes = (0.50271887, -0.47928587, 0.5125649, -0.5048129)
+
+                                                        over "right_index_PP_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "right_index_MP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -1811,6 +2025,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             float physics:mass = 0.01824
                                                             quatf physics:principalAxes = (0.026640795, 0.73255783, 0.018927297, 0.67991984)
 
+                                                            over "right_index_MP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
+
                                                             over "right_index_DP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                             )
@@ -1819,6 +2040,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                 float physics:mass = 0.00465
                                                                 quatf physics:principalAxes = (0.049189802, 0.71664006, 0.058411505, 0.69325006)
+
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
 
                                                                 over "right_index_fingertip" (
                                                                     prepend apiSchemas = ["NewtonSiteAPI"]
@@ -1923,6 +2151,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.00221
                                                     quatf physics:principalAxes = (-0.47950622, 0.5196862, 0.47950622, 0.5196862)
 
+                                                    over "right_middle_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "right_middle_PP" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -1932,6 +2167,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_PP/right_middle_MP>
                                                         float physics:mass = 0.04741
                                                         quatf physics:principalAxes = (0.50271887, -0.47928587, 0.5125649, -0.5048129)
+
+                                                        over "right_middle_PP_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "right_middle_MP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -1943,6 +2185,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             float physics:mass = 0.01824
                                                             quatf physics:principalAxes = (0.026640795, 0.73255783, 0.018927297, 0.67991984)
 
+                                                            over "right_middle_MP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
+
                                                             over "right_middle_DP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                             )
@@ -1951,6 +2200,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                 float physics:mass = 0.00465
                                                                 quatf physics:principalAxes = (0.049189802, 0.71664006, 0.058411505, 0.69325006)
+
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
 
                                                                 over "right_middle_fingertip" (
                                                                     prepend apiSchemas = ["NewtonSiteAPI"]
@@ -2055,6 +2311,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                     float physics:mass = 0.00221
                                                     quatf physics:principalAxes = (-0.47950622, 0.5196862, 0.47950622, 0.5196862)
 
+                                                    over "right_ring_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                    )
+                                                    {
+                                                        float physics:density = 1000
+                                                    }
+
                                                     over "right_ring_PP" (
                                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                     )
@@ -2064,6 +2327,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_PP/right_ring_MP>
                                                         float physics:mass = 0.04741
                                                         quatf physics:principalAxes = (0.50271887, -0.47928587, 0.5125649, -0.5048129)
+
+                                                        over "right_ring_PP_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
 
                                                         over "right_ring_MP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -2075,6 +2345,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             float physics:mass = 0.01824
                                                             quatf physics:principalAxes = (0.026640795, 0.73255783, 0.018927297, 0.67991984)
 
+                                                            over "right_ring_MP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
+
                                                             over "right_ring_DP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                             )
@@ -2083,6 +2360,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                 float physics:mass = 0.00465
                                                                 quatf physics:principalAxes = (0.049189802, 0.71664006, 0.058411505, 0.69325006)
+
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
 
                                                                 over "right_ring_fingertip" (
                                                                     prepend apiSchemas = ["NewtonSiteAPI"]
@@ -2194,6 +2478,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         float physics:mass = 0.00221
                                                         quatf physics:principalAxes = (-0.47950622, 0.5196862, 0.47950622, 0.5196862)
 
+                                                        over "right_pinky_MCP_VL_fit" (
+                                                            prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                        )
+                                                        {
+                                                            float physics:density = 1000
+                                                        }
+
                                                         over "right_pinky_PP" (
                                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
                                                         )
@@ -2203,6 +2494,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             rel physics:filteredPairs = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_PP/right_pinky_MP>
                                                             float physics:mass = 0.04741
                                                             quatf physics:principalAxes = (0.50271887, -0.47928587, 0.5125649, -0.5048129)
+
+                                                            over "right_pinky_PP_fit" (
+                                                                prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                            )
+                                                            {
+                                                                float physics:density = 1000
+                                                            }
 
                                                             over "right_pinky_MP" (
                                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI"]
@@ -2214,6 +2512,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 float physics:mass = 0.01824
                                                                 quatf physics:principalAxes = (0.026640795, 0.73255783, 0.018927297, 0.67991984)
 
+                                                                over "right_pinky_MP_fit" (
+                                                                    prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                )
+                                                                {
+                                                                    float physics:density = 1000
+                                                                }
+
                                                                 over "right_pinky_DP" (
                                                                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                                                 )
@@ -2222,6 +2527,13 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     float3 physics:diagonalInertia = (3.15145e-7, 3.09574e-7, 1.34852e-7)
                                                                     float physics:mass = 0.00465
                                                                     quatf physics:principalAxes = (0.049189802, 0.71664006, 0.058411505, 0.69325006)
+
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["NewtonCollisionAPI", "PhysicsMassAPI"]
+                                                                    )
+                                                                    {
+                                                                        float physics:density = 1000
+                                                                    }
 
                                                                     over "right_pinky_fingertip" (
                                                                         prepend apiSchemas = ["NewtonSiteAPI"]
@@ -2714,6 +3026,15 @@ over "biped_s40_with_sharpa_wave_hands"
             float physics:dynamicFriction = 1
             float physics:staticFriction = 1
         }
+    }
+
+    def PhysicsFixedJoint "fix_base_joint" (
+        prepend apiSchemas = ["PhysicsArticulationRootAPI", "NewtonArticulationRootAPI"]
+    )
+    {
+        uniform bool newton:jointsAddMobility = 1
+        bool newton:selfCollisionEnabled = 0
+        rel physics:body1 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link>
     }
 }
 

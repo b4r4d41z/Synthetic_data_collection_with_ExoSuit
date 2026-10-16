@@ -24,7 +24,6 @@ over "biped_s40_with_sharpa_wave_hands"
             {
                 uniform double[] mjc:solref = [0.02, 1]
                 float newton:contactGap = 0
-                bool physics:collisionEnabled = 1
             }
 
             over "imu" (
@@ -41,7 +40,6 @@ over "biped_s40_with_sharpa_wave_hands"
                 {
                     uniform double[] mjc:solref = [0.02, 1]
                     float newton:contactGap = 0
-                    bool physics:collisionEnabled = 1
                 }
 
                 over "leg_l2_link"
@@ -52,7 +50,6 @@ over "biped_s40_with_sharpa_wave_hands"
                     {
                         uniform double[] mjc:solref = [0.02, 1]
                         float newton:contactGap = 0
-                        bool physics:collisionEnabled = 1
                     }
 
                     over "leg_l3_link"
@@ -63,7 +60,6 @@ over "biped_s40_with_sharpa_wave_hands"
                         {
                             uniform double[] mjc:solref = [0.02, 1]
                             float newton:contactGap = 0
-                            bool physics:collisionEnabled = 1
                         }
 
                         over "Capsule" (
@@ -72,7 +68,6 @@ over "biped_s40_with_sharpa_wave_hands"
                         {
                             uniform double[] mjc:solref = [0.02, 1]
                             float newton:contactGap = 0
-                            bool physics:collisionEnabled = 1
                         }
 
                         over "leg_l4_link"
@@ -83,7 +78,6 @@ over "biped_s40_with_sharpa_wave_hands"
                             {
                                 uniform double[] mjc:solref = [0.02, 1]
                                 float newton:contactGap = 0
-                                bool physics:collisionEnabled = 1
                             }
 
                             over "leg_l5_link"
@@ -96,7 +90,6 @@ over "biped_s40_with_sharpa_wave_hands"
                                     {
                                         uniform double[] mjc:solref = [0.02, 1]
                                         float newton:contactGap = 0
-                                        bool physics:collisionEnabled = 1
                                     }
 
                                     over "l_ft_frame" (
@@ -192,7 +185,6 @@ over "biped_s40_with_sharpa_wave_hands"
                 {
                     uniform double[] mjc:solref = [0.02, 1]
                     float newton:contactGap = 0
-                    bool physics:collisionEnabled = 1
                 }
 
                 over "leg_r2_link"
@@ -203,7 +195,6 @@ over "biped_s40_with_sharpa_wave_hands"
                     {
                         uniform double[] mjc:solref = [0.02, 1]
                         float newton:contactGap = 0
-                        bool physics:collisionEnabled = 1
                     }
 
                     over "leg_r3_link"
@@ -214,7 +205,6 @@ over "biped_s40_with_sharpa_wave_hands"
                         {
                             uniform double[] mjc:solref = [0.02, 1]
                             float newton:contactGap = 0
-                            bool physics:collisionEnabled = 1
                         }
 
                         over "Capsule" (
@@ -223,7 +213,6 @@ over "biped_s40_with_sharpa_wave_hands"
                         {
                             uniform double[] mjc:solref = [0.02, 1]
                             float newton:contactGap = 0
-                            bool physics:collisionEnabled = 1
                         }
 
                         over "leg_r4_link"
@@ -234,7 +223,6 @@ over "biped_s40_with_sharpa_wave_hands"
                             {
                                 uniform double[] mjc:solref = [0.02, 1]
                                 float newton:contactGap = 0
-                                bool physics:collisionEnabled = 1
                             }
 
                             over "leg_r5_link"
@@ -247,7 +235,6 @@ over "biped_s40_with_sharpa_wave_hands"
                                     {
                                         uniform double[] mjc:solref = [0.02, 1]
                                         float newton:contactGap = 0
-                                        bool physics:collisionEnabled = 1
                                     }
 
                                     over "r_ft_frame" (
@@ -343,7 +330,6 @@ over "biped_s40_with_sharpa_wave_hands"
                 {
                     uniform double[] mjc:solref = [0.02, 1]
                     float newton:contactGap = 0
-                    bool physics:collisionEnabled = 1
                 }
 
                 over "zarm_l2_link"
@@ -354,7 +340,6 @@ over "biped_s40_with_sharpa_wave_hands"
                     {
                         uniform double[] mjc:solref = [0.02, 1]
                         float newton:contactGap = 0
-                        bool physics:collisionEnabled = 1
                     }
 
                     over "zarm_l3_link"
@@ -365,7 +350,6 @@ over "biped_s40_with_sharpa_wave_hands"
                         {
                             uniform double[] mjc:solref = [0.02, 1]
                             float newton:contactGap = 0
-                            bool physics:collisionEnabled = 1
                         }
 
                         over "zarm_l4_link"
@@ -376,7 +360,6 @@ over "biped_s40_with_sharpa_wave_hands"
                             {
                                 uniform double[] mjc:solref = [0.02, 1]
                                 float newton:contactGap = 0
-                                bool physics:collisionEnabled = 1
                             }
 
                             over "zarm_l5_link"
@@ -398,14 +381,50 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "left_thumb_CMC_VL"
                                                 {
+                                                    over "left_thumb_CMC_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "left_thumb_MC"
                                                     {
+                                                        over "left_thumb_MC_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "left_thumb_MCP_VL"
                                                         {
                                                             over "left_thumb_PP"
                                                             {
+                                                                over "left_thumb_PP_fit" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.02, 1]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "left_thumb_DP"
                                                                 {
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform int mjc:group = 3
+                                                                        uniform double[] mjc:solref = [0.06, 0.9]
+                                                                        float newton:contactGap = 0
+                                                                    }
+
                                                                     over "left_thumb_fingertip" (
                                                                         prepend apiSchemas = ["MjcSiteAPI"]
                                                                     )
@@ -480,12 +499,48 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "left_index_MCP_VL"
                                                 {
+                                                    over "left_index_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "left_index_PP"
                                                     {
+                                                        over "left_index_PP_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "left_index_MP"
                                                         {
+                                                            over "left_index_MP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "left_index_DP"
                                                             {
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.06, 0.9]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "left_index_fingertip" (
                                                                     prepend apiSchemas = ["MjcSiteAPI"]
                                                                 )
@@ -547,12 +602,48 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "left_middle_MCP_VL"
                                                 {
+                                                    over "left_middle_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "left_middle_PP"
                                                     {
+                                                        over "left_middle_PP_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "left_middle_MP"
                                                         {
+                                                            over "left_middle_MP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "left_middle_DP"
                                                             {
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.06, 0.9]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "left_middle_fingertip" (
                                                                     prepend apiSchemas = ["MjcSiteAPI"]
                                                                 )
@@ -614,12 +705,48 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "left_ring_MCP_VL"
                                                 {
+                                                    over "left_ring_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "left_ring_PP"
                                                     {
+                                                        over "left_ring_PP_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "left_ring_MP"
                                                         {
+                                                            over "left_ring_MP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "left_ring_DP"
                                                             {
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.06, 0.9]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "left_ring_fingertip" (
                                                                     prepend apiSchemas = ["MjcSiteAPI"]
                                                                 )
@@ -683,12 +810,48 @@ over "biped_s40_with_sharpa_wave_hands"
                                                 {
                                                     over "left_pinky_MCP_VL"
                                                     {
+                                                        over "left_pinky_MCP_VL_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "left_pinky_PP"
                                                         {
+                                                            over "left_pinky_PP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "left_pinky_MP"
                                                             {
+                                                                over "left_pinky_MP_fit" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.02, 1]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "left_pinky_DP"
                                                                 {
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform int mjc:group = 3
+                                                                        uniform double[] mjc:solref = [0.06, 0.9]
+                                                                        float newton:contactGap = 0
+                                                                    }
+
                                                                     over "left_pinky_fingertip" (
                                                                         prepend apiSchemas = ["MjcSiteAPI"]
                                                                     )
@@ -862,7 +1025,6 @@ over "biped_s40_with_sharpa_wave_hands"
                 {
                     uniform double[] mjc:solref = [0.02, 1]
                     float newton:contactGap = 0
-                    bool physics:collisionEnabled = 1
                 }
 
                 over "zarm_r2_link"
@@ -873,7 +1035,6 @@ over "biped_s40_with_sharpa_wave_hands"
                     {
                         uniform double[] mjc:solref = [0.02, 1]
                         float newton:contactGap = 0
-                        bool physics:collisionEnabled = 1
                     }
 
                     over "zarm_r3_link"
@@ -884,7 +1045,6 @@ over "biped_s40_with_sharpa_wave_hands"
                         {
                             uniform double[] mjc:solref = [0.02, 1]
                             float newton:contactGap = 0
-                            bool physics:collisionEnabled = 1
                         }
 
                         over "zarm_r4_link"
@@ -895,7 +1055,6 @@ over "biped_s40_with_sharpa_wave_hands"
                             {
                                 uniform double[] mjc:solref = [0.02, 1]
                                 float newton:contactGap = 0
-                                bool physics:collisionEnabled = 1
                             }
 
                             over "zarm_r5_link"
@@ -904,25 +1063,31 @@ over "biped_s40_with_sharpa_wave_hands"
                                 {
                                     over "zarm_r7_link"
                                     {
-                                        over "right_hand_camera_bracket_1" (
-                                            prepend apiSchemas = ["MjcImageableAPI"]
-                                        )
+                                        over "right_hand_camera_mount"
                                         {
-                                            uniform int mjc:group = 1
-                                        }
+                                            over "right_hand_camera_bracket_1" (
+                                                prepend apiSchemas = ["MjcImageableAPI"]
+                                            )
+                                            {
+                                                uniform int mjc:group = 1
+                                            }
 
-                                        over "right_hand_camera_bracket_2" (
-                                            prepend apiSchemas = ["MjcImageableAPI"]
-                                        )
-                                        {
-                                            uniform int mjc:group = 1
-                                        }
+                                            over "right_hand_camera_bracket_2" (
+                                                prepend apiSchemas = ["MjcImageableAPI"]
+                                            )
+                                            {
+                                                uniform int mjc:group = 1
+                                            }
 
-                                        over "right_hand_camera_housing" (
-                                            prepend apiSchemas = ["MjcImageableAPI"]
-                                        )
-                                        {
-                                            uniform int mjc:group = 1
+                                            over "right_hand_camera_head"
+                                            {
+                                                over "right_hand_camera_housing" (
+                                                    prepend apiSchemas = ["MjcImageableAPI"]
+                                                )
+                                                {
+                                                    uniform int mjc:group = 1
+                                                }
+                                            }
                                         }
 
                                         over "zarm_r7_end_effector"
@@ -938,14 +1103,50 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "right_thumb_CMC_VL"
                                                 {
+                                                    over "right_thumb_CMC_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "right_thumb_MC"
                                                     {
+                                                        over "right_thumb_MC_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "right_thumb_MCP_VL"
                                                         {
                                                             over "right_thumb_PP"
                                                             {
+                                                                over "right_thumb_PP_fit" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.02, 1]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "right_thumb_DP"
                                                                 {
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform int mjc:group = 3
+                                                                        uniform double[] mjc:solref = [0.06, 0.9]
+                                                                        float newton:contactGap = 0
+                                                                    }
+
                                                                     over "right_thumb_fingertip" (
                                                                         prepend apiSchemas = ["MjcSiteAPI"]
                                                                     )
@@ -1020,12 +1221,48 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "right_index_MCP_VL"
                                                 {
+                                                    over "right_index_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "right_index_PP"
                                                     {
+                                                        over "right_index_PP_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "right_index_MP"
                                                         {
+                                                            over "right_index_MP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "right_index_DP"
                                                             {
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.06, 0.9]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "right_index_fingertip" (
                                                                     prepend apiSchemas = ["MjcSiteAPI"]
                                                                 )
@@ -1087,12 +1324,48 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "right_middle_MCP_VL"
                                                 {
+                                                    over "right_middle_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "right_middle_PP"
                                                     {
+                                                        over "right_middle_PP_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "right_middle_MP"
                                                         {
+                                                            over "right_middle_MP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "right_middle_DP"
                                                             {
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.06, 0.9]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "right_middle_fingertip" (
                                                                     prepend apiSchemas = ["MjcSiteAPI"]
                                                                 )
@@ -1154,12 +1427,48 @@ over "biped_s40_with_sharpa_wave_hands"
 
                                                 over "right_ring_MCP_VL"
                                                 {
+                                                    over "right_ring_MCP_VL_fit" (
+                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                    )
+                                                    {
+                                                        uniform int mjc:group = 3
+                                                        uniform double[] mjc:solref = [0.02, 1]
+                                                        float newton:contactGap = 0
+                                                    }
+
                                                     over "right_ring_PP"
                                                     {
+                                                        over "right_ring_PP_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "right_ring_MP"
                                                         {
+                                                            over "right_ring_MP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "right_ring_DP"
                                                             {
+                                                                over "Capsule" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.06, 0.9]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "right_ring_fingertip" (
                                                                     prepend apiSchemas = ["MjcSiteAPI"]
                                                                 )
@@ -1223,12 +1532,48 @@ over "biped_s40_with_sharpa_wave_hands"
                                                 {
                                                     over "right_pinky_MCP_VL"
                                                     {
+                                                        over "right_pinky_MCP_VL_fit" (
+                                                            prepend apiSchemas = ["MjcCollisionAPI"]
+                                                        )
+                                                        {
+                                                            uniform int mjc:group = 3
+                                                            uniform double[] mjc:solref = [0.02, 1]
+                                                            float newton:contactGap = 0
+                                                        }
+
                                                         over "right_pinky_PP"
                                                         {
+                                                            over "right_pinky_PP_fit" (
+                                                                prepend apiSchemas = ["MjcCollisionAPI"]
+                                                            )
+                                                            {
+                                                                uniform int mjc:group = 3
+                                                                uniform double[] mjc:solref = [0.02, 1]
+                                                                float newton:contactGap = 0
+                                                            }
+
                                                             over "right_pinky_MP"
                                                             {
+                                                                over "right_pinky_MP_fit" (
+                                                                    prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                )
+                                                                {
+                                                                    uniform int mjc:group = 3
+                                                                    uniform double[] mjc:solref = [0.02, 1]
+                                                                    float newton:contactGap = 0
+                                                                }
+
                                                                 over "right_pinky_DP"
                                                                 {
+                                                                    over "Capsule" (
+                                                                        prepend apiSchemas = ["MjcCollisionAPI"]
+                                                                    )
+                                                                    {
+                                                                        uniform int mjc:group = 3
+                                                                        uniform double[] mjc:solref = [0.06, 0.9]
+                                                                        float newton:contactGap = 0
+                                                                    }
+
                                                                     over "right_pinky_fingertip" (
                                                                         prepend apiSchemas = ["MjcSiteAPI"]
                                                                     )

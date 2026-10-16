@@ -14,6 +14,7 @@ over "biped_s40_with_sharpa_wave_hands" (
 )
 {
     prepend rel isaac:physics:robotJoints = [
+        </biped_s40_with_sharpa_wave_hands/fix_base_joint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l1_joint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r1_joint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l1_joint>,
@@ -65,7 +66,9 @@ over "biped_s40_with_sharpa_wave_hands" (
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r5_joint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r6_joint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/PhysicsFixedJoint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/PhysicsFixedJoint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/PhysicsFixedJoint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/PhysicsFixedJoint>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_CMC_FE>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_MCP_FE>,
@@ -143,6 +146,8 @@ over "biped_s40_with_sharpa_wave_hands" (
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC>,
         </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL>,
@@ -679,6 +684,28 @@ over "biped_s40_with_sharpa_wave_hands" (
                                         prepend apiSchemas = ["IsaacLinkAPI"]
                                     )
                                     {
+                                        over "right_hand_camera_mount" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "right_hand_camera_head" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                                over "PhysicsFixedJoint" (
+                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                )
+                                                {
+                                                }
+                                            }
+
+                                            over "PhysicsFixedJoint" (
+                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+
                                         over "zarm_r7_end_effector" (
                                             prepend apiSchemas = ["IsaacLinkAPI"]
                                         )
@@ -1014,6 +1041,12 @@ over "biped_s40_with_sharpa_wave_hands" (
                 }
             }
         }
+    }
+
+    over "fix_base_joint" (
+        prepend apiSchemas = ["IsaacJointAPI"]
+    )
+    {
     }
 }
 
