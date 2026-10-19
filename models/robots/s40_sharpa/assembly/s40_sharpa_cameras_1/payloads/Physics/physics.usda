@@ -696,6 +696,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                     )
                                                                     {
+                                                                        float drive:angular:physics:damping = 0.1
+                                                                        float drive:angular:physics:stiffness = 0.9
                                                                         float newton:armature = 0.0006
                                                                         float newton:damping = 7.086037e-8
                                                                         float newton:friction = 0.01276
@@ -717,6 +719,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 6.62
                                                                     float newton:armature = 0.00265
                                                                     float newton:damping = 4.1538837e-7
                                                                     float newton:friction = 0.07456
@@ -738,6 +742,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 4.76
                                                                 float newton:armature = 0.00265
                                                                 float newton:damping = 4.1538837e-7
                                                                 float newton:friction = 0.07456
@@ -759,6 +765,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 13.2
                                                             float newton:armature = 0.0032
                                                             float newton:damping = 7.330383e-7
                                                             float newton:friction = 0.132
@@ -780,6 +788,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 6.95
                                                         float newton:armature = 0.0032
                                                         float newton:damping = 7.330383e-7
                                                         float newton:friction = 0.132
@@ -877,6 +887,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.00042
                                                                     float newton:damping = 2.1118485e-8
                                                                     float newton:friction = 0.00378738
@@ -898,6 +910,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 0.9
                                                                 float newton:armature = 0.0006
                                                                 float newton:damping = 7.086037e-8
                                                                 float newton:friction = 0.01276
@@ -919,6 +933,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 6.62
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -940,6 +956,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 4.76
                                                         float newton:armature = 0.00265
                                                         float newton:damping = 4.1538837e-7
                                                         float newton:friction = 0.07456
@@ -1037,6 +1055,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.00042
                                                                     float newton:damping = 2.1118485e-8
                                                                     float newton:friction = 0.00378738
@@ -1058,6 +1078,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 0.9
                                                                 float newton:armature = 0.0006
                                                                 float newton:damping = 7.086037e-8
                                                                 float newton:friction = 0.01276
@@ -1079,6 +1101,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 6.62
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -1100,6 +1124,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 4.76
                                                         float newton:armature = 0.00265
                                                         float newton:damping = 4.1538837e-7
                                                         float newton:friction = 0.07456
@@ -1197,6 +1223,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.00042
                                                                     float newton:damping = 2.1118485e-8
                                                                     float newton:friction = 0.00378738
@@ -1218,6 +1246,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 0.9
                                                                 float newton:armature = 0.0006
                                                                 float newton:damping = 7.086037e-8
                                                                 float newton:friction = 0.01276
@@ -1239,6 +1269,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 6.62
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -1260,6 +1292,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 4.76
                                                         float newton:armature = 0.00265
                                                         float newton:damping = 4.1538837e-7
                                                         float newton:friction = 0.07456
@@ -1364,6 +1398,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                     )
                                                                     {
+                                                                        float drive:angular:physics:damping = 0.1
+                                                                        float drive:angular:physics:stiffness = 0.9
                                                                         float newton:armature = 0.00042
                                                                         float newton:damping = 2.1118485e-8
                                                                         float newton:friction = 0.00378738
@@ -1385,6 +1421,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.0006
                                                                     float newton:damping = 7.086037e-8
                                                                     float newton:friction = 0.01276
@@ -1406,6 +1444,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 6.62
                                                                 float newton:armature = 0.00265
                                                                 float newton:damping = 4.1538837e-7
                                                                 float newton:friction = 0.07456
@@ -1427,6 +1467,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 4.76
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -1448,6 +1490,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 1.38
                                                         float newton:armature = 0.00012
                                                         float newton:damping = 7.330383e-7
                                                         float newton:friction = 0.012
@@ -1495,6 +1539,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                         )
                                         {
+                                            float drive:angular:physics:damping = 20
+                                            float drive:angular:physics:stiffness = 150
                                             float newton:armature = 0.05
                                             float newton:damping = 0.0034906585
                                             float newton:friction = 0.02
@@ -1516,6 +1562,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                     )
                                     {
+                                        float drive:angular:physics:damping = 20
+                                        float drive:angular:physics:stiffness = 150
                                         float newton:armature = 0.05
                                         float newton:damping = 0.0034906585
                                         float newton:friction = 0.02
@@ -1537,6 +1585,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                 )
                                 {
+                                    float drive:angular:physics:damping = 20
+                                    float drive:angular:physics:stiffness = 150
                                     float newton:armature = 0.05
                                     float newton:damping = 0.0034906585
                                     float newton:friction = 0.02
@@ -1558,6 +1608,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                             )
                             {
+                                float drive:angular:physics:damping = 20
+                                float drive:angular:physics:stiffness = 300
                                 float newton:armature = 0.05
                                 float newton:damping = 0.0034906585
                                 float newton:friction = 0.02
@@ -1579,6 +1631,8 @@ over "biped_s40_with_sharpa_wave_hands"
                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                         )
                         {
+                            float drive:angular:physics:damping = 20
+                            float drive:angular:physics:stiffness = 300
                             float newton:armature = 0.05
                             float newton:damping = 0.0034906585
                             float newton:friction = 0.02
@@ -1600,6 +1654,8 @@ over "biped_s40_with_sharpa_wave_hands"
                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                     )
                     {
+                        float drive:angular:physics:damping = 20
+                        float drive:angular:physics:stiffness = 500
                         float newton:armature = 0.05
                         float newton:damping = 0.0034906585
                         float newton:friction = 0.02
@@ -1621,6 +1677,8 @@ over "biped_s40_with_sharpa_wave_hands"
                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                 )
                 {
+                    float drive:angular:physics:damping = 20
+                    float drive:angular:physics:stiffness = 500
                     float newton:armature = 0.05
                     float newton:damping = 0.0034906585
                     float newton:friction = 0.02
@@ -1877,6 +1935,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                     )
                                                                     {
+                                                                        float drive:angular:physics:damping = 0.1
+                                                                        float drive:angular:physics:stiffness = 0.9
                                                                         float newton:armature = 0.0006
                                                                         float newton:damping = 7.086037e-8
                                                                         float newton:friction = 0.01276
@@ -1898,6 +1958,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 6.62
                                                                     float newton:armature = 0.00265
                                                                     float newton:damping = 4.1538837e-7
                                                                     float newton:friction = 0.07456
@@ -1919,6 +1981,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 4.76
                                                                 float newton:armature = 0.00265
                                                                 float newton:damping = 4.1538837e-7
                                                                 float newton:friction = 0.07456
@@ -1940,6 +2004,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 13.2
                                                             float newton:armature = 0.0032
                                                             float newton:damping = 7.330383e-7
                                                             float newton:friction = 0.132
@@ -1961,6 +2027,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 6.95
                                                         float newton:armature = 0.0032
                                                         float newton:damping = 7.330383e-7
                                                         float newton:friction = 0.132
@@ -2058,6 +2126,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.00042
                                                                     float newton:damping = 2.1118485e-8
                                                                     float newton:friction = 0.00378738
@@ -2079,6 +2149,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 0.9
                                                                 float newton:armature = 0.0006
                                                                 float newton:damping = 7.086037e-8
                                                                 float newton:friction = 0.01276
@@ -2100,6 +2172,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 6.62
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -2121,6 +2195,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 4.76
                                                         float newton:armature = 0.00265
                                                         float newton:damping = 4.1538837e-7
                                                         float newton:friction = 0.07456
@@ -2218,6 +2294,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.00042
                                                                     float newton:damping = 2.1118485e-8
                                                                     float newton:friction = 0.00378738
@@ -2239,6 +2317,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 0.9
                                                                 float newton:armature = 0.0006
                                                                 float newton:damping = 7.086037e-8
                                                                 float newton:friction = 0.01276
@@ -2260,6 +2340,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 6.62
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -2281,6 +2363,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 4.76
                                                         float newton:armature = 0.00265
                                                         float newton:damping = 4.1538837e-7
                                                         float newton:friction = 0.07456
@@ -2378,6 +2462,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.00042
                                                                     float newton:damping = 2.1118485e-8
                                                                     float newton:friction = 0.00378738
@@ -2399,6 +2485,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 0.9
                                                                 float newton:armature = 0.0006
                                                                 float newton:damping = 7.086037e-8
                                                                 float newton:friction = 0.01276
@@ -2420,6 +2508,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 6.62
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -2441,6 +2531,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 4.76
                                                         float newton:armature = 0.00265
                                                         float newton:damping = 4.1538837e-7
                                                         float newton:friction = 0.07456
@@ -2545,6 +2637,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                     )
                                                                     {
+                                                                        float drive:angular:physics:damping = 0.1
+                                                                        float drive:angular:physics:stiffness = 0.9
                                                                         float newton:armature = 0.00042
                                                                         float newton:damping = 2.1118485e-8
                                                                         float newton:friction = 0.00378738
@@ -2566,6 +2660,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                                 )
                                                                 {
+                                                                    float drive:angular:physics:damping = 0.1
+                                                                    float drive:angular:physics:stiffness = 0.9
                                                                     float newton:armature = 0.0006
                                                                     float newton:damping = 7.086037e-8
                                                                     float newton:friction = 0.01276
@@ -2587,6 +2683,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                             )
                                                             {
+                                                                float drive:angular:physics:damping = 0.1
+                                                                float drive:angular:physics:stiffness = 6.62
                                                                 float newton:armature = 0.00265
                                                                 float newton:damping = 4.1538837e-7
                                                                 float newton:friction = 0.07456
@@ -2608,6 +2706,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                         )
                                                         {
+                                                            float drive:angular:physics:damping = 0.1
+                                                            float drive:angular:physics:stiffness = 4.76
                                                             float newton:armature = 0.00265
                                                             float newton:damping = 4.1538837e-7
                                                             float newton:friction = 0.07456
@@ -2629,6 +2729,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                                     )
                                                     {
+                                                        float drive:angular:physics:damping = 0.1
+                                                        float drive:angular:physics:stiffness = 1.38
                                                         float newton:armature = 0.00012
                                                         float newton:damping = 7.330383e-7
                                                         float newton:friction = 0.012
@@ -2676,6 +2778,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                         )
                                         {
+                                            float drive:angular:physics:damping = 20
+                                            float drive:angular:physics:stiffness = 150
                                             float newton:armature = 0.05
                                             float newton:damping = 0.0034906585
                                             float newton:friction = 0.02
@@ -2697,6 +2801,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                     )
                                     {
+                                        float drive:angular:physics:damping = 20
+                                        float drive:angular:physics:stiffness = 150
                                         float newton:armature = 0.05
                                         float newton:damping = 0.0034906585
                                         float newton:friction = 0.02
@@ -2718,6 +2824,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                                 )
                                 {
+                                    float drive:angular:physics:damping = 20
+                                    float drive:angular:physics:stiffness = 150
                                     float newton:armature = 0.05
                                     float newton:damping = 0.0034906585
                                     float newton:friction = 0.02
@@ -2739,6 +2847,8 @@ over "biped_s40_with_sharpa_wave_hands"
                                 prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                             )
                             {
+                                float drive:angular:physics:damping = 20
+                                float drive:angular:physics:stiffness = 300
                                 float newton:armature = 0.05
                                 float newton:damping = 0.0034906585
                                 float newton:friction = 0.02
@@ -2760,6 +2870,8 @@ over "biped_s40_with_sharpa_wave_hands"
                             prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                         )
                         {
+                            float drive:angular:physics:damping = 20
+                            float drive:angular:physics:stiffness = 300
                             float newton:armature = 0.05
                             float newton:damping = 0.0034906585
                             float newton:friction = 0.02
@@ -2781,6 +2893,8 @@ over "biped_s40_with_sharpa_wave_hands"
                         prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                     )
                     {
+                        float drive:angular:physics:damping = 20
+                        float drive:angular:physics:stiffness = 500
                         float newton:armature = 0.05
                         float newton:damping = 0.0034906585
                         float newton:friction = 0.02
@@ -2802,6 +2916,8 @@ over "biped_s40_with_sharpa_wave_hands"
                     prepend apiSchemas = ["NewtonJointAPI", "PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
                 )
                 {
+                    float drive:angular:physics:damping = 20
+                    float drive:angular:physics:stiffness = 500
                     float newton:armature = 0.05
                     float newton:damping = 0.0034906585
                     float newton:friction = 0.02

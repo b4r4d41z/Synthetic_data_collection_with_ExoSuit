@@ -1883,7 +1883,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_l1_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -500, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -500, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 0.523599
@@ -1895,7 +1895,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_l2_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -500, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -500, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 2.0944
@@ -1907,7 +1907,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_l3_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -300, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -300, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -1919,7 +1919,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_l4_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -300, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -300, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:min = -1.5708
@@ -1930,7 +1930,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_l5_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -150, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -150, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -1942,7 +1942,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_l6_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -150, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -150, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -1954,7 +1954,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_l7_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -150, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -150, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -1966,7 +1966,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_r1_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -500, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -500, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 0.523599
@@ -1978,7 +1978,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_r2_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -500, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -500, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 0.349066
@@ -1990,7 +1990,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_r3_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -300, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -300, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -2002,7 +2002,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_r4_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -300, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -300, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:min = -1.5708
@@ -2013,7 +2013,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_r5_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -150, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -150, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -2025,7 +2025,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_r6_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -150, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -150, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -2037,7 +2037,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "zarm_r7_joint_position"
         {
-            uniform double[] mjc:biasPrm = [0, -150, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -150, -20, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform token mjc:ctrlLimited = "true"
             uniform double mjc:ctrlRange:max = 1.5708
@@ -2067,7 +2067,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_thumb_CMC_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -6.95, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.95, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.95, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2077,7 +2077,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_thumb_CMC_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -13.2, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -13.2, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [13.2, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2087,7 +2087,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_thumb_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2097,7 +2097,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_thumb_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2107,7 +2107,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_thumb_IP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2117,7 +2117,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_index_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2127,7 +2127,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_index_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2137,7 +2137,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_index_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2147,7 +2147,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_index_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2157,7 +2157,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_middle_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2167,7 +2167,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_middle_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2177,7 +2177,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_middle_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2187,7 +2187,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_middle_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2197,7 +2197,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_ring_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2207,7 +2207,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_ring_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2217,7 +2217,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_ring_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2227,7 +2227,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_ring_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2237,7 +2237,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_pinky_CMC"
         {
-            uniform double[] mjc:biasPrm = [0, -1.38, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -1.38, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [1.38, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2247,7 +2247,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_pinky_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2257,7 +2257,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_pinky_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2267,7 +2267,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_pinky_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2277,7 +2277,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "left_pinky_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2287,7 +2287,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_thumb_CMC_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -6.95, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.95, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.95, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2297,7 +2297,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_thumb_CMC_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -13.2, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -13.2, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [13.2, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2307,7 +2307,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_thumb_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2317,7 +2317,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_thumb_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2327,7 +2327,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_thumb_IP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2337,7 +2337,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_index_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2347,7 +2347,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_index_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2357,7 +2357,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_index_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2367,7 +2367,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_index_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2377,7 +2377,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_middle_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2387,7 +2387,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_middle_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2397,7 +2397,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_middle_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2407,7 +2407,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_middle_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2417,7 +2417,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_ring_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2427,7 +2427,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_ring_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2437,7 +2437,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_ring_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2447,7 +2447,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_ring_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2457,7 +2457,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_pinky_CMC"
         {
-            uniform double[] mjc:biasPrm = [0, -1.38, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -1.38, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [1.38, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2467,7 +2467,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_pinky_MCP_FE"
         {
-            uniform double[] mjc:biasPrm = [0, -4.76, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -4.76, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [4.76, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2477,7 +2477,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_pinky_MCP_AA"
         {
-            uniform double[] mjc:biasPrm = [0, -6.62, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -6.62, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [6.62, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2487,7 +2487,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_pinky_PIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
@@ -2497,7 +2497,7 @@ over "biped_s40_with_sharpa_wave_hands"
 
         def MjcActuator "right_pinky_DIP"
         {
-            uniform double[] mjc:biasPrm = [0, -0.9, 0.9, 0, 0, 0, 0, 0, 0, 0]
+            uniform double[] mjc:biasPrm = [0, -0.9, -0.1, 0, 0, 0, 0, 0, 0, 0]
             uniform token mjc:biasType = "affine"
             uniform double[] mjc:gainPrm = [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             uniform double mjc:inheritRange = 1
