@@ -1,39 +1,32 @@
-r"""Right-wrist RGB camera for an already imported robot in Isaac Sim 6.1.
+r"""Prepare a persistent right-hand USD Camera once after MJCF import.
 
-Uses ``isaacsim.sensors.experimental.rtx.RtxCamera`` and ``CameraSensor``.
-The older ``isaacsim.sensors.camera`` API is deprecated in 6.1. API reference:
-https://github.com/isaac-sim/IsaacSim/blob/v6.1.0/source/standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_basic.py
+Import s40_sharpa_two_cameras.xml, stop the timeline, and save the imported
+stage to a writable USD file. In Isaac Sim 6.1's Script Editor, with the
+repository root on sys.path, run::
 
-Import ``s40_sharpa_cameras.xml`` with the MJCF importer first, keeping visual
-geometry separate from collisions (do not enable collision-from-visuals).
-An existing USD Camera is reused; otherwise a camera is authored under the
-imported wrist. No robot joints, physics, scene lighting, or files are changed.
+    from control.cameras.right_hand_camera import prepare_right_hand_camera
+    camera_path = prepare_right_hand_camera()  # edits and saves the root layer
 
-In Isaac Sim's Script Editor, after adding the repository root to sys.path::
+For an unsaved stage, pass save=False and then use File > Save As. To select
+one robot in a multi-robot stage, pass robot_prim_path="/World/my_robot".
+Pass xml_path explicitly if the imported robot came from a different XML.
 
-    from control.cameras.right_hand_camera import RightHandCamera
-    camera = RightHandCamera()  # or robot_prim_path="/World/my_robot"
-    # Press Play and let rendering advance before reading; keep camera alive.
-    rgb = camera.get_rgb()  # None during warm-up, then uint8 (480, 640, 3)
-    camera.print_debug()
-    # camera.close() when finished, before closing the stage
+The returned path ends in right_hand_camera_head/right_hand_camera. It is
+saved as a real UsdGeom.Camera and remains available after reopening USD;
+this preparation does not need to run on Play. It creates no render product,
+sensor runtime, ROS publisher, or Action Graph nodes.
 
-For a bounded asynchronous check in the running GUI::
+Later, select this path in Isaac Create Render Product and set width=640,
+height=480. Configure rendering/sensor scheduling for 15 Hz separately:
+resolution and update rate are not UsdGeom.Camera properties. For example,
+render at 15 Hz, or at 60 Hz publish every fourth rendered frame using ROS2
+Camera Helper frameSkipCount=3. Frame skipping controls publication rate;
+it does not reduce the renderer's capture rate.
 
-    import asyncio
-    from control.cameras.right_hand_camera import debug_current_stage
-    camera_task = asyncio.ensure_future(debug_current_stage())
-
-Standalone, from the repository root, using Isaac Sim 6.1's python.sh::
+The same preparation can run with Isaac Sim's python.sh without starting Kit::
 
     /path/to/isaac-sim/python.sh control/cameras/right_hand_camera.py \
-        --stage /absolute/path/to/imported_scene.usd --headless
-
-The standalone check opens an already imported scene; it does not import,
-export, or save USD files. Use a scene with lighting and visible geometry.
-Rendering/physics must advance at least 15 times per simulation second for
-the requested 15 Hz sensor tick rate. Reading get_rgb() faster returns the
-latest buffer again; it is not a new-frame or synchronization API.
+        --stage /absolute/path/to/imported_robot.usd
 """
 
 from __future__ import annotations
@@ -42,34 +35,51 @@ import argparse
 from dataclasses import dataclass
 import math
 from pathlib import Path
-import time
 import xml.etree.ElementTree as ET
 
 
 CAMERA_NAME = "right_hand_camera"
 WRIST_NAME = "zarm_r7_link"
-RESOLUTION = (480, 640)  # CameraSensor 6.1 takes (height, width), not (width, height).
-CAPTURE_HZ = 15.0
-DEFAULT_XML = Path(__file__).resolve().parents[2] / "models/robots/s40_sharpa/assembly/s40_sharpa_cameras.xml"
+HEAD_NAME = "right_hand_camera_head"
+RENDER_RESOLUTION = (640, 480)  # Render product (width, height); no product is created here.
+TARGET_RATE_HZ = 15.0  # Configure the later renderer/sensor or graph scheduling separately.
+DEFAULT_XML = Path(__file__).resolve().parents[2] / "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml"
 
 
 @dataclass(frozen=True)
 class CameraMount:
+    body_names: tuple[str, ...]
     position: tuple[float, ...]
-    quaternion: tuple[float, ...]  # MJCF and USD both use w, x, y, z; view direction is -Z.
+    quaternion: tuple[float, ...]  # MJCF/USD wxyz; camera looks along local -Z.
     fovy: float
 
 
 def read_camera_mount(xml_path: str | Path = DEFAULT_XML) -> CameraMount:
-    """Read the XML as the calibration source without rewriting it."""
+    """Read the nested camera's local calibration without changing the XML."""
     root = ET.parse(xml_path).getroot()
     cameras = root.findall(f".//camera[@name='{CAMERA_NAME}']")
-    wrists = root.findall(f".//body[@name='{WRIST_NAME}']")
-    if len(cameras) != 1 or len(wrists) != 1 or cameras[0] not in list(wrists[0]):
-        raise ValueError(f"Expected exactly one {CAMERA_NAME} directly inside {WRIST_NAME} in {xml_path}")
+    if len(cameras) != 1:
+        raise ValueError(f"Expected exactly one {CAMERA_NAME} in {xml_path}")
     camera = cameras[0]
+    parents = {child: parent for parent in root.iter() for child in parent}
+    parent = parents[camera]
+    if parent.tag != "body" or parent.get("name") != HEAD_NAME:
+        raise ValueError(f"{CAMERA_NAME} must be directly inside {HEAD_NAME}")
+    chain = []
+    while parent.tag == "body":
+        chain.append(parent.attrib["name"])
+        if parent.get("name") == WRIST_NAME:
+            break
+        parent = parents[parent]
+    if chain[-1] != WRIST_NAME:
+        raise ValueError(f"{HEAD_NAME} must be a descendant of {WRIST_NAME}")
+    if any(key in camera.attrib for key in ("euler", "axisangle", "xyaxes", "zaxis")):
+        raise ValueError("Camera calibration must use an explicit MJCF wxyz quat")
+    if camera.get("mode", "fixed") != "fixed":
+        raise ValueError("The hand camera must use fixed mode to follow its parent")
     mount = CameraMount(
-        tuple(float(value) for value in camera.attrib["pos"].split()),
+        tuple(reversed(chain)),
+        tuple(float(value) for value in camera.get("pos", "0 0 0").split()),
         tuple(float(value) for value in camera.attrib["quat"].split()),
         float(camera.attrib["fovy"]),
     )
@@ -84,242 +94,143 @@ def read_camera_mount(xml_path: str | Path = DEFAULT_XML) -> CameraMount:
     return mount
 
 
-def _find_wrist(stage, robot_prim_path: str | None):
+def _find_head(stage, mount: CameraMount, robot_prim_path: str | None):
     from pxr import Usd, UsdGeom
 
     root = stage.GetPrimAtPath(robot_prim_path) if robot_prim_path else stage.GetPseudoRoot()
     if not root.IsValid():
         raise ValueError(f"Robot prim does not exist: {robot_prim_path}")
-    wrists = [prim for prim in Usd.PrimRange(root) if prim.GetName() == WRIST_NAME]
-    if len(wrists) != 1:
-        paths = [str(prim.GetPath()) for prim in wrists]
+    matches = []
+    for prim in Usd.PrimRange(root, Usd.TraverseInstanceProxies()):
+        if prim.GetName() != mount.body_names[-1]:
+            continue
+        ancestor, index = prim, len(mount.body_names) - 1
+        while ancestor.IsValid() and index >= 0:
+            if ancestor.GetName() == mount.body_names[index]:
+                index -= 1
+            ancestor = ancestor.GetParent()
+        if index < 0:
+            matches.append(prim)
+    if len(matches) != 1:
         raise ValueError(
-            f"Expected one imported {WRIST_NAME}; found {paths}. "
-            "Import the camera XML first, or set robot_prim_path to select one robot."
+            f"Expected one imported {'/'.join(mount.body_names)}; found "
+            f"{[str(prim.GetPath()) for prim in matches]}. Check the import or set robot_prim_path."
         )
-    wrist = wrists[0]
-    if not UsdGeom.Xformable(wrist) or wrist.IsInstance() or wrist.IsInstanceProxy():
-        raise ValueError(f"Wrist must be an editable, non-instanced transform: {wrist.GetPath()}")
-    return wrist
+    head = matches[0]
+    if not UsdGeom.Xformable(head) or head.IsInstance() or head.IsInstanceProxy():
+        raise ValueError(f"Camera head must be an editable, non-instanced transform: {head.GetPath()}")
+    return head
 
 
-def _inherits_wrist_transform(prim, wrist) -> bool:
+def _check_camera_slot(stage, path) -> None:
+    """Allow an existing Camera or a harmless leaf placeholder; reject occupied paths."""
     from pxr import UsdGeom, UsdPhysics
 
-    while prim.IsValid() and prim != wrist:
-        xform = UsdGeom.Xformable(prim)
-        if (xform and xform.GetResetXformStack()) or prim.HasAPI(UsdPhysics.RigidBodyAPI):
-            return False
-        prim = prim.GetParent()
-    return prim == wrist
-
-
-def _find_or_create_camera(stage, wrist, mount: CameraMount):
-    from pxr import Gf, Usd, UsdGeom
-
-    candidates = [
-        prim for prim in Usd.PrimRange(wrist)
-        if prim.GetName() == CAMERA_NAME and prim.IsA(UsdGeom.Camera)
-        and _inherits_wrist_transform(prim, wrist)
-    ]
-    if len(candidates) > 1:
-        raise ValueError(f"Multiple usable {CAMERA_NAME} cameras below {wrist.GetPath()}")
-    if candidates:
-        return UsdGeom.Camera(candidates[0]), False
-
-    # Preserve any importer placeholder with this name instead of changing its type.
-    path = wrist.GetPath().AppendChild(CAMERA_NAME)
-    if stage.GetPrimAtPath(path).IsValid():
-        path = wrist.GetPath().AppendChild(CAMERA_NAME + "_rgb")
-        existing = stage.GetPrimAtPath(path)
-        if existing.IsValid():
-            if existing.IsA(UsdGeom.Camera) and _inherits_wrist_transform(existing, wrist):
-                return UsdGeom.Camera(existing), False
-            raise ValueError(f"Fallback camera path is occupied by an unusable prim: {path}")
-
-    camera = UsdGeom.Camera.Define(stage, path)
-    meters_per_unit = UsdGeom.GetStageMetersPerUnit(stage)
-    xform = UsdGeom.Xformable(camera.GetPrim())
-    xform.AddTranslateOp().Set(Gf.Vec3d(*(value / meters_per_unit for value in mount.position)))
-    w, x, y, z = mount.quaternion
-    xform.AddOrientOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Quatd(w, Gf.Vec3d(x, y, z)))
-    return camera, True
+    prim = stage.GetPrimAtPath(path)
+    session_layers = set(stage.GetLayerStack()) - set(stage.GetLayerStack(includeSessionLayers=False))
+    if prim.IsValid() and any(spec.layer in session_layers for spec in prim.GetPrimStack()):
+        raise ValueError(f"Reopen the saved stage or remove session opinions at {path} before preparation")
+    if not prim.IsValid():
+        return
+    if not prim.IsActive() or prim.IsInstance() or prim.IsInstanceProxy() or prim.HasAPI(UsdPhysics.RigidBodyAPI):
+        raise ValueError(f"Camera path is inactive or occupied by an instance or rigid body: {path}")
+    if prim.IsA(UsdGeom.Camera):
+        return
+    harmless_properties = all(
+        prop.GetName().startswith("xformOp:") or prop.GetName() in {"xformOpOrder", "visibility", "purpose"}
+        for prop in prim.GetAuthoredProperties()
+    )
+    if (
+        prim.GetTypeName() not in {"", "Xform", "Scope"}
+        or prim.GetChildren() or prim.GetAppliedSchemas() or not harmless_properties
+        or prim.HasAuthoredReferences() or prim.HasAuthoredPayloads()
+    ):
+        raise ValueError(f"Cannot safely promote occupied camera path to UsdGeom.Camera: {path}")
+    # A verified empty placeholder is retyped at the same path, preserving its identity.
 
 
 def _configure_optics(camera, mount: CameraMount, meters_per_unit: float) -> None:
     from pxr import Gf, UsdGeom
 
-    # USD focal length/apertures are in tenths of a stage unit. Only their ratio
-    # determines pinhole FOV; use an equivalent 24 mm lens, not a claimed calibration.
+    # USD focal length/apertures use tenths of a stage unit. Their ratio sets FOV.
     focal_length = 0.024 / (0.1 * meters_per_unit)
     vertical_aperture = 2.0 * focal_length * math.tan(math.radians(mount.fovy) / 2.0)
     camera.CreateProjectionAttr().Set(UsdGeom.Tokens.perspective)
     camera.CreateFocalLengthAttr().Set(focal_length)
     camera.CreateVerticalApertureAttr().Set(vertical_aperture)
-    camera.CreateHorizontalApertureAttr().Set(vertical_aperture * RESOLUTION[1] / RESOLUTION[0])
+    camera.CreateHorizontalApertureAttr().Set(vertical_aperture * RENDER_RESOLUTION[0] / RENDER_RESOLUTION[1])
     camera.CreateHorizontalApertureOffsetAttr().Set(0.0)
     camera.CreateVerticalApertureOffsetAttr().Set(0.0)
     camera.CreateClippingRangeAttr().Set(Gf.Vec2f(0.005 / meters_per_unit, 100.0 / meters_per_unit))
-    camera.CreateFStopAttr().Set(0.0)  # Pinhole RGB; no depth of field.
+    camera.CreateFStopAttr().Set(0.0)
 
 
-class RightHandCamera:
-    """Discover a wrist camera and expose its latest RGB frame as a NumPy array.
+def prepare_right_hand_camera(
+    stage=None, *, xml_path: str | Path = DEFAULT_XML,
+    robot_prim_path: str | None = None, save: bool = True,
+) -> str:
+    """Author XML calibration in the root layer and return the Action Graph camera path.
 
-    Construct after SimulationApp/Kit and the imported stage exist. The caller
-    owns timeline/physics/render stepping. Recreate after replacing the stage.
-    Keep only one live adapter per camera; call close() before constructing another.
+    Call once with playback stopped. save=True saves the root layer, including
+    other pending root-layer edits. save=False permits an anonymous stage that
+    you will subsequently Save As. Referenced robot/payload layers are not edited.
     """
+    from pxr import Gf, Usd, UsdGeom
 
-    def __init__(self, robot_prim_path: str | None = None, xml_path: str | Path = DEFAULT_XML):
-        self._sensor = None
-        self._authoring = None
-        self.mount = read_camera_mount(xml_path)
-        # Imports are deferred so normal Python can inspect calibration and --help.
-        import omni.kit.app
+    mount = read_camera_mount(xml_path)
+    if stage is None:
         import omni.usd
-        from pxr import Usd, UsdGeom
-
-        manager = omni.kit.app.get_app().get_extension_manager()
-        extension = "isaacsim.sensors.experimental.rtx"
-        if not manager.is_extension_enabled(extension):
-            manager.set_extension_enabled_immediate(extension, True)
-        try:
-            from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
-        except ImportError as error:
-            raise RuntimeError("Isaac Sim 6.1 with isaacsim.sensors.experimental.rtx is required") from error
 
         stage = omni.usd.get_context().get_stage()
-        if stage is None:
-            raise RuntimeError("Open a stage containing the imported robot before initializing the camera")
-        self._stage = stage
-        wrist = _find_wrist(stage, robot_prim_path)
-        self.wrist_prim_path = str(wrist.GetPath())
-        # Runtime sensor opinions belong in the session layer, not the robot asset.
-        with Usd.EditContext(stage, stage.GetSessionLayer()):
-            camera, self.created_fallback = _find_or_create_camera(stage, wrist, self.mount)
-            self.prim_path = str(camera.GetPath())
-            self._authoring = RtxCamera(
-                self.prim_path, tick_rate=CAPTURE_HZ, reset_xform_op_properties=False
-            )
-            self._sensor = CameraSensor(self._authoring, resolution=RESOLUTION, annotators=["rgb"])
-            if tuple(self._sensor.resolution) != RESOLUTION:
-                self.close()
-                raise RuntimeError("An existing render product overrides 640x480; remove that camera's old render product first")
-            if not _inherits_wrist_transform(camera.GetPrim(), wrist):
-                self.close()
-                raise RuntimeError("The initialized camera does not inherit the wrist transform")
-            # CameraSensor enforces square pixels at construction; author our exact
-            # 4:3 apertures afterwards so the final vertical FOV is the XML value.
-            _configure_optics(camera, self.mount, UsdGeom.GetStageMetersPerUnit(stage))
-
-    def get_rgb(self):
-        """Return a copied uint8 (480, 640, 3) RGB array, or None during warm-up.
-
-        Reads the latest sensor buffer. Does not step simulation, start recording,
-        or guarantee a different capture on every call.
-        """
-        import numpy as np
-        import omni.usd
-
-        if self._sensor is None:
-            raise RuntimeError("Camera is closed")
-        if omni.usd.get_context().get_stage() != self._stage:
-            raise RuntimeError("The stage changed; close and recreate RightHandCamera")
-        data, _ = self._sensor.get_data("rgb")
-        if data is None:
-            return None
-        frame = np.asarray(data.numpy())  # 6.1 CameraSensor returns a Warp array.
-        if frame.size == 0:
-            return None
-        if frame.shape != (*RESOLUTION, 3) or frame.dtype != np.uint8:
-            raise RuntimeError(f"Unexpected RGB buffer: shape={frame.shape}, dtype={frame.dtype}")
-        return frame.copy()  # The renderer may reuse its buffer on the next tick.
-
-    def print_debug(self) -> None:
-        frame = self.get_rgb()
-        print(f"Camera prim: {self.prim_path} (runtime fallback created: {self.created_fallback})")
-        print(f"Wrist prim: {self.wrist_prim_path}")
-        print(f"Resolution: 640 x 480; sensor tick rate: {CAPTURE_HZ:g} Hz; fovy: {self.mount.fovy:g} degrees")
-        print(f"RGB frame shape: {None if frame is None else frame.shape}")
-
-    def close(self) -> None:
-        """Release RGB annotation/render resources; leave the camera prim reusable."""
-        if self._sensor is not None:
-            self._sensor.detach_annotators(["rgb"])
-            # 6.1 SensorRuntime.__del__ releases the render product/subscription.
-            self._sensor = None
-        self._authoring = None
-
-
-async def debug_current_stage(robot_prim_path: str | None = None, timeout: float = 30.0) -> None:
-    """Bounded GUI check; start Play if needed, then restore its previous state."""
-    import omni.kit.app
-    import omni.timeline
-
-    if timeout <= 0:
-        raise ValueError("timeout must be positive")
-    camera = RightHandCamera(robot_prim_path=robot_prim_path)
-    timeline = omni.timeline.get_timeline_interface()
-    was_playing = timeline.is_playing()
-    try:
-        timeline.play()
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            await omni.kit.app.get_app().next_update_async()
-            if camera.get_rgb() is not None:
-                camera.print_debug()
-                return
-        raise TimeoutError("No RGB frame: check Play, RTX renderer/GPU, and the render-product errors")
-    finally:
-        camera.close()
-        if not was_playing:
-            timeline.pause()
+    if stage is None:
+        raise RuntimeError("Open the imported robot stage before preparing the camera")
+    layer = stage.GetRootLayer()
+    if save and layer.anonymous:
+        raise ValueError("Save the stage to a USD file first, or pass save=False and then Save As")
+    if not layer.permissionToEdit or (save and not layer.permissionToSave):
+        raise ValueError("The root layer must be writable; save a writable scene USD first")
+    head = _find_head(stage, mount, robot_prim_path)
+    path = head.GetPath().AppendChild(CAMERA_NAME)
+    _check_camera_slot(stage, path)
+    meters_per_unit = UsdGeom.GetStageMetersPerUnit(stage)
+    if not math.isfinite(meters_per_unit) or meters_per_unit <= 0:
+        raise ValueError("Stage metersPerUnit must be positive and finite")
+    w, x, y, z = mount.quaternion
+    matrix = Gf.Matrix4d(1).SetRotate(Gf.Quatd(w, Gf.Vec3d(x, y, z)))
+    matrix.SetTranslateOnly(Gf.Vec3d(*(value / meters_per_unit for value in mount.position)))
+    with Usd.EditContext(stage, layer):
+        camera = UsdGeom.Camera.Define(stage, path)
+        xform = UsdGeom.Xformable(camera)
+        # One matrix op is reused on subsequent runs; no parent transforms change.
+        op = xform.MakeMatrixXform()
+        op.GetAttr().Clear()
+        op.Set(matrix)
+        xform.SetResetXformStack(False)
+        _configure_optics(camera, mount, meters_per_unit)
+    if not camera.GetPrim().IsA(UsdGeom.Camera) or xform.GetResetXformStack():
+        raise RuntimeError(f"Camera authoring failed at {path}")
+    if save and not layer.Save():
+        raise OSError(f"Could not save camera preparation to {layer.identifier}")
+    print(f"Camera Prim: {path}")
+    print(f"XML calibration: {xml_path}; vertical FOV: {mount.fovy:g} degrees")
+    width, height = RENDER_RESOLUTION
+    print(f"Render product: width={width}, height={height}; configure {TARGET_RATE_HZ:g} Hz scheduling separately")
+    print(f"Root layer: {layer.identifier} ({'saved' if save else 'save this layer before closing'})")
+    return str(path)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--stage", required=True, help="Existing USD scene imported from the camera XML")
-    parser.add_argument("--robot-prim-path", help="Restrict discovery when the stage contains several robots")
-    parser.add_argument("--headless", action="store_true")
-    parser.add_argument("--timeout", type=float, default=60.0, help="Maximum warm-up seconds")
+    parser.add_argument("--stage", required=True, help="Writable imported USD stage to prepare and save")
+    parser.add_argument("--xml", type=Path, default=DEFAULT_XML, help="Authoritative source MJCF calibration")
+    parser.add_argument("--robot-prim-path", help="Select one robot when several are present")
     args = parser.parse_args()
-    if args.timeout <= 0:
-        parser.error("--timeout must be positive")
+    from pxr import Usd
 
-    from isaacsim import SimulationApp
-
-    app = SimulationApp({"headless": args.headless})
-    camera = None
-    timeline = None
-    try:
-        import omni.timeline
-        import omni.usd
-
-        context = omni.usd.get_context()
-        if not context.open_stage(args.stage):
-            raise RuntimeError(f"Could not open USD stage: {args.stage}")
-        deadline = time.monotonic() + args.timeout
-        while context.get_stage_loading_status()[2] > 0:
-            if not app.is_running() or time.monotonic() >= deadline:
-                raise TimeoutError(f"Stage loading did not complete: {args.stage}")
-            app.update()
-        camera = RightHandCamera(robot_prim_path=args.robot_prim_path)
-        timeline = omni.timeline.get_timeline_interface()
-        timeline.play()
-        deadline = time.monotonic() + args.timeout
-        while app.is_running() and time.monotonic() < deadline:
-            app.update()
-            if camera.get_rgb() is not None:
-                camera.print_debug()
-                return
-        raise TimeoutError("No RGB frame: check RTX GPU support, Play, and renderer errors")
-    finally:
-        if camera is not None:
-            camera.close()
-        if timeline is not None:
-            timeline.stop()
-        app.close()
+    stage = Usd.Stage.Open(args.stage)
+    if stage is None:
+        raise RuntimeError(f"Could not open USD stage: {args.stage}")
+    prepare_right_hand_camera(stage, xml_path=args.xml, robot_prim_path=args.robot_prim_path)
 
 
 if __name__ == "__main__":

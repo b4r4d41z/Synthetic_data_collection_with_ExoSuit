@@ -1,0 +1,1052 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "MuJoCo USD Converter v0.5.0"
+    }
+    defaultPrim = "biped_s40_with_sharpa_wave_hands"
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "biped_s40_with_sharpa_wave_hands" (
+    prepend apiSchemas = ["IsaacRobotAPI"]
+)
+{
+    prepend rel isaac:physics:robotJoints = [
+        </biped_s40_with_sharpa_wave_hands/fix_base_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l1_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r1_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l1_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r1_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_1_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l2_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link/leg_l3_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link/leg_l4_link/leg_l4_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link/leg_l4_link/leg_l5_link/leg_l5_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link/leg_l4_link/leg_l5_link/leg_l6_link/leg_l6_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r2_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link/leg_r3_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link/leg_r4_link/leg_r4_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link/leg_r4_link/leg_r5_link/leg_r5_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link/leg_r4_link/leg_r5_link/leg_r6_link/leg_r6_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l2_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l3_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l4_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l5_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l6_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/PhysicsFixedJoint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/PhysicsFixedJoint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_CMC_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_CMC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_CMC_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_MCP_VL/left_thumb_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_MCP_VL/left_thumb_PP/left_thumb_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_MCP_VL/left_thumb_PP/left_thumb_DP/left_thumb_IP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_PP/left_index_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_PP/left_index_MP/left_index_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_PP/left_index_MP/left_index_DP/left_index_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_PP/left_middle_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_PP/left_middle_MP/left_middle_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_PP/left_middle_MP/left_middle_DP/left_middle_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_PP/left_ring_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_PP/left_ring_MP/left_ring_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_PP/left_ring_MP/left_ring_DP/left_ring_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_PP/left_pinky_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_PP/left_pinky_MP/left_pinky_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_PP/left_pinky_MP/left_pinky_DP/left_pinky_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r2_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r3_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r4_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r5_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r6_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_joint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/PhysicsFixedJoint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/PhysicsFixedJoint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/PhysicsFixedJoint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/PhysicsFixedJoint>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_CMC_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_CMC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_CMC_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_MCP_VL/right_thumb_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_MCP_VL/right_thumb_PP/right_thumb_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_MCP_VL/right_thumb_PP/right_thumb_DP/right_thumb_IP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_PP/right_index_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_PP/right_index_MP/right_index_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_PP/right_index_MP/right_index_DP/right_index_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_PP/right_middle_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_PP/right_middle_MP/right_middle_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_PP/right_middle_MP/right_middle_DP/right_middle_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_PP/right_ring_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_PP/right_ring_MP/right_ring_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_PP/right_ring_MP/right_ring_DP/right_ring_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_MCP_FE>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_PP/right_pinky_MCP_AA>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_PP/right_pinky_MP/right_pinky_PIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_PP/right_pinky_MP/right_pinky_DP/right_pinky_DIP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link/zhead_2_joint>,
+    ]
+    prepend rel isaac:physics:robotLinks = [
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link/leg_l4_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link/leg_l4_link/leg_l5_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_l1_link/leg_l2_link/leg_l3_link/leg_l4_link/leg_l5_link/leg_l6_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link/leg_r4_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link/leg_r4_link/leg_r5_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/leg_r1_link/leg_r2_link/leg_r3_link/leg_r4_link/leg_r5_link/leg_r6_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_MCP_VL/left_thumb_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_thumb_CMC_VL/left_thumb_MC/left_thumb_MCP_VL/left_thumb_PP/left_thumb_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_PP/left_index_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_index_MCP_VL/left_index_PP/left_index_MP/left_index_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_PP/left_middle_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_middle_MCP_VL/left_middle_PP/left_middle_MP/left_middle_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_PP/left_ring_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_ring_MCP_VL/left_ring_PP/left_ring_MP/left_ring_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_PP/left_pinky_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC/left_pinky_MC/left_pinky_MCP_VL/left_pinky_PP/left_pinky_MP/left_pinky_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_MCP_VL/right_thumb_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_thumb_CMC_VL/right_thumb_MC/right_thumb_MCP_VL/right_thumb_PP/right_thumb_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_PP/right_index_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_index_MCP_VL/right_index_PP/right_index_MP/right_index_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_PP/right_middle_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_middle_MCP_VL/right_middle_PP/right_middle_MP/right_middle_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_PP/right_ring_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_ring_MCP_VL/right_ring_PP/right_ring_MP/right_ring_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_PP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_PP/right_pinky_MP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC/right_pinky_MC/right_pinky_MCP_VL/right_pinky_PP/right_pinky_MP/right_pinky_DP>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link>,
+        </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link>,
+    ]
+    token isaac:robotType = "Humanoid"
+
+    over "Geometry"
+    {
+        over "base_link" (
+            prepend apiSchemas = ["IsaacLinkAPI"]
+        )
+        {
+            over "leg_l1_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "leg_l2_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "leg_l3_link" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "leg_l4_link" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "leg_l5_link" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "leg_l6_link" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "leg_l6_joint" (
+                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                    )
+                                    {
+                                    }
+                                }
+
+                                over "leg_l5_joint" (
+                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                )
+                                {
+                                }
+                            }
+
+                            over "leg_l4_joint" (
+                                prepend apiSchemas = ["IsaacJointAPI"]
+                            )
+                            {
+                            }
+                        }
+
+                        over "leg_l3_joint" (
+                            prepend apiSchemas = ["IsaacJointAPI"]
+                        )
+                        {
+                        }
+                    }
+
+                    over "leg_l2_joint" (
+                        prepend apiSchemas = ["IsaacJointAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "leg_l1_joint" (
+                    prepend apiSchemas = ["IsaacJointAPI"]
+                )
+                {
+                }
+            }
+
+            over "leg_r1_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "leg_r2_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "leg_r3_link" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "leg_r4_link" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "leg_r5_link" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "leg_r6_link" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "leg_r6_joint" (
+                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                    )
+                                    {
+                                    }
+                                }
+
+                                over "leg_r5_joint" (
+                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                )
+                                {
+                                }
+                            }
+
+                            over "leg_r4_joint" (
+                                prepend apiSchemas = ["IsaacJointAPI"]
+                            )
+                            {
+                            }
+                        }
+
+                        over "leg_r3_joint" (
+                            prepend apiSchemas = ["IsaacJointAPI"]
+                        )
+                        {
+                        }
+                    }
+
+                    over "leg_r2_joint" (
+                        prepend apiSchemas = ["IsaacJointAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "leg_r1_joint" (
+                    prepend apiSchemas = ["IsaacJointAPI"]
+                )
+                {
+                }
+            }
+
+            over "zarm_l1_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "zarm_l2_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "zarm_l3_link" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "zarm_l4_link" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "zarm_l5_link" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "zarm_l6_link" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "zarm_l7_link" (
+                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                    )
+                                    {
+                                        over "zarm_l7_end_effector" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "left_hand_C_MC" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                                over "left_thumb_CMC_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "left_thumb_MC" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "left_thumb_MCP_VL" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "left_thumb_PP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "left_thumb_DP" (
+                                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                                )
+                                                                {
+                                                                    over "left_thumb_IP" (
+                                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                                    )
+                                                                    {
+                                                                    }
+                                                                }
+
+                                                                over "left_thumb_MCP_AA" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_thumb_MCP_FE" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_thumb_CMC_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "left_thumb_CMC_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "left_index_MCP_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "left_index_PP" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "left_index_MP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "left_index_DP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "left_index_DIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_index_PIP" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_index_MCP_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "left_index_MCP_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "left_middle_MCP_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "left_middle_PP" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "left_middle_MP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "left_middle_DP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "left_middle_DIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_middle_PIP" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_middle_MCP_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "left_middle_MCP_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "left_ring_MCP_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "left_ring_PP" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "left_ring_MP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "left_ring_DP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "left_ring_DIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_ring_PIP" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_ring_MCP_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "left_ring_MCP_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "left_pinky_MC" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "left_pinky_MCP_VL" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "left_pinky_PP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "left_pinky_MP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "left_pinky_DP" (
+                                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                                )
+                                                                {
+                                                                    over "left_pinky_DIP" (
+                                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                                    )
+                                                                    {
+                                                                    }
+                                                                }
+
+                                                                over "left_pinky_PIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_pinky_MCP_AA" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_pinky_MCP_FE" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "left_pinky_CMC" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "PhysicsFixedJoint" (
+                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                )
+                                                {
+                                                }
+                                            }
+
+                                            over "PhysicsFixedJoint" (
+                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+
+                                        over "zarm_l7_joint" (
+                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                        )
+                                        {
+                                        }
+                                    }
+
+                                    over "zarm_l6_joint" (
+                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                    )
+                                    {
+                                    }
+                                }
+
+                                over "zarm_l5_joint" (
+                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                )
+                                {
+                                }
+                            }
+
+                            over "zarm_l4_joint" (
+                                prepend apiSchemas = ["IsaacJointAPI"]
+                            )
+                            {
+                            }
+                        }
+
+                        over "zarm_l3_joint" (
+                            prepend apiSchemas = ["IsaacJointAPI"]
+                        )
+                        {
+                        }
+                    }
+
+                    over "zarm_l2_joint" (
+                        prepend apiSchemas = ["IsaacJointAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "zarm_l1_joint" (
+                    prepend apiSchemas = ["IsaacJointAPI"]
+                )
+                {
+                }
+            }
+
+            over "zarm_r1_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "zarm_r2_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "zarm_r3_link" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "zarm_r4_link" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "zarm_r5_link" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "zarm_r6_link" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "zarm_r7_link" (
+                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                    )
+                                    {
+                                        over "right_hand_camera_mount" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "right_hand_camera_head" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                                over "PhysicsFixedJoint" (
+                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                )
+                                                {
+                                                }
+                                            }
+
+                                            over "PhysicsFixedJoint" (
+                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+
+                                        over "zarm_r7_end_effector" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "right_hand_C_MC" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                                over "right_thumb_CMC_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "right_thumb_MC" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "right_thumb_MCP_VL" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "right_thumb_PP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "right_thumb_DP" (
+                                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                                )
+                                                                {
+                                                                    over "right_thumb_IP" (
+                                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                                    )
+                                                                    {
+                                                                    }
+                                                                }
+
+                                                                over "right_thumb_MCP_AA" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_thumb_MCP_FE" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_thumb_CMC_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "right_thumb_CMC_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "right_index_MCP_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "right_index_PP" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "right_index_MP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "right_index_DP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "right_index_DIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_index_PIP" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_index_MCP_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "right_index_MCP_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "right_middle_MCP_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "right_middle_PP" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "right_middle_MP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "right_middle_DP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "right_middle_DIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_middle_PIP" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_middle_MCP_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "right_middle_MCP_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "right_ring_MCP_VL" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "right_ring_PP" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "right_ring_MP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "right_ring_DP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "right_ring_DIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_ring_PIP" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_ring_MCP_AA" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "right_ring_MCP_FE" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "right_pinky_MC" (
+                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                )
+                                                {
+                                                    over "right_pinky_MCP_VL" (
+                                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                                    )
+                                                    {
+                                                        over "right_pinky_PP" (
+                                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                                        )
+                                                        {
+                                                            over "right_pinky_MP" (
+                                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                                            )
+                                                            {
+                                                                over "right_pinky_DP" (
+                                                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                                                )
+                                                                {
+                                                                    over "right_pinky_DIP" (
+                                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                                    )
+                                                                    {
+                                                                    }
+                                                                }
+
+                                                                over "right_pinky_PIP" (
+                                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                                )
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_pinky_MCP_AA" (
+                                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                                            )
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_pinky_MCP_FE" (
+                                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                                        )
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "right_pinky_CMC" (
+                                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                                    )
+                                                    {
+                                                    }
+                                                }
+
+                                                over "PhysicsFixedJoint" (
+                                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                                )
+                                                {
+                                                }
+                                            }
+
+                                            over "PhysicsFixedJoint" (
+                                                prepend apiSchemas = ["IsaacJointAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+
+                                        over "zarm_r7_joint" (
+                                            prepend apiSchemas = ["IsaacJointAPI"]
+                                        )
+                                        {
+                                        }
+                                    }
+
+                                    over "zarm_r6_joint" (
+                                        prepend apiSchemas = ["IsaacJointAPI"]
+                                    )
+                                    {
+                                    }
+                                }
+
+                                over "zarm_r5_joint" (
+                                    prepend apiSchemas = ["IsaacJointAPI"]
+                                )
+                                {
+                                }
+                            }
+
+                            over "zarm_r4_joint" (
+                                prepend apiSchemas = ["IsaacJointAPI"]
+                            )
+                            {
+                            }
+                        }
+
+                        over "zarm_r3_joint" (
+                            prepend apiSchemas = ["IsaacJointAPI"]
+                        )
+                        {
+                        }
+                    }
+
+                    over "zarm_r2_joint" (
+                        prepend apiSchemas = ["IsaacJointAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "zarm_r1_joint" (
+                    prepend apiSchemas = ["IsaacJointAPI"]
+                )
+                {
+                }
+            }
+
+            over "zhead_1_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "zhead_2_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "zhead_2_joint" (
+                        prepend apiSchemas = ["IsaacJointAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "zhead_1_joint" (
+                    prepend apiSchemas = ["IsaacJointAPI"]
+                )
+                {
+                }
+            }
+        }
+    }
+
+    over "fix_base_joint" (
+        prepend apiSchemas = ["IsaacJointAPI"]
+    )
+    {
+    }
+}
+
