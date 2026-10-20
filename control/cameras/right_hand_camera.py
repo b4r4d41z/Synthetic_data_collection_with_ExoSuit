@@ -1,32 +1,39 @@
-r"""Prepare a persistent right-hand USD Camera once after MJCF import.
+r"""Prepare persistent hand/head USD Cameras once after MJCF import.
 
 Import s40_sharpa_two_cameras.xml, stop the timeline, and save the imported
 stage to a writable USD file. In Isaac Sim 6.1's Script Editor, with the
 repository root on sys.path, run::
 
-    from control.cameras.right_hand_camera import prepare_right_hand_camera
-    camera_path = prepare_right_hand_camera()  # edits and saves the root layer
+    from control.cameras.right_hand_camera import prepare_all_cameras
+    camera_paths = prepare_all_cameras()  # prints paths and saves the root layer
 
 For an unsaved stage, pass save=False and then use File > Save As. To select
 one robot in a multi-robot stage, pass robot_prim_path="/World/my_robot".
 Pass xml_path explicitly if the imported robot came from a different XML.
 
-The returned path ends in right_hand_camera_head/right_hand_camera. It is
-saved as a real UsdGeom.Camera and remains available after reopening USD;
-this preparation does not need to run on Play. It creates no render product,
-sensor runtime, ROS publisher, or Action Graph nodes.
+prepare_right_hand_camera() remains compatible with the working right-only
+workflow. prepare_left_hand_camera() and prepare_head_camera() prepare just
+one camera. prepare_all_cameras() returns a {camera_name: prim_path} dict.
+It preserves an existing persistent right camera, including manual USD
+calibration. The right-only function keeps its original XML-reapply behavior.
 
-Later, select this path in Isaac Create Render Product and set width=640,
-height=480. Configure rendering/sensor scheduling for 15 Hz separately:
-resolution and update rate are not UsdGeom.Camera properties. For example,
-render at 15 Hz, or at 60 Hz publish every fourth rendered frame using ROS2
-Camera Helper frameSkipCount=3. Frame skipping controls publication rate;
-it does not reduce the renderer's capture rate.
+All cameras inherit their XML parent frame and persist after reopening USD.
+Only camera opinions in the writable root layer are authored. No render
+products, runtime sensors, ROS publishers, rates, or Action Graph nodes are
+created. Render resolution is configured manually later; the existing 4:3
+aperture convention is retained for the hand cameras and the head preview.
+
+Head calibration is unavailable: its XML intentionally omits fovy and uses
+the MJCF default of 45 degrees, not a measured intrinsic. Set head_camera's
+fovy in the XML when calibrated. Its optical center is assumed to coincide
+with the existing mesh origin; mesh +X/+Z map to optical forward/up.
 
 The same preparation can run with Isaac Sim's python.sh without starting Kit::
 
     /path/to/isaac-sim/python.sh control/cameras/right_hand_camera.py \
-        --stage /absolute/path/to/imported_robot.usd
+        --stage /absolute/path/to/imported_robot.usd --camera all
+
+Without --camera, the CLI retains its original right-hand-only behavior.
 """
 
 from __future__ import annotations
@@ -42,7 +49,12 @@ CAMERA_NAME = "right_hand_camera"
 WRIST_NAME = "zarm_r7_link"
 HEAD_NAME = "right_hand_camera_head"
 RENDER_RESOLUTION = (640, 480)  # Render product (width, height); no product is created here.
-TARGET_RATE_HZ = 15.0  # Configure the later renderer/sensor or graph scheduling separately.
+MJCF_DEFAULT_FOVY = 45.0  # MJCF's built-in default, explicitly uncalibrated for the head.
+CAMERA_ATTACHMENTS = {
+    CAMERA_NAME: (WRIST_NAME, HEAD_NAME),
+    "left_hand_camera": ("zarm_l7_link", "left_hand_camera_head"),
+    "head_camera": ("zhead_2_link", "zhead_2_link"),
+}
 DEFAULT_XML = Path(__file__).resolve().parents[2] / "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml"
 
 
@@ -54,34 +66,39 @@ class CameraMount:
     fovy: float
 
 
-def read_camera_mount(xml_path: str | Path = DEFAULT_XML) -> CameraMount:
+def read_camera_mount(
+    xml_path: str | Path = DEFAULT_XML, *, camera_name: str = CAMERA_NAME,
+) -> CameraMount:
     """Read the nested camera's local calibration without changing the XML."""
+    if camera_name not in CAMERA_ATTACHMENTS:
+        raise ValueError(f"Unknown camera: {camera_name}")
+    anchor_name, parent_name = CAMERA_ATTACHMENTS[camera_name]
     root = ET.parse(xml_path).getroot()
-    cameras = root.findall(f".//camera[@name='{CAMERA_NAME}']")
+    cameras = root.findall(f".//camera[@name='{camera_name}']")
     if len(cameras) != 1:
-        raise ValueError(f"Expected exactly one {CAMERA_NAME} in {xml_path}")
+        raise ValueError(f"Expected exactly one {camera_name} in {xml_path}")
     camera = cameras[0]
     parents = {child: parent for parent in root.iter() for child in parent}
     parent = parents[camera]
-    if parent.tag != "body" or parent.get("name") != HEAD_NAME:
-        raise ValueError(f"{CAMERA_NAME} must be directly inside {HEAD_NAME}")
+    if parent.tag != "body" or parent.get("name") != parent_name:
+        raise ValueError(f"{camera_name} must be directly inside {parent_name}")
     chain = []
     while parent.tag == "body":
         chain.append(parent.attrib["name"])
-        if parent.get("name") == WRIST_NAME:
+        if parent.get("name") == anchor_name:
             break
         parent = parents[parent]
-    if chain[-1] != WRIST_NAME:
-        raise ValueError(f"{HEAD_NAME} must be a descendant of {WRIST_NAME}")
+    if chain[-1] != anchor_name:
+        raise ValueError(f"{parent_name} must be inside {anchor_name}")
     if any(key in camera.attrib for key in ("euler", "axisangle", "xyaxes", "zaxis")):
         raise ValueError("Camera calibration must use an explicit MJCF wxyz quat")
     if camera.get("mode", "fixed") != "fixed":
-        raise ValueError("The hand camera must use fixed mode to follow its parent")
+        raise ValueError("The camera must use fixed mode to follow its parent")
     mount = CameraMount(
         tuple(reversed(chain)),
         tuple(float(value) for value in camera.get("pos", "0 0 0").split()),
         tuple(float(value) for value in camera.attrib["quat"].split()),
-        float(camera.attrib["fovy"]),
+        float(camera.get("fovy", str(MJCF_DEFAULT_FOVY))),
     )
     if len(mount.position) != 3 or len(mount.quaternion) != 4:
         raise ValueError("Camera pos must have three components and quat must have four (wxyz)")
@@ -94,7 +111,7 @@ def read_camera_mount(xml_path: str | Path = DEFAULT_XML) -> CameraMount:
     return mount
 
 
-def _find_head(stage, mount: CameraMount, robot_prim_path: str | None):
+def _find_camera_parent(stage, mount: CameraMount, robot_prim_path: str | None):
     from pxr import Usd, UsdGeom
 
     root = stage.GetPrimAtPath(robot_prim_path) if robot_prim_path else stage.GetPseudoRoot()
@@ -118,7 +135,7 @@ def _find_head(stage, mount: CameraMount, robot_prim_path: str | None):
         )
     head = matches[0]
     if not UsdGeom.Xformable(head) or head.IsInstance() or head.IsInstanceProxy():
-        raise ValueError(f"Camera head must be an editable, non-instanced transform: {head.GetPath()}")
+        raise ValueError(f"Camera parent must be an editable, non-instanced transform: {head.GetPath()}")
     return head
 
 
@@ -165,11 +182,12 @@ def _configure_optics(camera, mount: CameraMount, meters_per_unit: float) -> Non
     camera.CreateFStopAttr().Set(0.0)
 
 
-def prepare_right_hand_camera(
-    stage=None, *, xml_path: str | Path = DEFAULT_XML,
+def _prepare_cameras(
+    camera_names: tuple[str, ...], stage=None, *, xml_path: str | Path = DEFAULT_XML,
     robot_prim_path: str | None = None, save: bool = True,
-) -> str:
-    """Author XML calibration in the root layer and return the Action Graph camera path.
+    preserve_existing: tuple[str, ...] = (),
+) -> dict[str, str]:
+    """Validate all requested cameras, author their XML calibration, and save once.
 
     Call once with playback stopped. save=True saves the root layer, including
     other pending root-layer edits. save=False permits an anonymous stage that
@@ -177,7 +195,7 @@ def prepare_right_hand_camera(
     """
     from pxr import Gf, Usd, UsdGeom
 
-    mount = read_camera_mount(xml_path)
+    mounts = {name: read_camera_mount(xml_path, camera_name=name) for name in camera_names}
     if stage is None:
         import omni.usd
 
@@ -189,34 +207,94 @@ def prepare_right_hand_camera(
         raise ValueError("Save the stage to a USD file first, or pass save=False and then Save As")
     if not layer.permissionToEdit or (save and not layer.permissionToSave):
         raise ValueError("The root layer must be writable; save a writable scene USD first")
-    head = _find_head(stage, mount, robot_prim_path)
-    path = head.GetPath().AppendChild(CAMERA_NAME)
-    _check_camera_slot(stage, path)
+    paths = {}
+    preserved = set()
+    for name, mount in mounts.items():
+        parent = _find_camera_parent(stage, mount, robot_prim_path)
+        path = parent.GetPath().AppendChild(name)
+        _check_camera_slot(stage, path)
+        paths[name] = path
+        prim = stage.GetPrimAtPath(path)
+        if name in preserve_existing and prim.IsValid() and prim.IsA(UsdGeom.Camera):
+            if UsdGeom.Xformable(prim).GetResetXformStack():
+                raise ValueError(f"Existing camera does not inherit its parent transform: {path}")
+            preserved.add(name)
     meters_per_unit = UsdGeom.GetStageMetersPerUnit(stage)
     if not math.isfinite(meters_per_unit) or meters_per_unit <= 0:
         raise ValueError("Stage metersPerUnit must be positive and finite")
-    w, x, y, z = mount.quaternion
-    matrix = Gf.Matrix4d(1).SetRotate(Gf.Quatd(w, Gf.Vec3d(x, y, z)))
-    matrix.SetTranslateOnly(Gf.Vec3d(*(value / meters_per_unit for value in mount.position)))
     with Usd.EditContext(stage, layer):
-        camera = UsdGeom.Camera.Define(stage, path)
-        xform = UsdGeom.Xformable(camera)
-        # One matrix op is reused on subsequent runs; no parent transforms change.
-        op = xform.MakeMatrixXform()
-        op.GetAttr().Clear()
-        op.Set(matrix)
-        xform.SetResetXformStack(False)
-        _configure_optics(camera, mount, meters_per_unit)
-    if not camera.GetPrim().IsA(UsdGeom.Camera) or xform.GetResetXformStack():
-        raise RuntimeError(f"Camera authoring failed at {path}")
+        for name, mount in mounts.items():
+            if name in preserved:
+                continue
+            path = paths[name]
+            w, x, y, z = mount.quaternion
+            matrix = Gf.Matrix4d(1).SetRotate(Gf.Quatd(w, Gf.Vec3d(x, y, z)))
+            matrix.SetTranslateOnly(Gf.Vec3d(*(value / meters_per_unit for value in mount.position)))
+            camera = UsdGeom.Camera.Define(stage, path)
+            xform = UsdGeom.Xformable(camera)
+            # One matrix op is reused on subsequent runs; no parent transforms change.
+            op = xform.MakeMatrixXform()
+            op.GetAttr().Clear()
+            op.Set(matrix)
+            xform.SetResetXformStack(False)
+            _configure_optics(camera, mount, meters_per_unit)
+            if not camera.GetPrim().IsA(UsdGeom.Camera) or xform.GetResetXformStack():
+                raise RuntimeError(f"Camera authoring failed at {path}")
     if save and not layer.Save():
         raise OSError(f"Could not save camera preparation to {layer.identifier}")
-    print(f"Camera Prim: {path}")
-    print(f"XML calibration: {xml_path}; vertical FOV: {mount.fovy:g} degrees")
-    width, height = RENDER_RESOLUTION
-    print(f"Render product: width={width}, height={height}; configure {TARGET_RATE_HZ:g} Hz scheduling separately")
+    for name, path in paths.items():
+        print(f"Camera Prim: {path}")
+        if name in preserved:
+            print("Existing persistent camera retained, including its USD calibration")
+        else:
+            print(f"XML calibration: {xml_path}; vertical FOV: {mounts[name].fovy:g} degrees")
+            if name == "head_camera":
+                print("Head fovy is an uncalibrated MJCF default when omitted from XML")
     print(f"Root layer: {layer.identifier} ({'saved' if save else 'save this layer before closing'})")
-    return str(path)
+    return {name: str(path) for name, path in paths.items()}
+
+
+def prepare_right_hand_camera(
+    stage=None, *, xml_path: str | Path = DEFAULT_XML,
+    robot_prim_path: str | None = None, save: bool = True,
+) -> str:
+    """Prepare and save the right camera; same signature, calibration and path as before."""
+    return _prepare_cameras((CAMERA_NAME,), stage, xml_path=xml_path,
+                            robot_prim_path=robot_prim_path, save=save)[CAMERA_NAME]
+
+
+def prepare_left_hand_camera(
+    stage=None, *, xml_path: str | Path = DEFAULT_XML,
+    robot_prim_path: str | None = None, save: bool = True,
+) -> str:
+    """Prepare and save the mirrored left camera using the XML calibration."""
+    return _prepare_cameras(("left_hand_camera",), stage, xml_path=xml_path,
+                            robot_prim_path=robot_prim_path, save=save)["left_hand_camera"]
+
+
+def prepare_head_camera(
+    stage=None, *, xml_path: str | Path = DEFAULT_XML,
+    robot_prim_path: str | None = None, save: bool = True,
+) -> str:
+    """Prepare the head camera; its omitted XML FOV is an uncalibrated MJCF default."""
+    return _prepare_cameras(("head_camera",), stage, xml_path=xml_path,
+                            robot_prim_path=robot_prim_path, save=save)["head_camera"]
+
+
+def prepare_all_cameras(
+    stage=None, *, xml_path: str | Path = DEFAULT_XML,
+    robot_prim_path: str | None = None, save: bool = True,
+) -> dict[str, str]:
+    """Prepare all three with playback stopped; save once and return/print their paths.
+
+    Keep an existing persistent right camera exactly as saved; create it from
+    XML only if missing. The individual right function retains XML reapplication.
+    save=True saves pending root-layer edits too. For an anonymous stage, pass
+    save=False and then Save As before closing. No referenced robot layers change.
+    """
+    return _prepare_cameras(tuple(CAMERA_ATTACHMENTS), stage, xml_path=xml_path,
+                            robot_prim_path=robot_prim_path, save=save,
+                            preserve_existing=(CAMERA_NAME,))
 
 
 def main() -> None:
@@ -224,13 +302,17 @@ def main() -> None:
     parser.add_argument("--stage", required=True, help="Writable imported USD stage to prepare and save")
     parser.add_argument("--xml", type=Path, default=DEFAULT_XML, help="Authoritative source MJCF calibration")
     parser.add_argument("--robot-prim-path", help="Select one robot when several are present")
+    parser.add_argument("--camera", choices=(*CAMERA_ATTACHMENTS, "all"), default=CAMERA_NAME,
+                        help="Camera to prepare; default preserves the right-only workflow")
     args = parser.parse_args()
     from pxr import Usd
 
     stage = Usd.Stage.Open(args.stage)
     if stage is None:
         raise RuntimeError(f"Could not open USD stage: {args.stage}")
-    prepare_right_hand_camera(stage, xml_path=args.xml, robot_prim_path=args.robot_prim_path)
+    names = tuple(CAMERA_ATTACHMENTS) if args.camera == "all" else (args.camera,)
+    _prepare_cameras(names, stage, xml_path=args.xml, robot_prim_path=args.robot_prim_path,
+                     preserve_existing=(CAMERA_NAME,) if args.camera == "all" else ())
 
 
 if __name__ == "__main__":

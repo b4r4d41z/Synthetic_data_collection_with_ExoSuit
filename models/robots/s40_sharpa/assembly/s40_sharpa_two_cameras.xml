@@ -308,6 +308,65 @@
                     <joint name="zarm_l7_joint" pos="0 0 0" axis="1 0 0" range="-1.5708 1.5708" actuatorfrcrange="-6 6" damping="0.2" />
                     <!-- Replacement wrist-roll visual kept from the no-gripper S40 model so the link between zarm_l7_joint and the Sharpa hand remains visible. -->
                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="l_hand_roll_no_gripper" />
+                    <!-- Mirror of the right-hand assembly in the wrist reference frames.
+                         Reflect Y positions and conjugate rotations by diag(1,-1,1).
+                         The optical frame has a local Z half-turn so both viewing
+                         direction and image-up are mirrored without an upside-down image. -->
+                    <body name="left_hand_camera_mount"
+                          pos="0.03088 0 -0.0672">
+
+                      <!-- First 40 mm rectangular bracket section -->
+                      <geom name="left_hand_camera_bracket_1"
+                            type="box"
+                            pos="0.02 0 0"
+                            size="0.02 0.003 0.003"
+                            contype="0"
+                            conaffinity="0"
+                            mass="0"
+                            density="0"
+                            group="1"
+                            rgba="0.45 0.45 0.45 1" />
+
+                      <!-- Second rectangular bracket section.
+                           Starts at the end of bracket_1 and reaches the current camera-holder position. -->
+                      <geom name="left_hand_camera_bracket_2"
+                            type="box"
+                            pos="0.059055 -0.006365 -0.017305"
+                            quat="0.92699448 0 0.35201843 -0.12947687"
+                            size="0.02651545 0.003 0.003"
+                            contype="0"
+                            conaffinity="0"
+                            mass="0"
+                            density="0"
+                            group="1"
+                            rgba="0.45 0.45 0.45 1" />
+
+                      <!-- Camera holder.
+                           Housing and optical sensor are children of the same body. -->
+                      <body name="left_hand_camera_head"
+                            pos="0.07811 -0.01273 -0.03461"
+                            euler="0 0.7853981634 1.5707963268">
+
+                        <geom name="left_hand_camera_housing"
+                              type="box"
+                              pos="0 0 0"
+                              size="0.005 0.005 0.005"
+                              contype="0"
+                              conaffinity="0"
+                              mass="0"
+                              density="0"
+                              group="1"
+                              rgba="0.08 0.08 0.08 1" />
+
+                        <camera name="left_hand_camera"
+                                pos="0 0 -0.005"
+                                quat="0 0 0 1"
+                                fovy="60" />
+
+                      </body>
+
+                    </body>
+
                     <body name="zarm_l7_end_effector" pos="0 0 -0.085" euler="-3.14159 0 1.5708">
                       <!-- Tune this fixed mount frame in Isaac Sim by editing pos and euler. pos translates from zarm_l7_link; euler rotates the Sharpa hand about this attachment point (radian XYZ order). -->
                       <body name="left_hand_C_MC" childclass="sharpa" pos="0 0 0" quat="1 0 0 0">
@@ -789,6 +848,13 @@
           <joint name="zhead_2_joint" pos="0 0 0" axis="0 1 0" range="-0.523599 0.523599" actuatorfrcrange="-6 6" damping="0.2" />
           <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="head_pitch" />
           <geom pos="0.0919101 0.0175 0.0617839" quat="0.953717 0 0.300706 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="camera" />
+          <!-- Optical center assumed at the existing camera mesh origin; no offset is calibrated.
+               Mesh +X is the lens-facing axis, +Z is up: map optical -Z/+Y to those axes.
+               Head intrinsics are unavailable. Leave fovy unset (MJCF default 45 degrees,
+               uncalibrated); set fovy here when measured. The housing mesh is unchanged. -->
+          <camera name="head_camera"
+                  pos="0.0919101 0.0175 0.0617839"
+                  quat="0.6272114327 0.3265054650 -0.3265054650 -0.6272114327" />
         </body>
       </body>
     </body>

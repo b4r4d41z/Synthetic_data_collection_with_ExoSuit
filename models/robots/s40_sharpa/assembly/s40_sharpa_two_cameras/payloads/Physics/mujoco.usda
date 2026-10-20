@@ -368,6 +368,33 @@ over "biped_s40_with_sharpa_wave_hands"
                                 {
                                     over "zarm_l7_link"
                                     {
+                                        over "left_hand_camera_mount"
+                                        {
+                                            over "left_hand_camera_bracket_1" (
+                                                prepend apiSchemas = ["MjcImageableAPI"]
+                                            )
+                                            {
+                                                uniform int mjc:group = 1
+                                            }
+
+                                            over "left_hand_camera_bracket_2" (
+                                                prepend apiSchemas = ["MjcImageableAPI"]
+                                            )
+                                            {
+                                                uniform int mjc:group = 1
+                                            }
+
+                                            over "left_hand_camera_head"
+                                            {
+                                                over "left_hand_camera_housing" (
+                                                    prepend apiSchemas = ["MjcImageableAPI"]
+                                                )
+                                                {
+                                                    uniform int mjc:group = 1
+                                                }
+                                            }
+                                        }
+
                                         over "zarm_l7_end_effector"
                                         {
                                             over "left_hand_C_MC"

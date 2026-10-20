@@ -855,6 +855,76 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                                         }
 
+                                        def Xform "left_hand_camera_mount"
+                                        {
+                                            quatf xformOp:orient = (1, 0, 0, 0)
+                                            float3 xformOp:scale = (1, 1, 1)
+                                            double3 xformOp:translate = (0.03088, 0, -0.0672)
+                                            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+                                            def Cube "left_hand_camera_bracket_1"
+                                            {
+                                                float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+                                                color3f[] primvars:displayColor = [(0.45, 0.45, 0.45)] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayColor:indices = None
+                                                float[] primvars:displayOpacity = [1] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayOpacity:indices = None
+                                                double size = 2
+                                                quatf xformOp:orient = (1, 0, 0, 0)
+                                                float3 xformOp:scale = (0.02, 0.003, 0.003)
+                                                double3 xformOp:translate = (0.02, 0, 0)
+                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                            }
+
+                                            def Cube "left_hand_camera_bracket_2"
+                                            {
+                                                float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+                                                color3f[] primvars:displayColor = [(0.45, 0.45, 0.45)] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayColor:indices = None
+                                                float[] primvars:displayOpacity = [1] (
+                                                    interpolation = "constant"
+                                                )
+                                                int[] primvars:displayOpacity:indices = None
+                                                double size = 2
+                                                quatf xformOp:orient = (0.9269945, 1.122805e-17, 0.3520184, -0.12947686)
+                                                float3 xformOp:scale = (0.02651545, 0.003, 0.003)
+                                                double3 xformOp:translate = (0.059055, -0.006365, -0.017305)
+                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                            }
+
+                                            def Xform "left_hand_camera_head"
+                                            {
+                                                quatf xformOp:orient = (0.6532815, 0.27059802, 0.27059802, 0.65328145)
+                                                float3 xformOp:scale = (1, 1, 1)
+                                                double3 xformOp:translate = (0.07811, -0.01273, -0.03461)
+                                                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+                                                def Cube "left_hand_camera_housing"
+                                                {
+                                                    float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+                                                    color3f[] primvars:displayColor = [(0.08, 0.08, 0.08)] (
+                                                        interpolation = "constant"
+                                                    )
+                                                    int[] primvars:displayColor:indices = None
+                                                    float[] primvars:displayOpacity = [1] (
+                                                        interpolation = "constant"
+                                                    )
+                                                    int[] primvars:displayOpacity:indices = None
+                                                    double size = 2
+                                                    quatf xformOp:orient = (1, 0, 0, 0)
+                                                    float3 xformOp:scale = (0.005, 0.005, 0.005)
+                                                    double3 xformOp:translate = (0, 0, 0)
+                                                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                                                }
+                                            }
+                                        }
+
                                         def Xform "zarm_l7_end_effector"
                                         {
                                             quatf xformOp:orient = (9.38184e-7, -0.70710546, 0.7071081, 9.381874e-7)

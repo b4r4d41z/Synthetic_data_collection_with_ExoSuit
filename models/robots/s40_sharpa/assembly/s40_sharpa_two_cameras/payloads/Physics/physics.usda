@@ -582,6 +582,40 @@ over "biped_s40_with_sharpa_wave_hands"
                                         float physics:mass = 0.810524
                                         quatf physics:principalAxes = (0.7658993, -0.009214664, 0.007465603, 0.64285123)
 
+                                        over "left_hand_camera_mount" (
+                                            prepend apiSchemas = ["PhysicsRigidBodyAPI"]
+                                        )
+                                        {
+                                            over "left_hand_camera_head" (
+                                                prepend apiSchemas = ["PhysicsRigidBodyAPI"]
+                                            )
+                                            {
+                                                def PhysicsFixedJoint "PhysicsFixedJoint"
+                                                {
+                                                    custom rel physics:body0
+                                                    append rel physics:body0 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount>
+                                                    custom rel physics:body1
+                                                    append rel physics:body1 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount/left_hand_camera_head>
+                                                    point3f physics:localPos0 = (0.07811, -0.01273, -0.03461)
+                                                    point3f physics:localPos1 = (0, 0, 0)
+                                                    quatf physics:localRot0 = (0.6532815, 0.27059802, 0.27059802, 0.65328145)
+                                                    quatf physics:localRot1 = (1, 0, 0, 0)
+                                                }
+                                            }
+
+                                            def PhysicsFixedJoint "PhysicsFixedJoint"
+                                            {
+                                                custom rel physics:body0
+                                                append rel physics:body0 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link>
+                                                custom rel physics:body1
+                                                append rel physics:body1 = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount>
+                                                point3f physics:localPos0 = (0.03088, 0, -0.0672)
+                                                point3f physics:localPos1 = (0, 0, 0)
+                                                quatf physics:localRot0 = (1, 0, 0, 0)
+                                                quatf physics:localRot1 = (1, 0, 0, 0)
+                                            }
+                                        }
+
                                         over "zarm_l7_end_effector" (
                                             prepend apiSchemas = ["PhysicsRigidBodyAPI"]
                                         )

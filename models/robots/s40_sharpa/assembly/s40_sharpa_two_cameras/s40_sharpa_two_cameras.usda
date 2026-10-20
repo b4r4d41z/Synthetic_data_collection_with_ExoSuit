@@ -7,8 +7,8 @@
                 double radius = 5
             }
             dictionary Perspective = {
-                double3 position = (2.6515055244093575, -1.6015277847917746, 1.624929360268864)
-                double3 target = (-4.220931351915851, 1.5320922169413178, 0.13344624462481813)
+                double3 position = (1.3370896163359731, 1.1196340472467918, 2.089441649408593)
+                double3 target = (-4.244509923490251, -3.729245596356071, -3.118221688650427)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -18,7 +18,7 @@
                 double3 position = (0, 0, 5)
                 double radius = 5
             }
-            string boundCamera = "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera"
+            string boundCamera = "/OmniverseKit_Persp"
         }
         string creator = "MuJoCo USD Converter v0.5.0"
         dictionary omni_layer = {
@@ -38,341 +38,6 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
     append variantSets = "Physics"
 )
 {
-    def OmniGraph "ActionGraph"
-    {
-        token evaluationMode = "Automatic"
-        token evaluator:type = "execution"
-        token fabricCacheBacking = "Shared"
-        int2 fileFormatVersion = (1, 9)
-        token pipelineStage = "pipelineStageSimulation"
-
-        def OmniGraphNode "on_playback_tick" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            token node:type = "omni.graph.action.OnPlaybackTick"
-            int node:typeVersion = 2
-            custom double outputs:deltaSeconds
-            custom double outputs:frame
-            custom uint outputs:tick (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom double outputs:time
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (128, 108)
-        }
-
-        def OmniGraphNode "ros2_context" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uchar inputs:domain_id
-            custom bool inputs:useDomainIDEnvVar
-            token node:type = "isaacsim.ros2.bridge.ROS2Context"
-            int node:typeVersion = 2
-            custom uint64 outputs:context
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (131.78677, 264.64462)
-        }
-
-        def OmniGraphNode "ros2_subscribe_joint_state" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint64 inputs:context
-            prepend uint64 inputs:context.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_context.outputs:context>
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/on_playback_tick.outputs:tick>
-            custom string inputs:nodeNamespace
-            custom string inputs:qosProfile
-            custom uint64 inputs:queueSize
-            custom string inputs:topicName = "right_hand_joint_command"
-            token node:type = "isaacsim.ros2.bridge.ROS2SubscribeJointState"
-            int node:typeVersion = 2
-            custom double[] outputs:effortCommand
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom token[] outputs:jointNames
-            custom double[] outputs:positionCommand
-            custom double outputs:timeStamp
-            custom double[] outputs:velocityCommand
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (472.384, 791.4231)
-        }
-
-        def OmniGraphNode "ros2_subscribe_joint_state_01" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint64 inputs:context
-            prepend uint64 inputs:context.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_context.outputs:context>
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/on_playback_tick.outputs:tick>
-            custom string inputs:nodeNamespace
-            custom string inputs:qosProfile
-            custom uint64 inputs:queueSize
-            custom string inputs:topicName = "left_hand_joint_command"
-            token node:type = "isaacsim.ros2.bridge.ROS2SubscribeJointState"
-            int node:typeVersion = 2
-            custom double[] outputs:effortCommand
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom token[] outputs:jointNames
-            custom double[] outputs:positionCommand
-            custom double outputs:timeStamp
-            custom double[] outputs:velocityCommand
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (711.7858, 449.2464)
-        }
-
-        def OmniGraphNode "ros2_subscribe_joint_state_02" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint64 inputs:context
-            prepend uint64 inputs:context.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_context.outputs:context>
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/on_playback_tick.outputs:tick>
-            custom string inputs:nodeNamespace
-            custom string inputs:qosProfile
-            custom uint64 inputs:queueSize
-            custom string inputs:topicName = "robot_arm_joint_command"
-            token node:type = "isaacsim.ros2.bridge.ROS2SubscribeJointState"
-            int node:typeVersion = 2
-            custom double[] outputs:effortCommand
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom token[] outputs:jointNames
-            custom double[] outputs:positionCommand
-            custom double outputs:timeStamp
-            custom double[] outputs:velocityCommand
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (959.7858, 123.24641)
-        }
-
-        def OmniGraphNode "articulation_controller" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom double[] inputs:effortCommand
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state_02.outputs:execOut>
-            custom int[] inputs:jointIndices
-            custom token[] inputs:jointNames
-            prepend token[] inputs:jointNames.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state_02.outputs:jointNames>
-            custom double[] inputs:positionCommand
-            prepend double[] inputs:positionCommand.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state_02.outputs:positionCommand>
-            custom string inputs:robotPath
-            custom rel inputs:targetPrim = </biped_s40_with_sharpa_wave_hands/fix_base_joint> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom double[] inputs:velocityCommand
-            token node:type = "isaacsim.core.nodes.IsaacArticulationController"
-            int node:typeVersion = 1
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (1255.1919, 179.01099)
-        }
-
-        def OmniGraphNode "articulation_controller_01" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom double[] inputs:effortCommand
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state_01.outputs:execOut>
-            custom int[] inputs:jointIndices
-            custom token[] inputs:jointNames
-            prepend token[] inputs:jointNames.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state_01.outputs:jointNames>
-            custom double[] inputs:positionCommand
-            prepend double[] inputs:positionCommand.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state_01.outputs:positionCommand>
-            custom string inputs:robotPath
-            custom rel inputs:targetPrim = </biped_s40_with_sharpa_wave_hands/fix_base_joint> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom double[] inputs:velocityCommand
-            token node:type = "isaacsim.core.nodes.IsaacArticulationController"
-            int node:typeVersion = 1
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (1019.87714, 527.6596)
-        }
-
-        def OmniGraphNode "articulation_controller_02" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom double[] inputs:effortCommand
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state.outputs:execOut>
-            custom int[] inputs:jointIndices
-            custom token[] inputs:jointNames
-            prepend token[] inputs:jointNames.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state.outputs:jointNames>
-            custom double[] inputs:positionCommand
-            prepend double[] inputs:positionCommand.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_subscribe_joint_state.outputs:positionCommand>
-            custom string inputs:robotPath
-            custom rel inputs:targetPrim = </biped_s40_with_sharpa_wave_hands/fix_base_joint> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom double[] inputs:velocityCommand
-            token node:type = "isaacsim.core.nodes.IsaacArticulationController"
-            int node:typeVersion = 1
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (831.8588, 832.3443)
-        }
-
-        def OmniGraphNode "isaac_run_one_simulation_frame" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/on_playback_tick.outputs:tick>
-            token node:type = "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame"
-            int node:typeVersion = 1
-            custom uint outputs:step (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (499.81378, -144.53708)
-        }
-
-        def OmniGraphNode "isaac_create_render_product" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom rel inputs:cameraPrim = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom bool inputs:enabled
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/isaac_run_one_simulation_frame.outputs:step>
-            custom uint inputs:height = 640
-            custom rel inputs:renderProductPrim (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom uint inputs:width = 480
-            token node:type = "isaacsim.core.nodes.IsaacCreateRenderProduct"
-            int node:typeVersion = 3
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom token outputs:renderProductPath
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (912.18646, -342.42172)
-        }
-
-        def OmniGraphNode "ros2_camera_helper" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint64 inputs:context
-            prepend uint64 inputs:context.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/ros2_context.outputs:context>
-            custom bool inputs:enabled
-            custom bool inputs:enableSemanticLabels
-            custom uint inputs:execIn (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            prepend uint inputs:execIn.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/isaac_create_render_product.outputs:execOut>
-            custom string inputs:frameId
-            custom uint inputs:frameSkipCount
-            custom string inputs:nodeNamespace
-            custom string inputs:qosProfile
-            custom uint64 inputs:queueSize
-            custom token inputs:renderProductPath
-            prepend token inputs:renderProductPath.connect = </biped_s40_with_sharpa_wave_hands/ActionGraph/isaac_create_render_product.outputs:renderProductPath>
-            custom bool inputs:resetSimulationTimeOnStop
-            custom string inputs:semanticLabelsTopicName
-            custom string inputs:srtxCompressionType
-            custom float2 inputs:stereoOffset
-            custom string inputs:topicName = "/right_hand_camera/image_raw"
-            custom token inputs:type (
-                allowedTokens = ["rgb", "rgb_h264", "rgb_hevc", "depth", "depth_pcl", "instance_segmentation", "semantic_segmentation", "bbox_2d_tight", "bbox_2d_loose", "bbox_3d"]
-            )
-            custom bool inputs:useSystemTime
-            token node:type = "isaacsim.ros2.bridge.ROS2CameraHelper"
-            int node:typeVersion = 4
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (1366.5304, -317.73636)
-        }
-    }
-
     over "Geometry"
     {
         over "base_link"
@@ -385,16 +50,8 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                     {
                         over "zarm_r4_link"
                         {
-                            string isaac:nameOverride (
-                                displayName = "Name Override"
-                            )
-
                             over "zarm_r5_link"
                             {
-                                string isaac:nameOverride (
-                                    displayName = "Name Override"
-                                )
-
                                 over "zarm_r6_link"
                                 {
                                     over "zarm_r7_link"
@@ -403,387 +60,27 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                         {
                                             over "right_hand_camera_head"
                                             {
-                                                def Camera "right_hand_camera" (
-                                                    prepend apiSchemas = ["OmniRtxCameraAutoExposureAPI_1", "OmniRtxCameraExposureAPI_1"]
-                                                )
+                                                def Camera "right_hand_camera"
                                                 {
                                                     float2 clippingRange = (0.005, 100)
-                                                    float exposure:fStop = 5
-                                                    float exposure:responsivity = 1.1026709
-                                                    float exposure:time = 0.02
                                                     float focalLength = 0.24
                                                     float fStop = 0
                                                     float horizontalAperture = 0.36950418
                                                     float horizontalApertureOffset = 0
-                                                    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -0.0050000000000000044)
                                                     token projection = "perspective"
                                                     float verticalAperture = 0.27712813
                                                     float verticalApertureOffset = 0
                                                     token visibility = "invisible"
-                                                    matrix4d xformOp:transform = ( (0.9998814046013136, -0.01090426840266767, -0.010875369562541674, 0), (0.01018781988149665, 0.9979050301681627, -0.06388864602682127, 0), (0.011549244935559476, 0.06377027282112926, 0.9978977739456772, 0), (-2.7755575615628914e-17, -5.551115123125783e-17, -0.004999999999999893, 1) )
+                                                    matrix4d xformOp:transform = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, -0.005, 1) )
                                                     uniform token[] xformOpOrder = ["xformOp:transform"]
                                                 }
                                             }
                                         }
-
-                                        over "zarm_r7_end_effector"
-                                        {
-                                            over "right_hand_C_MC"
-                                            {
-                                                over "right_thumb_CMC_VL"
-                                                {
-                                                    over "right_thumb_MC"
-                                                    {
-                                                        over "right_thumb_MCP_VL"
-                                                        {
-                                                            over "right_thumb_PP"
-                                                            {
-                                                                over "right_thumb_DP"
-                                                                {
-                                                                    over "right_thumb_IP"
-                                                                    {
-                                                                        float state:angular:physics:position = 0
-                                                                        float state:angular:physics:velocity = 0
-                                                                    }
-                                                                }
-
-                                                                over "right_thumb_MCP_AA"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "right_thumb_MCP_FE"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "right_thumb_CMC_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "right_thumb_CMC_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "right_index_MCP_VL"
-                                                {
-                                                    over "right_index_PP"
-                                                    {
-                                                        over "right_index_MP"
-                                                        {
-                                                            over "right_index_DP"
-                                                            {
-                                                                over "right_index_DIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "right_index_PIP"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "right_index_MCP_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "right_index_MCP_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "right_middle_MCP_VL"
-                                                {
-                                                    over "right_middle_PP"
-                                                    {
-                                                        over "right_middle_MP"
-                                                        {
-                                                            over "right_middle_DP"
-                                                            {
-                                                                over "right_middle_DIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "right_middle_PIP"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "right_middle_MCP_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "right_middle_MCP_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "right_ring_MCP_VL"
-                                                {
-                                                    over "right_ring_PP"
-                                                    {
-                                                        over "right_ring_MP"
-                                                        {
-                                                            over "right_ring_DP"
-                                                            {
-                                                                over "right_ring_DIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "right_ring_PIP"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "right_ring_MCP_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "right_ring_MCP_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "right_pinky_MC"
-                                                {
-                                                    over "right_pinky_MCP_VL"
-                                                    {
-                                                        over "right_pinky_PP"
-                                                        {
-                                                            over "right_pinky_MP"
-                                                            {
-                                                                over "right_pinky_DP"
-                                                                {
-                                                                    over "right_pinky_DIP"
-                                                                    {
-                                                                        float state:angular:physics:position = 0
-                                                                        float state:angular:physics:velocity = 0
-                                                                    }
-                                                                }
-
-                                                                over "right_pinky_PIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "right_pinky_MCP_AA"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "right_pinky_MCP_FE"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "right_pinky_CMC"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        over "zarm_r7_joint"
-                                        {
-                                            float state:angular:physics:position = 0
-                                            float state:angular:physics:velocity = 0
-                                        }
-                                    }
-
-                                    over "zarm_r6_joint"
-                                    {
-                                        float state:angular:physics:position = 0
-                                        float state:angular:physics:velocity = 0
                                     }
                                 }
-
-                                over "zarm_r5_joint"
-                                {
-                                    float state:angular:physics:position = 0
-                                    float state:angular:physics:velocity = 0
-                                }
-                            }
-
-                            over "zarm_r4_joint"
-                            {
-                                float state:angular:physics:position = 0
-                                float state:angular:physics:velocity = 0
                             }
                         }
-
-                        over "zarm_r3_joint"
-                        {
-                            float state:angular:physics:position = 0
-                            float state:angular:physics:velocity = 0
-                        }
                     }
-
-                    over "zarm_r2_joint"
-                    {
-                        float state:angular:physics:position = 0
-                        float state:angular:physics:velocity = 0
-                    }
-                }
-
-                over "zarm_r1_joint"
-                {
-                    float state:angular:physics:position = 0
-                    float state:angular:physics:velocity = 0
-                }
-            }
-
-            over "leg_l1_link"
-            {
-                over "leg_l2_link"
-                {
-                    over "leg_l3_link"
-                    {
-                        over "leg_l4_link"
-                        {
-                            over "leg_l5_link"
-                            {
-                                over "leg_l6_link"
-                                {
-                                    over "leg_l6_joint"
-                                    {
-                                        float state:angular:physics:position = 0
-                                        float state:angular:physics:velocity = 0
-                                    }
-                                }
-
-                                over "leg_l5_joint"
-                                {
-                                    float state:angular:physics:position = 0
-                                    float state:angular:physics:velocity = 0
-                                }
-                            }
-
-                            over "leg_l4_joint"
-                            {
-                                float state:angular:physics:position = 0
-                                float state:angular:physics:velocity = 0
-                            }
-                        }
-
-                        over "leg_l3_joint"
-                        {
-                            float state:angular:physics:position = 0
-                            float state:angular:physics:velocity = 0
-                        }
-                    }
-
-                    over "leg_l2_joint"
-                    {
-                        float state:angular:physics:position = 0
-                        float state:angular:physics:velocity = 0
-                    }
-                }
-
-                over "leg_l1_joint"
-                {
-                    float state:angular:physics:position = 0
-                    float state:angular:physics:velocity = 0
-                }
-            }
-
-            over "leg_r1_link"
-            {
-                over "leg_r2_link"
-                {
-                    over "leg_r3_link"
-                    {
-                        over "leg_r4_link"
-                        {
-                            over "leg_r5_link"
-                            {
-                                over "leg_r6_link"
-                                {
-                                    over "leg_r6_joint"
-                                    {
-                                        float state:angular:physics:position = 0
-                                        float state:angular:physics:velocity = 0
-                                    }
-                                }
-
-                                over "leg_r5_joint"
-                                {
-                                    float state:angular:physics:position = 0
-                                    float state:angular:physics:velocity = 0
-                                }
-                            }
-
-                            over "leg_r4_joint"
-                            {
-                                float state:angular:physics:position = 0
-                                float state:angular:physics:velocity = 0
-                            }
-                        }
-
-                        over "leg_r3_joint"
-                        {
-                            float state:angular:physics:position = 0
-                            float state:angular:physics:velocity = 0
-                        }
-                    }
-
-                    over "leg_r2_joint"
-                    {
-                        float state:angular:physics:position = 0
-                        float state:angular:physics:velocity = 0
-                    }
-                }
-
-                over "leg_r1_joint"
-                {
-                    float state:angular:physics:position = 0
-                    float state:angular:physics:velocity = 0
                 }
             }
 
@@ -801,256 +98,31 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
                                 {
                                     over "zarm_l7_link"
                                     {
-                                        over "zarm_l7_end_effector"
+                                        over "left_hand_camera_mount"
                                         {
-                                            over "left_hand_C_MC"
+                                            over "left_hand_camera_head"
                                             {
-                                                over "left_thumb_CMC_VL"
+                                                def Camera "left_hand_camera"
                                                 {
-                                                    over "left_thumb_MC"
-                                                    {
-                                                        over "left_thumb_MCP_VL"
-                                                        {
-                                                            over "left_thumb_PP"
-                                                            {
-                                                                over "left_thumb_DP"
-                                                                {
-                                                                    over "left_thumb_IP"
-                                                                    {
-                                                                        float state:angular:physics:position = 0
-                                                                        float state:angular:physics:velocity = 0
-                                                                    }
-                                                                }
-
-                                                                over "left_thumb_MCP_AA"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "left_thumb_MCP_FE"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "left_thumb_CMC_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "left_thumb_CMC_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "left_index_MCP_VL"
-                                                {
-                                                    over "left_index_PP"
-                                                    {
-                                                        over "left_index_MP"
-                                                        {
-                                                            over "left_index_DP"
-                                                            {
-                                                                over "left_index_DIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "left_index_PIP"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "left_index_MCP_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "left_index_MCP_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "left_middle_MCP_VL"
-                                                {
-                                                    over "left_middle_PP"
-                                                    {
-                                                        over "left_middle_MP"
-                                                        {
-                                                            over "left_middle_DP"
-                                                            {
-                                                                over "left_middle_DIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "left_middle_PIP"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "left_middle_MCP_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "left_middle_MCP_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "left_ring_MCP_VL"
-                                                {
-                                                    over "left_ring_PP"
-                                                    {
-                                                        over "left_ring_MP"
-                                                        {
-                                                            over "left_ring_DP"
-                                                            {
-                                                                over "left_ring_DIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "left_ring_PIP"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "left_ring_MCP_AA"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "left_ring_MCP_FE"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
-                                                }
-
-                                                over "left_pinky_MC"
-                                                {
-                                                    over "left_pinky_MCP_VL"
-                                                    {
-                                                        over "left_pinky_PP"
-                                                        {
-                                                            over "left_pinky_MP"
-                                                            {
-                                                                over "left_pinky_DP"
-                                                                {
-                                                                    over "left_pinky_DIP"
-                                                                    {
-                                                                        float state:angular:physics:position = 0
-                                                                        float state:angular:physics:velocity = 0
-                                                                    }
-                                                                }
-
-                                                                over "left_pinky_PIP"
-                                                                {
-                                                                    float state:angular:physics:position = 0
-                                                                    float state:angular:physics:velocity = 0
-                                                                }
-                                                            }
-
-                                                            over "left_pinky_MCP_AA"
-                                                            {
-                                                                float state:angular:physics:position = 0
-                                                                float state:angular:physics:velocity = 0
-                                                            }
-                                                        }
-
-                                                        over "left_pinky_MCP_FE"
-                                                        {
-                                                            float state:angular:physics:position = 0
-                                                            float state:angular:physics:velocity = 0
-                                                        }
-                                                    }
-
-                                                    over "left_pinky_CMC"
-                                                    {
-                                                        float state:angular:physics:position = 0
-                                                        float state:angular:physics:velocity = 0
-                                                    }
+                                                    float2 clippingRange = (0.005, 100)
+                                                    float focalLength = 0.24
+                                                    float fStop = 0
+                                                    float horizontalAperture = 0.36950418
+                                                    float horizontalApertureOffset = 0
+                                                    token projection = "perspective"
+                                                    float verticalAperture = 0.27712813
+                                                    float verticalApertureOffset = 0
+                                                    token visibility = "invisible"
+                                                    matrix4d xformOp:transform = ( (-1, 0, 0, 0), (0, -1, 0, 0), (0, 0, 1, 0), (0, 0, -0.005, 1) )
+                                                    uniform token[] xformOpOrder = ["xformOp:transform"]
                                                 }
                                             }
                                         }
-
-                                        over "zarm_l7_joint"
-                                        {
-                                            float state:angular:physics:position = 0
-                                            float state:angular:physics:velocity = 0
-                                        }
-                                    }
-
-                                    over "zarm_l6_joint"
-                                    {
-                                        float state:angular:physics:position = 0
-                                        float state:angular:physics:velocity = 0
                                     }
                                 }
-
-                                over "zarm_l5_joint"
-                                {
-                                    float state:angular:physics:position = 0
-                                    float state:angular:physics:velocity = 0
-                                }
-                            }
-
-                            over "zarm_l4_joint"
-                            {
-                                float state:angular:physics:position = 0
-                                float state:angular:physics:velocity = 0
                             }
                         }
-
-                        over "zarm_l3_joint"
-                        {
-                            float state:angular:physics:position = 0
-                            float state:angular:physics:velocity = 0
-                        }
                     }
-
-                    over "zarm_l2_joint"
-                    {
-                        float state:angular:physics:position = 0
-                        float state:angular:physics:velocity = 0
-                    }
-                }
-
-                over "zarm_l1_joint"
-                {
-                    float state:angular:physics:position = 0
-                    float state:angular:physics:velocity = 0
                 }
             }
 
@@ -1058,17 +130,20 @@ def Xform "biped_s40_with_sharpa_wave_hands" (
             {
                 over "zhead_2_link"
                 {
-                    over "zhead_2_joint"
+                    def Camera "head_camera"
                     {
-                        float state:angular:physics:position = 0
-                        float state:angular:physics:velocity = 0
+                        float2 clippingRange = (0.005, 100)
+                        float focalLength = 0.24
+                        float fStop = 0
+                        float horizontalAperture = 0.2650967
+                        float horizontalApertureOffset = 0
+                        token projection = "perspective"
+                        float verticalAperture = 0.19882251
+                        float verticalApertureOffset = 0
+                        token visibility = "invisible"
+                        matrix4d xformOp:transform = ( (3.1094238295281684e-11, -0.9999999999689058, 0, 0), (0.5735767252694408, 3.1094238295281684e-11, 0.8191518419481189, 0), (-0.8191518419481189, 0, 0.573576725300535, 0), (0.0919101, 0.0175, 0.0617839, 1) )
+                        uniform token[] xformOpOrder = ["xformOp:transform"]
                     }
-                }
-
-                over "zhead_1_joint"
-                {
-                    float state:angular:physics:position = 0
-                    float state:angular:physics:velocity = 0
                 }
             }
         }
@@ -1133,7 +208,6 @@ def "Render" (
                 token omni:rtx:rendermode = "RealTimePathTracing"
                 color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
                 bool omni:rtx:rt:demoire = 0
-                bool omni:rtx:rt:ecoMode:enabled
                 bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
                 int omni:rtx:rt:sss:samples = 1
                 uint omni:rtx:rtpt:maxVolumeBounces = 15
@@ -1143,59 +217,6 @@ def "Render" (
                 rel orderedVars = </Render/Vars/LdrColor>
                 custom bool overrideClipRange = 0
                 uniform int2 resolution = (1280, 720)
-            }
-
-            def RenderProduct "omni_kit_widget_viewport_ViewportTexture_1" (
-                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxSettingsParticleFieldAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
-                hide_in_stage_window = true
-                no_delete = true
-            )
-            {
-                rel camera = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera>
-                token omni:rtx:ambientOcclusion:denoiserMode = "none"
-                token omni:rtx:background:source:texture:textureMode = "repeatMirrored"
-                token omni:rtx:background:source:type = "domeLight"
-                bool omni:rtx:debug:view:pixelDebug:enableFixedTextPos = 1
-                token omni:rtx:directLighting:sampledLighting:denoisingTechnique = "None"
-                bool omni:rtx:dlss:frameGeneration = 0
-                bool omni:rtx:indirectDiffuse:denoiser:enabled = 0
-                bool omni:rtx:material:db:syncLoads = 1
-                token omni:rtx:post:dlss:execMode = "performance"
-                bool omni:rtx:post:registeredCompositing:invertColorCorrection = 1
-                bool omni:rtx:post:registeredCompositing:invertToneMap = 1
-                bool omni:rtx:pt:adaptiveSampling:filterError = 0
-                uint omni:rtx:pt:adaptiveSampling:fixedSppIterations = 2
-                uint omni:rtx:pt:maxSamplesPerLaunch = 2073600
-                uint omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
-                bool omni:rtx:reflections:denoiser:enabled = 0
-                token omni:rtx:rendermode = "RealTimePathTracing"
-                color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
-                bool omni:rtx:rt:demoire = 0
-                bool omni:rtx:rt:ecoMode:enabled
-                bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
-                int omni:rtx:rt:sss:samples = 1
-                uint omni:rtx:rtpt:maxVolumeBounces = 15
-                float omni:rtx:rtpt:modulatingRoughnessThreshold = 0.08
-                bool omni:rtx:scene:hydra:materialSyncLoads = 1
-                bool omni:rtx:scene:hydra:mdlMaterialWarmup = 1
-                rel orderedVars = </Render/Vars/LdrColor>
-                custom bool overrideClipRange = 0
-                uniform int2 resolution = (1280, 720)
-            }
-
-            def RenderProduct "Replicator" (
-                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxSettingsParticleFieldAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
-                hide_in_stage_window = true
-                no_delete = true
-            )
-            {
-                rel camera = </biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera>
-                bool omni:rtx:material:db:syncLoads = 1
-                bool omni:rtx:rt:ecoMode:enabled
-                bool omni:rtx:scene:hydra:materialSyncLoads = 1
-                rel orderedVars = </Render/Vars/LdrColor>
-                custom bool overrideClipRange = 0
-                uniform int2 resolution = (480, 640)
             }
         }
     }
@@ -1205,11 +226,7 @@ def "Render" (
         no_delete = true
     )
     {
-        rel products = [
-            </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0>,
-            </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_1>,
-            </Render/OmniverseKit/HydraTextures/Replicator>,
-        ]
+        rel products = </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0>
     }
 
     def "Vars" (
@@ -1249,10 +266,10 @@ over "OmniverseKit_Persp" (
     float exposure:time = 0.02
     float focalLength = 18.147562
     float focusDistance = 400
-    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -7.698992454768843)
-    float3 xformOp:rotateXYZ = (78.82978, 2.2263883e-14, 65.48847)
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -9.043541599600156)
+    float3 xformOp:rotateXYZ = (54.841286, 6.3611094e-15, 130.98169)
     float3 xformOp:scale = (1, 1, 1)
-    double3 xformOp:translate = (2.6515055244093575, -1.6015277847917746, 1.624929360268864)
+    double3 xformOp:translate = (1.3370896163359731, 1.1196340472467918, 2.089441649408593)
     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 }
 
@@ -1329,11 +346,5 @@ over "OmniverseKit_Top" (
     float3 xformOp:scale = (1, 1, 1)
     double3 xformOp:translate = (0, 0, 5)
     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
-}
-
-def PhysicsScene "PhysicsScene" (
-    prepend apiSchemas = ["NewtonSceneAPI", "PhysxSceneAPI"]
-)
-{
 }
 
