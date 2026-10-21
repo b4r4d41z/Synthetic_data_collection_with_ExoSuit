@@ -129,6 +129,22 @@ class RecordingPipelineTests(unittest.TestCase):
         self.process.wait.return_value = 0
         self.popen.return_value = self.process
 
+    def test_default_topics_include_actions_trigger_and_sim_observations(self):
+        expected = [
+            "/control_robot_hand_position",
+            "/kuavo_arm_traj",
+            "/data_collection/recording",
+            "/isaac/joint_states",
+            "/head_camera/image_raw",
+            "/left_hand_camera/image_raw",
+            "/right_hand_camera/image_raw",
+            "/clock",
+        ]
+        node = self.recorder.SimRecorder()
+        self.assertEqual(node.topics, expected)
+        node.recording_callback(Bool(True))
+        self.assertEqual(self.popen.call_args.args[0][5:], expected)
+
     def test_state_transitions_are_idempotent_and_each_bag_is_new(self):
         node = self.recorder.SimRecorder()
         node.recording_callback(Bool(False))

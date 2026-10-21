@@ -21,6 +21,23 @@ waiting five seconds at each step and logging warnings. Ctrl-C, SIGTERM, and tmu
 hangup go through cleanup. SIGKILL cannot run cleanup. Unexpected bag exits are
 logged; toggle false then true to retry.
 
+The default recorded topics include actions, recording state, and Isaac Sim
+observations:
+
+```text
+/control_robot_hand_position
+/kuavo_arm_traj
+/data_collection/recording
+/isaac/joint_states
+/head_camera/image_raw
+/left_hand_camera/image_raw
+/right_hand_camera/image_raw
+/clock
+```
+
+Messages retain their existing simulation timestamps. Synchronization and
+resampling are deferred to the later rosbag2-to-Zarr conversion.
+
 ## Build and launch in the existing Isaac Sim container
 
 The package declares `std_msgs`, `ros2bag`, `rosbag2_transport`, and
@@ -43,19 +60,19 @@ Stop an active recording before replacing a tmux session, allowing metadata to
 finish writing before launching another recorder.
 
 Startup parameters can also be supplied when running the recorder directly
-(stop the existing recorder first):
+(stop the existing recorder first). Omitting `topics` uses all eight defaults
+above; setting `topics` replaces the complete list:
 
 ```bash
 ros2 run isaac_eff_control sim_recorder_node --ros-args \
   -p output_root:=/workspace/Synthetic_data_collection_with_ExoSuit/records \
-  -p 'topics:=[/control_robot_hand_position, /kuavo_arm_traj, /data_collection/recording]' \
   -p stop_timeout_sec:=15.0
 ```
 
 Each bag uses a new `record_YYYYMMDD_HHMMSS_microseconds_random` output name;
 timestamps use the container's local clock. The default `records/` directory is
-Git-ignored. Add confirmed camera/state topics to `topics` later. No all-topics
-recording or assumed camera names are used. To change the control topic, use
+Git-ignored. Customize `topics` to change the selection. To change the control
+topic, use
 `-r /data_collection/recording:=/your/control/topic` and update the recorded topic
 list accordingly.
 

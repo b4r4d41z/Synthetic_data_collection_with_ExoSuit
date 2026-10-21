@@ -26,6 +26,11 @@ DEFAULT_TOPICS = [
     "/control_robot_hand_position",
     "/kuavo_arm_traj",
     RECORDING_TOPIC,
+    "/isaac/joint_states",
+    "/head_camera/image_raw",
+    "/left_hand_camera/image_raw",
+    "/right_hand_camera/image_raw",
+    "/clock",
 ]
 
 
