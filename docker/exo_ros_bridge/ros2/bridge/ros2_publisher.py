@@ -7,10 +7,11 @@ import rclpy
 import zmq
 
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 
 from dynamic_biped.msg import RobotHandPosition
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool
 
 
 ROS2_HAND_TOPIC = os.getenv(
@@ -21,6 +22,11 @@ ROS2_HAND_TOPIC = os.getenv(
 ROS2_ARM_TOPIC = os.getenv(
     "ROS2_ARM_TOPIC",
     "/kuavo_arm_traj",
+)
+
+ROS2_RECORDING_TOPIC = os.getenv(
+    "ROS2_RECORDING_TOPIC",
+    "/data_collection/recording",
 )
 
 ZMQ_ENDPOINT = os.getenv(
@@ -51,6 +57,18 @@ class Ros2Publisher(Node):
             qos,
         )
 
+        recording_qos = QoSProfile(
+            depth=1,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            history=HistoryPolicy.KEEP_LAST,
+        )
+        self.recording_publisher = self.create_publisher(
+            Bool,
+            ROS2_RECORDING_TOPIC,
+            recording_qos,
+        )
+
         context = zmq.Context.instance()
         self.socket = context.socket(zmq.PULL)
         self.socket.setsockopt(zmq.RCVHWM, 1)
@@ -64,7 +82,8 @@ class Ros2Publisher(Node):
         self.thread.start()
 
         self.get_logger().info(
-            f"Publishing {ROS2_HAND_TOPIC} and {ROS2_ARM_TOPIC}; "
+            f"Publishing hand {ROS2_HAND_TOPIC}, arm {ROS2_ARM_TOPIC}, "
+            f"and recording state {ROS2_RECORDING_TOPIC}; "
             f"waiting for bridge data on {ZMQ_ENDPOINT}"
         )
 
@@ -78,6 +97,8 @@ class Ros2Publisher(Node):
                     self.publish_hand(payload)
                 elif kind == "arm":
                     self.publish_arm(payload)
+                elif kind == "recording":
+                    self.publish_recording(payload)
                 else:
                     self.get_logger().warning(
                         f"Dropped payload with unknown kind: {kind}"
@@ -143,6 +164,15 @@ class Ros2Publisher(Node):
             return
 
         self.arm_publisher.publish(msg)
+
+    def publish_recording(self, payload):
+        enabled = payload.get("enabled")
+        if not isinstance(enabled, bool):
+            self.get_logger().warning(
+                "Dropped recording state: enabled must be a boolean"
+            )
+            return
+        self.recording_publisher.publish(Bool(data=enabled))
 
     def destroy_node(self):
         self.running = False

@@ -32,3 +32,6 @@ docker/exo_ros_bridge/**/__pycache__/
 # Legacy models
 /models/legacy/
 /camera.patch
+
+# Simulation bag recordings
+/records/

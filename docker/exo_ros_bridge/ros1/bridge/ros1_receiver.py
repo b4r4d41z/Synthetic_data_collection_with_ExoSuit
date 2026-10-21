@@ -8,6 +8,7 @@ import zmq
 
 from dynamic_biped.msg import robotHandPosition
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool
 
 
 ROS1_HAND_TOPIC = os.getenv(
@@ -18,6 +19,11 @@ ROS1_HAND_TOPIC = os.getenv(
 ROS1_ARM_TOPIC = os.getenv(
     "ROS1_ARM_TOPIC",
     "/kuavo_arm_traj",
+)
+
+ROS1_RECORDING_TOPIC = os.getenv(
+    "ROS1_RECORDING_TOPIC",
+    "/data_collection/recording",
 )
 
 ZMQ_ENDPOINT = os.getenv(
@@ -52,10 +58,20 @@ class Ros1Receiver:
             tcp_nodelay=True,
         )
 
+        self.recording_subscriber = rospy.Subscriber(
+            ROS1_RECORDING_TOPIC,
+            Bool,
+            self.recording_callback,
+            queue_size=1,
+            tcp_nodelay=True,
+        )
+
         rospy.loginfo(
-            "Reading ROS1 hand topic %s and arm topic %s; forwarding to %s",
+            "Reading ROS1 hand topic %s, arm topic %s, and recording topic %s; "
+            "forwarding to %s",
             ROS1_HAND_TOPIC,
             ROS1_ARM_TOPIC,
+            ROS1_RECORDING_TOPIC,
             ZMQ_ENDPOINT,
         )
 
@@ -100,6 +116,12 @@ class Ros1Receiver:
         }
 
         self.send_payload(payload)
+
+    def recording_callback(self, msg):
+        self.send_payload({
+            "kind": "recording",
+            "enabled": bool(msg.data),
+        })
 
 
 def main():

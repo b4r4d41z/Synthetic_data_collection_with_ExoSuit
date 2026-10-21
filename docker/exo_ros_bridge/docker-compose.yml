@@ -16,6 +16,7 @@ services:
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
       ROS_STATIC_PEERS: ""
       ROS2_HAND_TOPIC: /control_robot_hand_position
+      ROS2_RECORDING_TOPIC: /data_collection/recording
       ZMQ_BIND_ENDPOINT: tcp://0.0.0.0:5555
 
     restart: unless-stopped
@@ -38,6 +39,7 @@ services:
       ROS_IP: ${ISAAC_PC_IP}
       ROS_HOSTNAME: ${ISAAC_PC_IP}
       ROS1_HAND_TOPIC: /control_robot_hand_position
+      ROS1_RECORDING_TOPIC: /data_collection/recording
       ZMQ_ENDPOINT: tcp://127.0.0.1:5555
 
     restart: unless-stopped

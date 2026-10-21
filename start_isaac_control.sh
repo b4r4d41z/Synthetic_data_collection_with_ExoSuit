@@ -9,6 +9,7 @@ tmux kill-session -t $SESSION 2>/dev/null
 
 PANE_HAND=$(tmux new-session -d -s $SESSION -n main -P -F "#{pane_id}")
 PANE_ARM=$(tmux split-window -h -t $PANE_HAND -P -F "#{pane_id}")
+PANE_RECORDER=$(tmux split-window -h -t $PANE_ARM -P -F "#{pane_id}")
 
 tmux select-layout -t $SESSION:main even-horizontal
 
@@ -17,6 +18,7 @@ tmux set-option -t $SESSION pane-border-format "#{pane_title}"
 
 tmux select-pane -t $PANE_HAND -T "Isaac hand controller"
 tmux select-pane -t $PANE_ARM -T "Isaac arm controller"
+tmux select-pane -t $PANE_RECORDER -T "Simulation data recorder"
 
 # --- HAND CONTROLLER ---
 tmux send-keys -t $PANE_HAND "
@@ -46,6 +48,21 @@ export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
 unset ROS_STATIC_PEERS
 
 ros2 run isaac_eff_control arm_control_node
+" C-m
+
+# --- SIMULATION DATA RECORDER ---
+tmux send-keys -t $PANE_RECORDER "
+cd $ROS2_WS
+
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+
+export ROS_DOMAIN_ID=0
+export ROS_LOCALHOST_ONLY=0
+export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
+unset ROS_STATIC_PEERS
+
+ros2 run isaac_eff_control sim_recorder_node
 " C-m
 
 tmux select-pane -t $PANE_HAND
