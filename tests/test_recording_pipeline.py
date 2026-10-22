@@ -1,6 +1,8 @@
 """Recording relay and process lifecycle tests without ROS or Isaac Sim."""
 
 import importlib.util
+import hashlib
+import json
 from pathlib import Path
 import signal
 import subprocess
@@ -42,10 +44,15 @@ def ros_stubs(overrides):
             self.logger = Mock()
             self.publishers = {}
             self.subscriptions = {}
+            self.parameters = {}
             self.destroyed = False
 
         def declare_parameter(self, name, default):
-            return SimpleNamespace(value=overrides.get(name, default))
+            self.parameters[name] = overrides.get(name, default)
+            return SimpleNamespace(value=self.parameters[name])
+
+        def get_parameter(self, name):
+            return SimpleNamespace(value=overrides.get(name, self.parameters[name]))
 
         def create_publisher(self, msg_type, topic, qos):
             publisher = Mock(qos=qos, msg_type=msg_type)
@@ -148,7 +155,7 @@ class RecordingPipelineTests(unittest.TestCase):
         node = self.recorder.SimRecorder()
         self.assertEqual(node.topics, expected)
         node.recording_callback(Bool(True))
-        self.assertEqual(self.popen.call_args.args[0][5:], expected)
+        self.assertEqual(self.popen.call_args.args[0][7:], expected)
 
     def test_state_transitions_are_idempotent_and_each_bag_is_new(self):
         node = self.recorder.SimRecorder()
@@ -159,9 +166,11 @@ class RecordingPipelineTests(unittest.TestCase):
         self.popen.assert_called_once()
         command = self.popen.call_args.args[0]
         self.assertEqual(command[:4], ["ros2", "bag", "record", "--output"])
-        self.assertEqual(command[5:], self.recorder.DEFAULT_TOPICS)
+        self.assertEqual(command[5:7], ["--storage", "mcap"])
+        self.assertEqual(command[7:], self.recorder.DEFAULT_TOPICS)
         self.assertEqual(self.popen.call_args.kwargs, {"start_new_session": True})
-        self.assertTrue(Path(command[4]).name.startswith("record_"))
+        self.assertEqual(Path(command[4]).name, "bag")
+        self.assertTrue(Path(command[4]).parent.name.startswith("record_"))
         self.assertTrue(node.output_root.is_dir())
         node.recording_callback(Bool(False))
         node.recording_callback(Bool(False))
@@ -170,6 +179,132 @@ class RecordingPipelineTests(unittest.TestCase):
         node.recording_callback(Bool(True))
         self.assertEqual(self.popen.call_count, 2)
         self.assertNotEqual(command[4], self.popen.call_args.args[0][4])
+
+    def test_mcap_episode_metadata_is_saved_before_rosbag_starts(self):
+        def start(command, **kwargs):
+            bag = Path(command[4])
+            self.assertFalse(bag.exists())  # rosbag2 owns this output directory.
+            metadata = json.loads((bag.parent / "episode.json").read_text())
+            self.assertEqual(command[5:7], ["--storage", "mcap"])
+            self.assertEqual(metadata["recording"], {
+                "storage_id": "mcap", "bag_directory": "bag",
+                "topics": self.recorder.DEFAULT_TOPICS,
+            })
+            self.assertEqual(metadata["source"], "sim")
+            self.assertEqual(metadata["task_id"], "sorting_food")
+            self.assertEqual(metadata["robot"], "kuavo_s40_sharpa")
+            self.assertEqual(metadata["scene"], "s40_sharpa_two_cameras.usd")
+            self.assertIsNone(metadata["success"])
+            self.assertEqual(metadata["time"], {
+                "synchronization_source": "rosbag_record_timestamp",
+                "header_stamp": "source_native",
+            })
+            return self.process
+
+        self.popen.side_effect = start
+        node = self.recorder.SimRecorder()
+        node.recording_callback(Bool(True))
+        node.recording_callback(Bool(True))
+        self.popen.assert_called_once()
+        self.assertEqual(len(list(node.output_root.glob("record_*/episode.json"))), 1)
+
+    def test_task_parameters_are_preserved_and_snapshotted_per_episode(self):
+        instruction = "把食物分类。\nSort the food into the matching containers."
+        self.overrides.update(task_id="sorting_food_v2", instruction=instruction)
+        node = self.recorder.SimRecorder()
+        node.recording_callback(Bool(True))
+        first_path = node._episode_path / "episode.json"
+        first = json.loads(first_path.read_text(encoding="utf-8"))
+        self.assertEqual(first["task_id"], "sorting_food_v2")
+        self.assertEqual(first["instruction"], instruction)
+        self.overrides.update(task_id="another_task", instruction="A different task.")
+        node.recording_callback(Bool(True))
+        self.assertEqual(json.loads(first_path.read_text())["instruction"], instruction)
+        node.recording_callback(Bool(False))
+        node.recording_callback(Bool(True))
+        second = json.loads((node._episode_path / "episode.json").read_text())
+        self.assertEqual(second["task_id"], "another_task")
+        self.assertEqual(second["instruction"], "A different task.")
+        self.assertNotEqual(first_path.parent, node._episode_path)
+
+    def test_episode_camera_metadata_has_known_values_and_explicit_unknowns(self):
+        node = self.recorder.SimRecorder()
+        node.recording_callback(Bool(True))
+        metadata = json.loads((node._episode_path / "episode.json").read_text())
+        self.assertFalse(metadata["camera_configuration"]["runtime_verified"])
+        self.assertEqual(set(metadata["cameras"]), {"head", "left_wrist", "right_wrist"})
+        for name, camera in metadata["cameras"].items():
+            self.assertEqual(camera["topic"], f"/sensors/camera/{name}/image_raw")
+            self.assertEqual(camera["resolution"], [640, 480])
+            self.assertIsNone(camera["frame"])
+            self.assertIsNone(camera["intrinsics"]["camera_matrix"])
+            self.assertIsNone(camera["intrinsics"]["distortion_coefficients"])
+            self.assertGreater(camera["intrinsics"]["focal_length_mm"], 0)
+            self.assertEqual(len(camera["extrinsics"]["translation_m"]), 3)
+            self.assertEqual(len(camera["extrinsics"]["quaternion_wxyz"]), 4)
+
+    def test_custom_camera_snapshot_and_episode_identifiers_are_copied(self):
+        snapshot = json.loads(Path(self.recorder.__file__).with_name(
+            "camera_metadata.json").read_text())
+        snapshot["cameras"]["head"]["frame"] = "custom_head_optical"
+        path = Path(self.overrides["output_root"]).parent / "custom_cameras.json"
+        path.write_text(json.dumps(snapshot))
+        self.overrides.update(
+            camera_metadata_path=str(path), source="real",
+            robot="custom_robot", scene="custom_scene",
+        )
+        metadata = self.recorder.SimRecorder().episode_metadata()
+        self.assertEqual(metadata["source"], "real")
+        self.assertEqual(metadata["robot"], "custom_robot")
+        self.assertEqual(metadata["scene"], "custom_scene")
+        self.assertEqual(metadata["cameras"], snapshot["cameras"])
+
+    def test_camera_snapshot_identifies_the_versioned_scene_and_model(self):
+        snapshot = json.loads(Path(self.recorder.__file__).with_name(
+            "camera_metadata.json").read_text())
+        provenance = snapshot["provenance"]
+        for name in ("scene", "model"):
+            content = (ROOT / provenance[name + "_path"]).read_bytes()
+            self.assertEqual(hashlib.sha256(content).hexdigest(), provenance[name + "_sha256"])
+        self.assertEqual(len(provenance["repository_commit"]), 40)
+
+    def test_metadata_errors_prevent_an_unlabelled_bag(self):
+        path = Path(self.overrides["output_root"]).parent / "invalid_cameras.json"
+        path.write_text("{}")
+        for override in ({"instruction": " "}, {"camera_metadata_path": str(path)}):
+            with self.subTest(override=override):
+                self.overrides.update(override)
+                node = self.recorder.SimRecorder()
+                node.recording_callback(Bool(True))
+                self.assertTrue(node.logger.error.called)
+                self.popen.assert_not_called()
+                for name in override:
+                    del self.overrides[name]
+
+    @unittest.skipUnless(importlib.util.find_spec("pxr"), "Requires OpenUSD (Isaac Sim)")
+    def test_camera_snapshot_poses_and_optics_match_the_saved_usd(self):
+        from pxr import Usd, UsdGeom
+
+        snapshot = json.loads(Path(self.recorder.__file__).with_name(
+            "camera_metadata.json").read_text())
+        stage = Usd.Stage.Open(str(ROOT / snapshot["provenance"]["scene_path"]))
+        scale = UsdGeom.GetStageMetersPerUnit(stage)
+        cache = UsdGeom.XformCache()
+        for camera in snapshot["cameras"].values():
+            prim = stage.GetPrimAtPath(camera["usd_camera_prim"])
+            optics = UsdGeom.Camera(prim)
+            self.assertAlmostEqual(camera["intrinsics"]["focal_length_mm"],
+                                   optics.GetFocalLengthAttr().Get() * scale * 100)
+            reference = stage.GetPrimAtPath(camera["extrinsics"]["reference_prim"])
+            matrix, reset = cache.ComputeRelativeTransform(prim, reference)
+            self.assertFalse(reset)
+            for actual, expected in zip(matrix.ExtractTranslation() * scale,
+                                        camera["extrinsics"]["translation_m"]):
+                self.assertAlmostEqual(actual, expected)
+            quat = matrix.ExtractRotationQuat().GetNormalized()
+            actual = [quat.GetReal(), *quat.GetImaginary()]
+            expected = camera["extrinsics"]["quaternion_wxyz"]
+            self.assertAlmostEqual(abs(sum(a * b for a, b in zip(actual, expected))), 1.0)
 
     def test_semantic_bridge_topics_reach_controllers_without_changing_ros1_or_units(self):
         arm_module = load_module(
@@ -333,7 +468,7 @@ class RecordingPipelineTests(unittest.TestCase):
         self.overrides.update(topics=["/robot/command/arm_joint_target"], stop_timeout_sec=2.0)
         node = self.recorder.SimRecorder()
         node.recording_callback(Bool(True))
-        self.assertEqual(self.popen.call_args.args[0][5:], ["/robot/command/arm_joint_target"])
+        self.assertEqual(self.popen.call_args.args[0][7:], ["/robot/command/arm_joint_target"])
         node.recording_callback(Bool(False))
         self.process.wait.assert_called_once_with(timeout=2.0)
 

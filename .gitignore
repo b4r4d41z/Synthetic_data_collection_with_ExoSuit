@@ -35,3 +35,6 @@ docker/exo_ros_bridge/**/__pycache__/
 
 # Simulation bag recordings
 /records/
+
+# Historical host-side launcher (current deployment uses Docker bridges)
+start_isaac_bridge.sh

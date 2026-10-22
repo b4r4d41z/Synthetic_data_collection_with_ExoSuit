@@ -2,8 +2,8 @@
 
 The existing ROS1 bridge forwards `std_msgs/Bool` on
 `/data_collection/recording` over its shared ZMQ connection as
-`{"kind": "recording", "enabled": true}` (or `false`). The existing host-side
-ROS2 publisher republishes `std_msgs/msg/Bool` with reliable, transient-local,
+`{"kind": "recording", "enabled": true}` (or `false`). The ROS2 bridge container
+republishes `std_msgs/msg/Bool` with reliable, transient-local,
 keep-last/depth-1 QoS. Hand and arm topics retain their best-effort QoS.
 `ROS1_RECORDING_TOPIC` and `ROS2_RECORDING_TOPIC` override the bridge topic names.
 
@@ -83,21 +83,113 @@ observations:
 /clock
 ```
 
-Messages retain their existing simulation timestamps. Synchronization and
-resampling are deferred to the later rosbag2-to-Zarr conversion. This exact
-topic selection is passed to rosbag2, including when its storage backend is MCAP;
-recording lifecycle and storage configuration are unchanged.
+All eight topics are recorded independently at their native rates using the
+explicit MCAP storage backend (`ros2 bag record --storage mcap`). The complete
+robot JointState (`name`, `position`, `velocity`, and `effort`) is retained.
+Public arm targets retain ExoSuit-side degrees; only the existing arm controller
+converts its internal joint commands to radians. Historical bags need no migration.
+
+## Timestamp contract
+
+**Cross-topic synchronization uses the rosbag2 recorded message timestamp.**
+The future BFM rosbag-to-Zarr converter must use the timestamp returned with
+each stored message by rosbag2 (the record/log timestamp), rather than treating
+message headers as a shared clock.
+
+**`message.header.stamp` remains source-native and is preserved unchanged.**
+The public ExoSuit command headers retain their ROS1 source timestamps, often
+Unix-like seconds (for example, approximately `1792639761`). Isaac observation
+headers use simulation time (for example, approximately `9` seconds). This
+domain difference is expected. `/clock` is recorded unchanged; Bool recording
+control messages have no header. Neither headers nor record timestamps are
+rewritten or normalized by this node, and no simulation-clock override is added
+to rosbag2. Synchronization/resampling belongs in the BFM converter.
+
+Every `episode.json` explicitly records:
+
+```json
+"time": {
+  "synchronization_source": "rosbag_record_timestamp",
+  "header_stamp": "source_native"
+}
+```
+
+## Episode metadata and camera configuration
+
+Each new recording is self-contained under the existing `output_root`:
+
+```text
+records/record_YYYYMMDD_HHMMSS_microseconds_random/
+  episode.json
+  bag/
+    metadata.yaml
+    *.mcap
+```
+
+rosbag2 creates `bag/` itself; its output directory is initially absent so the
+sidecar does not conflict with rosbag2's nonempty-output-directory checks.
+`episode.json` is saved before starting rosbag2. Metadata errors prevent a bag
+from starting. A failed startup may leave an episode directory with metadata
+but no completed bag; errors are logged and require a false/true cycle to retry.
+
+The episode records `source`, `task_id`, `instruction`, `success`, `robot`,
+`scene`, the timestamp policy, exact recorded topic list, and MCAP storage ID.
+`instruction` is the episode's language task instruction for future BFM/VLA
+conditioning, not a per-frame ROS topic or an encoded embedding.
+`task_id` is a stable machine-readable identifier. Defaults are:
+
+```json
+{
+  "source": "sim",
+  "task_id": "sorting_food",
+  "instruction": "Sort the food items into their corresponding containers.",
+  "success": null,
+  "robot": "kuavo_s40_sharpa",
+  "scene": "s40_sharpa_two_cameras.usd"
+}
+```
+
+Override the task defaults for each actual demonstration. The string fields
+are ROS2 parameters, read at the start of each episode; changes during a bag do
+not rewrite that episode's metadata. `source` also accepts identifiers such as
+`real` for later use. Annotate `success` in the sidecar after recording; it starts
+as `null`. Folder timestamps and `created_at` are wall-clock identifiers, not
+cross-topic synchronization inputs.
+
+The packaged [camera_metadata.json](isaac_eff_control/camera_metadata.json)
+describes all three cameras from the saved repository USD, including its manual
+camera adjustments. Each episode embeds the snapshot's `cameras` and
+`camera_configuration` provenance, with repository commit and scene/model hashes.
+The saved graph provides 640x480 resolution, virtual perspective optics, and
+rigid poses relative to `zhead_2_link`, `zarm_l7_link`, or `zarm_r7_link`.
+Extrinsics describe the USD camera frame (+X right, +Y up, -Z forward) relative
+to that link, using translation in meters and a `wxyz` camera-to-link quaternion.
+They imply no alignment to a ROS optical frame.
+
+These are saved simulation parameters, not measured physical calibration or a
+live-stage query (`runtime_verified` is false). ROS frame IDs, calibrated camera
+matrices, and distortion parameters are unavailable and explicitly `null`.
+The ideal focal lengths in pixels are derived from the saved focal length,
+apertures, and render resolution; no principal point or distortion is invented.
+In particular, the head camera's original MJCF FOV was an uncalibrated default.
+Supply a matching JSON snapshot through `camera_metadata_path` when the active
+scene, session overrides, or physical calibration differs. Preserve its
+`provenance` object and three camera entries with the current ROS topic names;
+unknown calibration fields may remain `null`. The recorder copies this data
+without altering the USD, optics, graph, images, or timestamps.
 
 ## Build and launch in the existing Isaac Sim container
 
-The package declares `std_msgs`, `ros2bag`, `rosbag2_transport`, and
-`rosbag2_storage_default_plugins` dependencies. Ensure these are installed in
-that environment.
+The package declares `std_msgs`, `ros2bag`, `rosbag2_transport`,
+`rosbag2_storage_default_plugins`, and `rosbag2_storage_mcap` dependencies.
+Ensure these are installed in the existing Isaac container. If the MCAP plugin
+is missing, install `ros-jazzy-rosbag2-storage-mcap` there.
 
 ```bash
 cd /workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim
 source /opt/ros/jazzy/setup.bash
-colcon build --packages-select isaac_eff_control
+colcon build --symlink-install \
+  --packages-select dynamic_biped isaac_eff_control
 source install/setup.bash
 ros2 bag record --help
 cd ..
@@ -106,6 +198,9 @@ bash start_isaac_control.sh
 
 The launcher opens hand-controller, arm-controller, and recorder panes with the
 same ROS domain/discovery settings. It does not build or start a container.
+Build both selected packages: `isaac_eff_control` depends on the local
+`dynamic_biped` interfaces, and building only the former can leave an unknown
+`dynamic_biped` package at runtime.
 Stop an active recording before replacing a tmux session, allowing metadata to
 finish writing before launching another recorder.
 
@@ -116,7 +211,19 @@ above; setting `topics` replaces the complete list:
 ```bash
 ros2 run isaac_eff_control sim_recorder_node --ros-args \
   -p output_root:=/workspace/Synthetic_data_collection_with_ExoSuit/records \
+  -p task_id:=sorting_food \
+  -p 'instruction:=Sort the food items into their corresponding containers.' \
+  -p source:=sim \
+  -p robot:=kuavo_s40_sharpa \
+  -p scene:=s40_sharpa_two_cameras.usd \
   -p stop_timeout_sec:=15.0
+```
+
+While stopped, task parameters can also be changed for the next episode:
+
+```bash
+ros2 param set /sim_recorder task_id sorting_food
+ros2 param set /sim_recorder instruction 'Sort the food items into their corresponding containers.'
 ```
 
 Each bag uses a new `record_YYYYMMDD_HHMMSS_microseconds_random` output name;
@@ -126,30 +233,25 @@ topic, use
 `-r /data_collection/recording:=/your/control/topic` and update the recorded topic
 list accordingly.
 
-## Update and verify the existing bridge
+## Verify the current Docker bridge
 
-The ROS1 image copies its Python script rather than bind-mounting it. On the
-bridge host, from the repository root, update the existing container without
-creating a replacement:
-
-```bash
-docker cp docker/exo_ros_bridge/ros1/bridge/ros1_receiver.py \
-  exo_ros1_bridge:/bridge/ros1_receiver.py
-docker restart exo_ros1_bridge
-```
-
-Restart the Python publisher in its existing host ROS2 publisher pane, after
-stopping the previous process. Keep the sourced ROS environment and discovery
-settings from `start_isaac_bridge.sh`, and run:
+The current deployment is ROS1 bridge container -> ZMQ -> ROS2 bridge container
+-> DDS -> Isaac container. The bridge code and architecture are unchanged by
+these recorder additions. From a sourced ROS2 terminal in the same domain:
 
 ```bash
-/usr/bin/python3 docker/exo_ros_bridge/ros2/bridge/ros2_publisher.py
 ros2 topic echo /data_collection/recording \
   --qos-reliability reliable --qos-durability transient_local
 ```
 
-Run the echo in a separate sourced terminal. Radxa X-button transitions should
+Radxa X-button transitions should
 appear as `data: false`, `data: true`, `data: false`, and so on.
+
+`start_isaac_bridge.sh` is a historical host-installed-Isaac helper, retained
+locally and added to `.gitignore`; the current Docker deployment does not use
+it. Ignore rules do not untrack an already tracked script. To stop tracking it
+without deleting the local file, optionally run
+`git rm --cached start_isaac_bridge.sh` yourself.
 
 For an isolated recorder test, with the bridge stopped to avoid competing state
 publishers, run each command from a sourced ROS2 terminal in the same domain:
@@ -163,10 +265,11 @@ ros2 topic pub --once --qos-reliability reliable --qos-durability transient_loca
 
 True should log the child PID, topics, and new bag path. Repeated true must not
 start a second process. False should log a clean exit and leave `metadata.yaml`
-and storage files in that path. Validate the exact path printed by the recorder:
+and MCAP files in `bag/`, with `episode.json` alongside it. Inspect the path
+printed by the recorder using the standard rosbag2 command:
 
 ```bash
-ros2 bag info /workspace/Synthetic_data_collection_with_ExoSuit/records/record_NAME
+ros2 bag info /workspace/Synthetic_data_collection_with_ExoSuit/records/record_NAME/bag
 ```
 
 To test retained state, leave the bridge running with state true, restart only

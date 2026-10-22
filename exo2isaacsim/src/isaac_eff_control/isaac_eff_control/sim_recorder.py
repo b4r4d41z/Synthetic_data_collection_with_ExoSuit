@@ -2,11 +2,14 @@
 """Record selected ROS2 topics when the retained recording state is true.
 
 Run in the existing Isaac Sim environment with ``ros2 run isaac_eff_control
-sim_recorder_node``. Configure output_root, topics, and stop_timeout_sec through
-ROS2 parameters at startup. rosbag2 inherits this process's ROS environment.
+sim_recorder_node``. Each timestamped episode contains episode.json and a bag/
+directory using MCAP. Task parameters are captured once per episode. Message
+headers retain their source-native times; rosbag record time is the cross-topic
+synchronization contract for downstream conversion.
 """
 
 from datetime import datetime
+import json
 import math
 import os
 from pathlib import Path
@@ -33,6 +36,19 @@ DEFAULT_TOPICS = [
     "/clock",
 ]
 
+EPISODE_PARAMETERS = {
+    "source": "sim",
+    "task_id": "sorting_food",
+    "instruction": "Sort the food items into their corresponding containers.",
+    "robot": "kuavo_s40_sharpa",
+    "scene": "s40_sharpa_two_cameras.usd",
+}
+CAMERA_TOPICS = {
+    "head": "/sensors/camera/head/image_raw",
+    "left_wrist": "/sensors/camera/left_wrist/image_raw",
+    "right_wrist": "/sensors/camera/right_wrist/image_raw",
+}
+
 
 class SimRecorder(Node):
     """Manage one rosbag2 process; repeated state messages are idempotent."""
@@ -46,6 +62,11 @@ class SimRecorder(Node):
         self.topics = list(self.declare_parameter("topics", DEFAULT_TOPICS).value)
         self.stop_timeout_sec = float(
             self.declare_parameter("stop_timeout_sec", 15.0).value
+        )
+        for name, default in EPISODE_PARAMETERS.items():
+            self.declare_parameter(name, default)
+        self.declare_parameter(
+            "camera_metadata_path", str(Path(__file__).with_name("camera_metadata.json"))
         )
         if not self.topics or any(
             not isinstance(topic, str)
@@ -63,6 +84,7 @@ class SimRecorder(Node):
         self.output_root.mkdir(parents=True, exist_ok=True)
         self._recording_enabled = False
         self._process = None
+        self._episode_path = None
         self._bag_path = None
 
         qos = QoSProfile(
@@ -92,30 +114,81 @@ class SimRecorder(Node):
         elif self.stop_recording():
             self._recording_enabled = False
 
+    def episode_metadata(self):
+        """Snapshot task parameters and camera configuration for the next episode."""
+        fields = {name: self.get_parameter(name).value for name in EPISODE_PARAMETERS}
+        if any(not isinstance(value, str) or not value.strip() for value in fields.values()):
+            raise ValueError(
+                "Episode source, task_id, instruction, robot, and scene "
+                "must be nonempty strings"
+            )
+        path = Path(self.get_parameter("camera_metadata_path").value).expanduser()
+        snapshot = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(snapshot, dict) or not isinstance(snapshot.get("provenance"), dict):
+            raise ValueError("Camera metadata must contain a provenance object")
+        cameras = snapshot.get("cameras")
+        if not isinstance(cameras, dict) or set(cameras) != set(CAMERA_TOPICS):
+            raise ValueError("Camera metadata must describe head, left_wrist, and right_wrist")
+        for name, topic in CAMERA_TOPICS.items():
+            if not isinstance(cameras[name], dict) or cameras[name].get("topic") != topic:
+                raise ValueError(f"Camera metadata topic does not match {name}: {topic}")
+        return {
+            "schema_version": 1,
+            **fields,
+            "success": None,
+            "created_at": datetime.now().astimezone().isoformat(),
+            "time": {
+                "synchronization_source": "rosbag_record_timestamp",
+                "header_stamp": "source_native",
+            },
+            "recording": {
+                "storage_id": "mcap",
+                "bag_directory": "bag",
+                "topics": list(self.topics),
+            },
+            "camera_configuration": snapshot["provenance"],
+            "cameras": cameras,
+        }
+
     def start_recording(self):
         """Start a new bag without reusing an existing output directory."""
         if self._process is not None:
             self.get_logger().warning("Previous recorder still exists; refusing another")
             return
-        stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        self._bag_path = self.output_root / f"record_{stamp}_{uuid4().hex[:8]}"
-        while self._bag_path.exists():
-            self._bag_path = self.output_root / f"record_{stamp}_{uuid4().hex[:8]}"
-        command = [
-            "ros2", "bag", "record", "--output", str(self._bag_path), *self.topics
-        ]
         try:
+            metadata = self.episode_metadata()
+            serialized_metadata = json.dumps(
+                metadata, indent=2, ensure_ascii=False, allow_nan=False
+            ) + "\n"
+            stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            while True:
+                self._episode_path = self.output_root / f"record_{stamp}_{uuid4().hex[:8]}"
+                try:
+                    self._episode_path.mkdir()
+                    break
+                except FileExistsError:
+                    continue
+            # rosbag2 must create its own output directory. The episode parent
+            # owns the sidecar, which is saved before the bag process is started.
+            self._bag_path = self._episode_path / "bag"
+            with (self._episode_path / "episode.json").open("x", encoding="utf-8") as output:
+                output.write(serialized_metadata)
+            command = [
+                "ros2", "bag", "record", "--output", str(self._bag_path),
+                "--storage", "mcap", *self.topics,
+            ]
             # Keep stdout/stderr in the tmux pane. A separate session lets us
             # interrupt the recorder and any children without signalling tmux.
             self._process = subprocess.Popen(command, start_new_session=True)
-        except OSError as error:
+        except (OSError, ValueError) as error:
             self.get_logger().error(
-                f"Cannot start ros2 bag: {error}. Toggle recording false/true to retry."
+                f"Cannot start MCAP episode: {error}. Toggle recording false/true to retry."
             )
             return
         self.get_logger().info(
-            f"Started ros2 bag pid={self._process.pid}: {self._bag_path}; "
-            f"topics: {self.topics}"
+            f"Started MCAP ros2 bag pid={self._process.pid}: {self._bag_path}; "
+            f"task: {metadata['task_id']}; instruction: {metadata['instruction']}; "
+            f"metadata: {self._episode_path / 'episode.json'}; topics: {self.topics}"
         )
 
     def stop_recording(self):

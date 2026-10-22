@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "provenance": {
+    "kind": "saved_repository_usd_snapshot",
+    "repository": "b4r4d41z/Synthetic_data_collection_with_ExoSuit",
+    "repository_commit": "d263821ea10b2e8865c31d13ee97c24bb15254d6",
+    "scene_path": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.usd",
+    "scene_sha256": "c67a615cb3fb22a2c0d722f7b93f69ecf75c3c0af54e79f631b428dd551b72e9",
+    "model_path": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml",
+    "model_sha256": "4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
+    "runtime_verified": false,
+    "notes": "Saved virtual camera configuration, including USD adjustments. Not measured physical calibration or a live-stage capture. Supply camera_metadata_path for a different scene or calibration."
+  },
+  "cameras": {
+    "head": {
+      "topic": "/sensors/camera/head/image_raw",
+      "frame": null,
+      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link/head_camera",
+      "resolution": [
+        640,
+        480
+      ],
+      "intrinsics": {
+        "status": "saved_simulation_optics_not_physical_calibration",
+        "projection": "perspective",
+        "focal_length_mm": 23.999999463558197,
+        "horizontal_aperture_mm": 26.509669423103333,
+        "vertical_aperture_mm": 19.88225132226944,
+        "horizontal_aperture_offset_mm": 0.0,
+        "vertical_aperture_offset_mm": 0.0,
+        "ideal_focal_length_pixels": [
+          579.4112107369742,
+          579.4112324495552
+        ],
+        "camera_matrix": null,
+        "distortion_model": null,
+        "distortion_coefficients": null
+      },
+      "extrinsics": {
+        "status": "rigid_mount_from_saved_usd",
+        "reference_link": "zhead_2_link",
+        "reference_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link",
+        "translation_m": [
+          0.0919101,
+          0.0175,
+          0.0617839
+        ],
+        "quaternion_wxyz": [
+          0.6272114327398242,
+          0.3265054649949238,
+          -0.3265054649949238,
+          -0.6272114326902487
+        ],
+        "convention": "Camera-to-link: p_link = R(quaternion_wxyz) * p_usd_camera + translation_m. USD camera axes: +X right, +Y up, -Z viewing direction. No ROS optical-frame alignment is implied."
+      }
+    },
+    "left_wrist": {
+      "topic": "/sensors/camera/left_wrist/image_raw",
+      "frame": null,
+      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount/left_hand_camera_head/left_hand_camera",
+      "resolution": [
+        640,
+        480
+      ],
+      "intrinsics": {
+        "status": "saved_simulation_optics_not_physical_calibration",
+        "projection": "perspective",
+        "focal_length_mm": 23.999999463558197,
+        "horizontal_aperture_mm": 36.95041835308075,
+        "vertical_aperture_mm": 27.712813019752502,
+        "horizontal_aperture_offset_mm": 0.0,
+        "vertical_aperture_offset_mm": 0.0,
+        "ideal_focal_length_pixels": [
+          415.6921718694588,
+          415.69218304532905
+        ],
+        "camera_matrix": null,
+        "distortion_model": null,
+        "distortion_coefficients": null
+      },
+      "extrinsics": {
+        "status": "rigid_mount_from_saved_usd",
+        "reference_link": "zarm_l7_link",
+        "reference_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link",
+        "translation_m": [
+          0.10545446628735054,
+          -0.012729999891536553,
+          -0.105345534099216
+        ],
+        "quaternion_wxyz": [
+          -0.6470267454448849,
+          0.2474255515931178,
+          -0.25759934420897596,
+          0.6736316240802143
+        ],
+        "convention": "Camera-to-link: p_link = R(quaternion_wxyz) * p_usd_camera + translation_m. USD camera axes: +X right, +Y up, -Z viewing direction. No ROS optical-frame alignment is implied."
+      }
+    },
+    "right_wrist": {
+      "topic": "/sensors/camera/right_wrist/image_raw",
+      "frame": null,
+      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera",
+      "resolution": [
+        640,
+        480
+      ],
+      "intrinsics": {
+        "status": "saved_simulation_optics_not_physical_calibration",
+        "projection": "perspective",
+        "focal_length_mm": 23.999999463558197,
+        "horizontal_aperture_mm": 36.95041835308075,
+        "vertical_aperture_mm": 27.712813019752502,
+        "horizontal_aperture_offset_mm": 0.0,
+        "vertical_aperture_offset_mm": 0.0,
+        "ideal_focal_length_pixels": [
+          415.6921718694588,
+          415.69218304532905
+        ],
+        "camera_matrix": null,
+        "distortion_model": null,
+        "distortion_coefficients": null
+      },
+      "extrinsics": {
+        "status": "rigid_mount_from_saved_usd",
+        "reference_link": "zarm_r7_link",
+        "reference_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link",
+        "translation_m": [
+          0.10545446628735054,
+          0.012729999891536553,
+          -0.105345534099216
+        ],
+        "quaternion_wxyz": [
+          0.653281509876251,
+          -0.27059803221605283,
+          0.27059803221605283,
+          -0.6532814697933854
+        ],
+        "convention": "Camera-to-link: p_link = R(quaternion_wxyz) * p_usd_camera + translation_m. USD camera axes: +X right, +Y up, -Z viewing direction. No ROS optical-frame alignment is implied."
+      }
+    }
+  }
+}
