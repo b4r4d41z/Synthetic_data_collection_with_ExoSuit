@@ -21,22 +21,72 @@ waiting five seconds at each step and logging warnings. Ctrl-C, SIGTERM, and tmu
 hangup go through cleanup. SIGKILL cannot run cleanup. Unexpected bag exits are
 logged; toggle false then true to retry.
 
+## ROS2 topic contract
+
+The ROS1 receiver keeps the external ExoSuit topic names and payloads unchanged.
+The ROS2 bridge applies the semantic names at its publisher boundary:
+
+| Previous topic | Synthetic Data Collection ROS2 topic |
+| --- | --- |
+| `/kuavo_arm_traj` | `/robot/command/arm_joint_target` |
+| `/control_robot_hand_position` | `/robot/command/hand_target` |
+| `/isaac/joint_states` | `/robot/state/joint_states` |
+| `/head_camera/image_raw` | `/sensors/camera/head/image_raw` |
+| `/left_hand_camera/image_raw` | `/sensors/camera/left_wrist/image_raw` |
+| `/right_hand_camera/image_raw` | `/sensors/camera/right_wrist/image_raw` |
+| `/clock` | `/clock` |
+| `/data_collection/recording` | `/data_collection/recording` |
+
+Arm targets remain `sensor_msgs/msg/JointState` with the original ExoSuit units
+(degrees by default). Hand targets remain `dynamic_biped/msg/RobotHandPosition`.
+`arm_control_node` and `eff_control_node` consume the semantic command topics in
+the Isaac environment. They retain the existing conversion and mapping, then
+publish `/robot_arm_joint_command`, `/left_hand_joint_command`, and
+`/right_hand_joint_command` for the saved Articulation Controllers. These internal
+compatibility topics carry mapped joint angles; connecting the raw bridge
+messages directly to the Articulation Controllers would bypass that conversion.
+
+Open `models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.usd` for the current
+scene. Its `Control_ActionGraph` camera helpers publish the three semantic image
+topics; `Data_collection_ActionGraph` publishes `/robot/state/joint_states`.
+Only their topic-name attributes change; `/clock`, graph wiring, camera frames,
+optics, timestamps, and robot parameters are preserved. Reopen the saved scene
+after updating it; an already-open stage may retain its previous layer.
+
+The existing launch scripts use these new defaults without ROS1 changes.
+`ROS2_ARM_TOPIC`/`ROS2_HAND_TOPIC` configure bridge outputs;
+`ARM_INPUT_TOPIC`/`HAND_INPUT_TOPIC` configure matching controller inputs.
+For a temporary legacy deployment, explicitly set both ends to the old names
+(or use ROS2 `--ros-args -r NEW_TOPIC:=OLD_TOPIC` on both nodes). Configure the
+recorder's `topics` parameter to match that temporary deployment as well.
+Aliases are opt-in so duplicate command publishers are not introduced.
+
+The standalone `control/ros*_hand_command_subscriber.py` scripts and
+`tests/test_left_hand_ros2_publisher.py` intentionally retain the old topic as
+legacy `Int32MultiArray` mapper smoke tests. They are not launched by the
+production scripts and must not publish that different type on the semantic
+`RobotHandPosition` topic. No rosbag-to-Zarr converter or BFM training code is
+currently present in this repository; the table also defines the name mapping
+for historical bags when converters are added.
+
 The default recorded topics include actions, recording state, and Isaac Sim
 observations:
 
 ```text
-/control_robot_hand_position
-/kuavo_arm_traj
+/robot/command/hand_target
+/robot/command/arm_joint_target
 /data_collection/recording
-/isaac/joint_states
-/head_camera/image_raw
-/left_hand_camera/image_raw
-/right_hand_camera/image_raw
+/robot/state/joint_states
+/sensors/camera/head/image_raw
+/sensors/camera/left_wrist/image_raw
+/sensors/camera/right_wrist/image_raw
 /clock
 ```
 
 Messages retain their existing simulation timestamps. Synchronization and
-resampling are deferred to the later rosbag2-to-Zarr conversion.
+resampling are deferred to the later rosbag2-to-Zarr conversion. This exact
+topic selection is passed to rosbag2, including when its storage backend is MCAP;
+recording lifecycle and storage configuration are unchanged.
 
 ## Build and launch in the existing Isaac Sim container
 
@@ -133,3 +183,5 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
 
 These tests mock ROS, ZMQ, and subprocesses. Real DDS durability and rosbag
 metadata finalization require the manual checks above.
+The saved-graph topic test runs when OpenUSD (`pxr`) is available, as in Isaac
+Sim; otherwise that single test is skipped.

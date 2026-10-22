@@ -15,7 +15,8 @@ services:
       ROS_LOCALHOST_ONLY: "0"
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
       ROS_STATIC_PEERS: ""
-      ROS2_HAND_TOPIC: /control_robot_hand_position
+      ROS2_HAND_TOPIC: ${ROS2_HAND_TOPIC:-/robot/command/hand_target}
+      ROS2_ARM_TOPIC: ${ROS2_ARM_TOPIC:-/robot/command/arm_joint_target}
       ROS2_RECORDING_TOPIC: /data_collection/recording
       ZMQ_BIND_ENDPOINT: tcp://0.0.0.0:5555
 

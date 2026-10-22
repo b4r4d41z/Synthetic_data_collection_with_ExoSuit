@@ -7,6 +7,8 @@ from std_msgs.msg import Int32MultiArray
 class LeftHandTestPublisher(Node):
     def __init__(self):
         super().__init__("left_hand_test_publisher")
+        # Pair with the legacy Int32MultiArray smoke-test subscribers. The
+        # production /robot/command/hand_target has type RobotHandPosition.
         self.pub = self.create_publisher(Int32MultiArray, "/control_robot_hand_position", 10)
         self.timer = self.create_timer(2.0, self.publish_command)
         self.closed = False

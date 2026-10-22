@@ -9,7 +9,9 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import JointState
 
 
-INPUT_TOPIC = os.getenv("ARM_INPUT_TOPIC", "/kuavo_arm_traj")
+INPUT_TOPIC = os.getenv("ARM_INPUT_TOPIC", "/robot/command/arm_joint_target")
+# Internal radians/name-mapped JointState consumed by the saved Isaac graph.
+# Keep this distinct from the bridge's raw ExoSuit targets for compatibility.
 OUTPUT_TOPIC = os.getenv("ARM_OUTPUT_TOPIC", "/robot_arm_joint_command")
 
 # Данные из экзоскелета сейчас выглядят как градусы.

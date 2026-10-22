@@ -23,13 +23,13 @@ from std_msgs.msg import Bool
 
 RECORDING_TOPIC = "/data_collection/recording"
 DEFAULT_TOPICS = [
-    "/control_robot_hand_position",
-    "/kuavo_arm_traj",
+    "/robot/command/hand_target",
+    "/robot/command/arm_joint_target",
     RECORDING_TOPIC,
-    "/isaac/joint_states",
-    "/head_camera/image_raw",
-    "/left_hand_camera/image_raw",
-    "/right_hand_camera/image_raw",
+    "/robot/state/joint_states",
+    "/sensors/camera/head/image_raw",
+    "/sensors/camera/left_wrist/image_raw",
+    "/sensors/camera/right_wrist/image_raw",
     "/clock",
 ]
 

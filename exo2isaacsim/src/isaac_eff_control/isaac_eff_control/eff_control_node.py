@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import math
+import os
 
 import rclpy
 from rclpy.node import Node
@@ -9,6 +10,8 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from dynamic_biped.msg import RobotHandPosition
 from sensor_msgs.msg import JointState
 
+
+HAND_INPUT_TOPIC = os.getenv("HAND_INPUT_TOPIC", "/robot/command/hand_target")
 
 PUBLISH_HZ = 50.0
 
@@ -76,11 +79,13 @@ class IsaacEffControlNode(Node):
 
         self.sub = self.create_subscription(
             RobotHandPosition,
-            "/control_robot_hand_position",
+            HAND_INPUT_TOPIC,
             self.hand_callback,
             input_qos,
         )
 
+        # Retain the internal mapped JointState topics used by the Isaac graph;
+        # the semantic bridge input carries RobotHandPosition, not joint angles.
         self.pub_left = self.create_publisher(
             JointState,
             "/left_hand_joint_command",
@@ -94,7 +99,7 @@ class IsaacEffControlNode(Node):
         )
 
         self.get_logger().info("isaac_eff_control_node started")
-        self.get_logger().info("subscribing: /control_robot_hand_position")
+        self.get_logger().info(f"subscribing: {HAND_INPUT_TOPIC}")
         self.get_logger().info("publishing:  /left_hand_joint_command")
         self.get_logger().info("publishing:  /right_hand_joint_command")
         self.get_logger().info("current scene: left and right hands")

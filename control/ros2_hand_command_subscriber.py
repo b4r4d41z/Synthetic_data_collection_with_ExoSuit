@@ -6,6 +6,8 @@ from std_msgs.msg import Int32MultiArray
 
 from .hand_command_mapper import HandCommandMapper
 
+# Legacy Int32MultiArray mapper smoke test, not the production bridge consumer.
+# Retain its old topic: /robot/command/hand_target uses RobotHandPosition.
 TOPIC_NAME = "/control_robot_hand_position"
 
 

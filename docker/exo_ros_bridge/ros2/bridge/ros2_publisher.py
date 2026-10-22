@@ -16,12 +16,12 @@ from std_msgs.msg import Bool
 
 ROS2_HAND_TOPIC = os.getenv(
     "ROS2_HAND_TOPIC",
-    "/control_robot_hand_position",
+    "/robot/command/hand_target",
 )
 
 ROS2_ARM_TOPIC = os.getenv(
     "ROS2_ARM_TOPIC",
-    "/kuavo_arm_traj",
+    "/robot/command/arm_joint_target",
 )
 
 ROS2_RECORDING_TOPIC = os.getenv(

@@ -7,6 +7,8 @@ from std_msgs.msg import Int32MultiArray
 from .hand_command_mapper import HandCommandMapper
 
 
+# Legacy ROS2 Int32MultiArray smoke test, despite this historical filename.
+# Retain its old topic: /robot/command/hand_target uses RobotHandPosition.
 TOPIC_NAME = "/control_robot_hand_position"
 
 

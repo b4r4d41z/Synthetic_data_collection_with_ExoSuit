@@ -21,6 +21,7 @@ class Bool:
 
 class Message:
     def __init__(self):
+        self.name, self.position, self.velocity, self.effort = [], [], [], []
         self.header = SimpleNamespace(
             stamp=SimpleNamespace(sec=0, nanosec=0, secs=0, nsecs=0),
             frame_id="",
@@ -61,6 +62,10 @@ def ros_stubs(overrides):
 
         def get_logger(self):
             return self.logger
+
+        def get_clock(self):
+            return SimpleNamespace(now=lambda: SimpleNamespace(
+                to_msg=lambda: SimpleNamespace(sec=0, nanosec=0)))
 
         def destroy_node(self):
             self.destroyed = True
@@ -131,13 +136,13 @@ class RecordingPipelineTests(unittest.TestCase):
 
     def test_default_topics_include_actions_trigger_and_sim_observations(self):
         expected = [
-            "/control_robot_hand_position",
-            "/kuavo_arm_traj",
+            "/robot/command/hand_target",
+            "/robot/command/arm_joint_target",
             "/data_collection/recording",
-            "/isaac/joint_states",
-            "/head_camera/image_raw",
-            "/left_hand_camera/image_raw",
-            "/right_hand_camera/image_raw",
+            "/robot/state/joint_states",
+            "/sensors/camera/head/image_raw",
+            "/sensors/camera/left_wrist/image_raw",
+            "/sensors/camera/right_wrist/image_raw",
             "/clock",
         ]
         node = self.recorder.SimRecorder()
@@ -165,6 +170,85 @@ class RecordingPipelineTests(unittest.TestCase):
         node.recording_callback(Bool(True))
         self.assertEqual(self.popen.call_count, 2)
         self.assertNotEqual(command[4], self.popen.call_args.args[0][4])
+
+    def test_semantic_bridge_topics_reach_controllers_without_changing_ros1_or_units(self):
+        arm_module = load_module(
+            "test_arm_topics",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/arm_control_node.py",
+        )
+        hand_module = load_module(
+            "test_hand_topics",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py",
+        )
+        bridge = self.ros2.Ros2Publisher()
+        arm = arm_module.ArmControlNode()
+        hand = hand_module.IsaacEffControlNode()
+        self.assertEqual(self.ros1.ROS1_ARM_TOPIC, "/kuavo_arm_traj")
+        self.assertEqual(self.ros1.ROS1_HAND_TOPIC, "/control_robot_hand_position")
+        self.assertIn("/robot/command/arm_joint_target", arm.subscriptions)
+        self.assertIn("/robot/command/hand_target", hand.subscriptions)
+        self.assertIn(arm_module.INPUT_TOPIC, bridge.publishers)
+        self.assertIn(hand_module.HAND_INPUT_TOPIC, bridge.publishers)
+        self.assertEqual(len(bridge.publishers), 3)  # No duplicate alias publishers.
+        raw = Message()
+        raw.name, raw.position = ["zarm_l4_joint"], [-30.0]
+        arm.arm_callback(raw)
+        converted = arm.pub.publish.call_args.args[0]
+        self.assertEqual(converted.name, ["zarm_r4_joint"])
+        self.assertAlmostEqual(converted.position[0], -0.5235987755982988)
+        self.assertIn("/robot_arm_joint_command", arm.publishers)
+        self.assertIn("/left_hand_joint_command", hand.publishers)
+        self.assertIn("/right_hand_joint_command", hand.publishers)
+
+    def test_legacy_bridge_and_controller_inputs_can_be_selected_explicitly(self):
+        # Legacy names are opt-in ROS2 configuration; ROS1 publishers never change.
+        with patch.dict(self.recorder.os.environ, {
+            "ROS2_ARM_TOPIC": "/kuavo_arm_traj",
+            "ARM_INPUT_TOPIC": "/kuavo_arm_traj",
+            "ROS2_HAND_TOPIC": "/control_robot_hand_position",
+            "HAND_INPUT_TOPIC": "/control_robot_hand_position",
+        }):
+            bridge_module = load_module(
+                "test_legacy_bridge", "docker/exo_ros_bridge/ros2/bridge/ros2_publisher.py"
+            )
+            arm_module = load_module(
+                "test_legacy_arm",
+                "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/arm_control_node.py",
+            )
+            hand_module = load_module(
+                "test_legacy_hand",
+                "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py",
+            )
+            bridge = bridge_module.Ros2Publisher()
+            self.assertIn(arm_module.INPUT_TOPIC, bridge.publishers)
+            self.assertIn(hand_module.HAND_INPUT_TOPIC, bridge.publishers)
+            self.assertIn("/kuavo_arm_traj", arm_module.ArmControlNode().subscriptions)
+            self.assertIn("/control_robot_hand_position",
+                          hand_module.IsaacEffControlNode().subscriptions)
+
+    @unittest.skipUnless(importlib.util.find_spec("pxr"), "Requires OpenUSD (Isaac Sim)")
+    def test_saved_isaac_graph_uses_semantic_observation_topics(self):
+        from pxr import Sdf
+
+        layer = Sdf.Layer.FindOrOpen(str(
+            ROOT / "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.usd"))
+        root = "/biped_s40_with_sharpa_wave_hands/"
+        expected = {
+            "Control_ActionGraph/ros2_camera_helper": "/sensors/camera/head/image_raw",
+            "Control_ActionGraph/ros2_camera_helper_01": "/sensors/camera/right_wrist/image_raw",
+            "Control_ActionGraph/ros2_camera_helper_02": "/sensors/camera/left_wrist/image_raw",
+            "Data_collection_ActionGraph/ros2_publish_joint_state": "/robot/state/joint_states",
+            "Control_ActionGraph/ros2_subscribe_joint_state": "right_hand_joint_command",
+            "Control_ActionGraph/ros2_subscribe_joint_state_01": "left_hand_joint_command",
+            "Control_ActionGraph/ros2_subscribe_joint_state_02": "robot_arm_joint_command",
+        }
+        for node, topic in expected.items():
+            attr = layer.GetAttributeAtPath(root + node + ".inputs:topicName")
+            self.assertIsNotNone(attr, node)
+            self.assertEqual(attr.default, topic)
+        clock = layer.GetAttributeAtPath(
+            root + "Data_collection_ActionGraph/ros2_publish_clock.inputs:topicName")
+        self.assertTrue(clock is None or clock.default in (None, "clock", "/clock"))
 
     def test_shutdown_stops_an_active_bag(self):
         node = self.recorder.SimRecorder()
@@ -246,10 +330,10 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertTrue(node.logger.error.called)
 
     def test_parameters_configure_topics_output_and_stop_timeout(self):
-        self.overrides.update(topics=["/kuavo_arm_traj"], stop_timeout_sec=2.0)
+        self.overrides.update(topics=["/robot/command/arm_joint_target"], stop_timeout_sec=2.0)
         node = self.recorder.SimRecorder()
         node.recording_callback(Bool(True))
-        self.assertEqual(self.popen.call_args.args[0][5:], ["/kuavo_arm_traj"])
+        self.assertEqual(self.popen.call_args.args[0][5:], ["/robot/command/arm_joint_target"])
         node.recording_callback(Bool(False))
         self.process.wait.assert_called_once_with(timeout=2.0)
 

@@ -24,4 +24,10 @@ This allows the physical ExoSuit to control the humanoid model in real time and 
 
 ## System Architecture
 
+The Synthetic Data Collection ROS2 interface uses `/robot/command/...` for
+ExoSuit commands, `/robot/state/...` for measured state, and `/sensors/...` for
+camera observations. External ROS1 topic names are preserved. See the
+[topic contract and recording setup](exo2isaacsim/src/isaac_eff_control/README.md#ros2-topic-contract)
+for the full mapping, internal controller topics, and legacy configuration.
+
 ![ExoSuit to Isaac Sim pipeline](assets/Frame%205.png)
