@@ -11,15 +11,26 @@ from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from dynamic_biped.msg import BfmState
 
-from .bfm_contract import STATE_TOPIC, collection_enabled, state_defaults
+from .bfm_contract import (
+    STATE_ENV, STATE_TOPIC, collection_enabled, scene_config_default,
+    state_defaults, validate_state_parameters,
+)
+
+
+STATE_FIELD_SIZES = {
+    "right_eef_position": 3, "object_position": 3, "object_velocity": 3,
+    "goal_center": 3, "goal_half_extents": 3, "goal_orientation": 4,
+    "goal_linear_velocity": 3, "goal_angular_velocity": 3,
+}
 
 
 class IsaacTaskSampler:
     """Use live PhysX tensors, including when USD pose writeback is disabled.
 
-    EEF/object must be actual rigid-body frames in the active physics variant.
-    The goal may also be a static Xform. The reference must be stationary and
-    rigid; a moving reference would require additional velocity terms.
+    EEF, object and container must resolve to live rigid bodies. Local offsets
+    and half extents are physical meters; rotations use xyzw. Physics tensor
+    linear velocities are at the COM, so point velocities account for both
+    the COM-to-origin and origin-to-point lever arms. Reference stays static.
     """
 
     def __init__(self, stage, config, simulation_view=None):
@@ -28,12 +39,12 @@ class IsaacTaskSampler:
         if stage is None:
             raise ValueError("Open an Isaac USD stage before configuring task state")
         self.stage = stage
-        self.config = config
+        self.config = validate_state_parameters(config)
         self.scale = UsdGeom.GetStageMetersPerUnit(stage)
         if not math.isfinite(self.scale) or self.scale <= 0:
             raise ValueError("Stage metersPerUnit must be finite and positive")
         self.prims = {}
-        for key in ("eef_prim_path", "object_prim_path", "goal_prim_path",
+        for key in ("eef_prim_path", "object_prim_path", "container_prim_path",
                     "reference_prim_path"):
             path = config[key]
             if not path or not Sdf.Path.IsValidPathString(path):
@@ -48,18 +59,20 @@ class IsaacTaskSampler:
                     or (path != "/" and not UsdGeom.Xformable(prim))):
                 raise ValueError(f"Missing/inactive/non-transformable {key}: {path}")
             self.prims[key] = prim
-        for key in ("eef_prim_path", "object_prim_path"):
+        for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
             if not self.prims[key].HasAPI(UsdPhysics.RigidBodyAPI):
                 raise ValueError(
                     f"{key} must select a PhysX rigid body in the active physics variant"
                 )
+            if UsdPhysics.RigidBodyAPI(self.prims[key]).GetRigidBodyEnabledAttr().Get() is False:
+                raise ValueError(f"{key} selects a disabled rigid body")
 
         def require_static(prim):
             while prim and not prim.IsPseudoRoot():
                 xform = UsdGeom.Xformable(prim)
                 if (prim.HasAPI(UsdPhysics.RigidBodyAPI)
                         or (xform and xform.TransformMightBeTimeVarying())):
-                    raise ValueError("Reference/non-rigid goal must be a static world frame")
+                    raise ValueError("Reference must be a static world frame")
                 prim = prim.GetParent()
 
         reference = self.prims["reference_prim_path"]
@@ -76,14 +89,13 @@ class IsaacTaskSampler:
                 or any(not math.isclose(a * b, float(i == j), abs_tol=1e-6)
                        for i, a in enumerate(axes) for j, b in enumerate(axes))):
             raise ValueError("Reference must be right-handed, with unit scale and no shear")
-        self.goal_is_rigid = self.prims["goal_prim_path"].HasAPI(UsdPhysics.RigidBodyAPI)
-        if not self.goal_is_rigid:
-            require_static(self.prims["goal_prim_path"])
+        self.reference_orientation = matrix.ExtractRotationQuat().GetNormalized()
         self.simulation_view = simulation_view
         self.views = {}
+        self.resolved_body_counts = {}
 
     def read(self):
-        from pxr import Gf, Usd, UsdGeom
+        from pxr import Gf
 
         if self.simulation_view is None:
             # Initialize only after Play has initialized physics. These views
@@ -92,32 +104,73 @@ class IsaacTaskSampler:
             self.simulation_view = tensors.create_simulation_view("numpy")
             self.simulation_view.set_subspace_roots("/")
         if not self.views:
-            keys = ["eef_prim_path", "object_prim_path"]
-            if self.goal_is_rigid:
-                keys.append("goal_prim_path")
-            for key in keys:
+            views = {}
+            for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
                 view = self.simulation_view.create_rigid_body_view(self.config[key])
                 if view.count != 1:
                     raise ValueError(f"PhysX did not resolve one body for {self.config[key]}")
-                self.views[key] = view
+                views[key] = view
+            self.views = views
+            self.resolved_body_counts = {self.config[key]: view.count for key, view in views.items()}
 
-        def position(key):
-            xyz = self.views[key].get_transforms()[0][:3]
-            return self.world_to_reference.Transform(Gf.Vec3d(*map(float, xyz))) * self.scale
+        def vector(values, size, label):
+            values = [float(v) for v in values]
+            if len(values) != size or not all(math.isfinite(v) for v in values):
+                raise ValueError(f"PhysX returned invalid {label}")
+            return values
 
-        eef = position("eef_prim_path")
-        obj = position("object_prim_path")
-        velocity = self.views["object_prim_path"].get_velocities()[0][:3]
-        velocity = self.world_to_reference.TransformDir(
-            Gf.Vec3d(*map(float, velocity))) * self.scale
-        if self.goal_is_rigid:
-            goal = position("goal_prim_path")
-        else:
-            world = UsdGeom.Xformable(self.prims["goal_prim_path"]).ComputeLocalToWorldTransform(
-                Usd.TimeCode.Default()).ExtractTranslation()
-            goal = self.world_to_reference.Transform(world) * self.scale
-        values = [list(vector) for vector in (eef, obj, velocity, goal)]
-        if not all(math.isfinite(value) for vector in values for value in vector):
+        def quaternion(xyzw):
+            x, y, z, w = xyzw
+            norm = math.hypot(x, y, z, w)
+            if not math.isfinite(norm) or norm < 1e-12:
+                raise ValueError("PhysX returned an invalid pose quaternion")
+            return Gf.Quatd(w / norm, Gf.Vec3d(x / norm, y / norm, z / norm))
+
+        def pose(key):
+            raw = vector(self.views[key].get_transforms()[0], 7, "pose")
+            return Gf.Vec3d(*raw[:3]) * self.scale, quaternion(raw[3:])
+
+        def body_state(key):
+            position, orientation = pose(key)
+            rotation = Gf.Rotation(orientation)
+            twist = vector(self.views[key].get_velocities()[0], 6, "velocity")
+            # Tensor twists are world-space velocities at the center of mass.
+            # Never assume that an auto-computed COM equals the USD body origin.
+            com = vector(self.views[key].get_coms()[0], 7, "local COM pose")
+            omega = Gf.Vec3d(*twist[3:])  # PhysX angular velocities are rad/s.
+            com_offset = rotation.TransformDir(Gf.Vec3d(*com[:3]) * self.scale)
+            return position, orientation, Gf.Vec3d(*twist[:3]) * self.scale, omega, com_offset
+
+        def point_state(key, offset_m):
+            position, orientation, com_velocity, omega, com_offset = body_state(key)
+            rotation = Gf.Rotation(orientation)
+            offset = rotation.TransformDir(Gf.Vec3d(*offset_m))
+            origin_velocity = com_velocity - Gf.Cross(omega, com_offset)
+            return position + offset, origin_velocity + Gf.Cross(omega, offset), omega, orientation
+
+        def reference_point(point_m):
+            # USD reference translation is in stage units; vector rotations
+            # below have no translation and use SI units directly.
+            return self.world_to_reference.Transform(point_m / self.scale) * self.scale
+
+        eef, _ = pose("eef_prim_path")
+        obj_origin, _, obj_velocity, _, obj_com_offset = body_state("object_prim_path")
+        obj = obj_origin + obj_com_offset
+        goal, goal_velocity, goal_omega, container_rotation = point_state(
+            "container_prim_path", self.config["goal_local_center"])
+        goal_rotation = (self.reference_orientation * container_rotation *
+                         quaternion(self.config["goal_local_orientation"])).GetNormalized()
+        values = {
+            "right_eef_position": list(reference_point(eef)),
+            "object_position": list(reference_point(obj)),
+            "object_velocity": list(self.world_to_reference.TransformDir(obj_velocity)),
+            "goal_center": list(reference_point(goal)),
+            "goal_half_extents": list(self.config["goal_half_extents"]),
+            "goal_orientation": [*goal_rotation.GetImaginary(), goal_rotation.GetReal()],
+            "goal_linear_velocity": list(self.world_to_reference.TransformDir(goal_velocity)),
+            "goal_angular_velocity": list(self.world_to_reference.TransformDir(goal_omega)),
+        }
+        if not all(math.isfinite(value) for array in values.values() for value in array):
             raise ValueError("PhysX returned non-finite task measurements")
         return values
 
@@ -129,21 +182,25 @@ class BfmTaskStatePublisher(Node):
         super().__init__("bfm_task_state", **kwargs)
         self.enabled = self.declare_parameter(
             "bfm_collection_mode", collection_enabled()).value
+        self.scene_config_path = self.declare_parameter(
+            "scene_config_path", scene_config_default()).value
         self.config = {key: self.declare_parameter(key, value).value
-                       for key, value in state_defaults().items()}
+                       for key, value in state_defaults(self.scene_config_path).items()}
         self.stage, self.factory = stage, sampler_factory
         self.last_time = None
         self.sampler = None
+        self._reported_counts = False
         if not self.enabled:
             self.get_logger().info("BFM task state disabled")
             return
         try:
+            self.config = validate_state_parameters(self.config)
             if not self.config["state_frame"].strip():
                 raise ValueError("state_frame must name the configured reference basis")
             self.sampler = self.factory(stage, self.config)
         except Exception:
             super().destroy_node()
-            raise  # A missing object/goal is a setup error, never a zero state.
+            raise  # Missing/invalid roles are setup errors, never a zero state.
         self.publisher = self.create_publisher(BfmState, STATE_TOPIC, QoSProfile(
             history=HistoryPolicy.KEEP_LAST, depth=1,
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -153,6 +210,7 @@ class BfmTaskStatePublisher(Node):
     def reset(self):
         self.last_time = None
         self.sampler = None  # Recreate PhysX views after Stop/Play.
+        self._reported_counts = False
 
     def publish_at(self, simulation_seconds):
         if not self.enabled or simulation_seconds == self.last_time:
@@ -164,15 +222,22 @@ class BfmTaskStatePublisher(Node):
         if self.sampler is None:
             self.sampler = self.factory(self.stage, self.config)
         values = self.sampler.read()
-        if len(values) != 4 or any(len(v) != 3 or not all(math.isfinite(x) for x in v)
-                                   for v in values):
-            raise ValueError("Task sampler must supply four measured finite 3D vectors")
+        if (not isinstance(values, dict) or set(values) != set(STATE_FIELD_SIZES)
+                or any(len(values[key]) != size or not all(math.isfinite(x) for x in values[key])
+                       for key, size in STATE_FIELD_SIZES.items())
+                or any(v <= 0 for v in values["goal_half_extents"])
+                or not math.isclose(sum(v*v for v in values["goal_orientation"]), 1., abs_tol=1e-6)):
+            raise ValueError("Task sampler must supply the finite moving OBB contract with unit xyzw")
+        counts = getattr(self.sampler, "resolved_body_counts", None)
+        if not self._reported_counts and isinstance(counts, dict):
+            self.get_logger().info(f"Live PhysX resolved body counts: {counts}")
+            self._reported_counts = True
         message = BfmState()
         nanoseconds = round(simulation_seconds * 1_000_000_000)
         message.header.stamp.sec, message.header.stamp.nanosec = divmod(nanoseconds, 1_000_000_000)
         message.header.frame_id = self.config["state_frame"]
-        (message.right_eef_position, message.object_position,
-         message.object_velocity, message.goal_position) = values
+        for field, value in values.items():
+            setattr(message, field, list(value))
         self.publisher.publish(message)
         self.last_time = simulation_seconds
 
@@ -181,9 +246,15 @@ def start_task_state_publisher(**parameters):
     """Install a live Kit callback and return a handle with idempotent stop().
 
     Keywords are ROS parameters: bfm_collection_mode, eef_prim_path,
-    object_prim_path, goal_prim_path, reference_prim_path, state_frame.
+    object_prim_path, container_prim_path, reference_prim_path, state_frame,
+    scene_config_path and local SI goal geometry. Goal quaternions use xyzw.
     Start per Isaac session; this does not author a persistent USD sensor.
     """
+    if "goal_prim_path" in parameters:
+        raise ValueError("goal_prim_path was replaced by container_prim_path and local OBB geometry")
+    unknown = set(parameters) - {*STATE_ENV, "bfm_collection_mode", "scene_config_path", "use_sim_time"}
+    if unknown:
+        raise ValueError(f"Unknown task-state parameters: {sorted(unknown)}")
     import omni.kit.app
     import omni.timeline
     import omni.usd
@@ -221,6 +292,7 @@ def start_task_state_publisher(**parameters):
             context.shutdown()
 
     handle = Handle()
+    handle.node = node  # Inspect sampler.resolved_body_counts after Play in Script Editor.
 
     def update(_event):
         executor.spin_once(timeout_sec=0.0)

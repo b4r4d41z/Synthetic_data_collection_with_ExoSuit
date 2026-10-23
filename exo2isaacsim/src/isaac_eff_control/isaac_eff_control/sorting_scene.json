@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "scene": "models/stages/stage_sorting_v1.usd",
+  "parameters": {
+    "state_frame": "world",
+    "reference_prim_path": "/",
+    "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
+    "object_prim_path": "/World/orange1",
+    "container_prim_path": "/World/container_b04",
+    "goal_local_center": [
+      -0.08494214117424082,
+      0.0,
+      0.05886988293797252
+    ],
+    "goal_half_extents": [
+      0.118,
+      0.068,
+      0.017130117062027467
+    ],
+    "goal_local_orientation": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "provenance": {
+    "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
+    "scene_sha256": "250eaf0e1c50fb7d64728a586b0dbf44b7b3e0386af9496f9750f80dbf524fd0",
+    "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
+    "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
+    "orange_asset": "models/addons/objects/fruits_veggies/orange1.usd",
+    "orange_asset_sha256": "f3a8c7fc09b6d3d44ec88654fcfd3952e7baff711763b23fbedebc2e085679e3",
+    "robot_root": "/World/s40_sharpa_two_cameras",
+    "required_robot_physics_variant": "physx",
+    "container_mesh": "/World/container_b04/Container_B04_01",
+    "container_mesh_to_body_translation_m": [
+      -0.08494214117424082,
+      0.0,
+      0.0
+    ],
+    "interior_floor_mesh_z_m": 0.010474557988345623,
+    "rim_mesh_z_m": 0.1199781745672226,
+    "conservative_interior_mesh_min_m": [
+      -0.16,
+      -0.11,
+      0.011
+    ],
+    "conservative_interior_mesh_max_m": [
+      0.16,
+      0.11,
+      0.118
+    ],
+    "orange_skin_mesh": "/World/orange1/orange_01_inst/Orange_01/OrangeSkin",
+    "orange_skin_enclosing_radius_m": 0.03822402105197607,
+    "clearance_radius_m": 0.039,
+    "safety_margin_m": 0.003,
+    "quaternion_convention": "xyzw; local goal axes relative to container body",
+    "method": "Inscribed box above the inner floor and below the rim, checked against all 5776 mesh triangles. XY and the ceiling are eroded by skin enclosing radius rounded to 39 mm plus 3 mm margin. The lower centre height is inner floor + minimum skin support radius (ConvexHull) - 3 mm contact tolerance, so normal resting poses remain successful. Mesh/body rotation is identity; local offsets include composed child translations. No initial world coordinates are stored.",
+    "object_position_semantics": "Live PhysX center of mass and its linear velocity, not the displaced body origin or authored USD position. Goal clearance is measured from fruit skin; the separately offset stem in the existing asset is not repaired here.",
+    "runtime_verified": false,
+    "orange_skin_minimum_support_radius_m": 0.03426520788759943,
+    "floor_contact_tolerance_m": 0.003
+  }
+}

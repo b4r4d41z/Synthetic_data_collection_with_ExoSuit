@@ -771,14 +771,20 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(bfm["task_state"]["frame"], "fixture")
         self.assertEqual(bfm["task_state"]["position_unit"], "m")
         self.assertEqual(bfm["task_state"]["velocity_unit"], "m/s")
-        self.assertFalse(bfm["task_state"]["configured"])
+        self.assertTrue(bfm["task_state"]["configured"])
+        self.assertEqual(bfm["task_state"]["goal_representation"], "oriented_bounding_box")
         self.assertFalse(bfm["task_state"]["runtime_verified"])
 
     def test_task_state_native_updates_are_independent_of_policy_rate(self):
         self.overrides["bfm_collection_mode"] = True
         module = load_module("test_task_state",
             "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_task_state.py")
-        measured = [[1., 2., 3.], [4., 5., 6.], [.1, .2, .3], [7., 8., 9.]]
+        measured = {
+            "right_eef_position": [1., 2., 3.], "object_position": [4., 5., 6.],
+            "object_velocity": [.1, .2, .3], "goal_center": [7., 8., 9.],
+            "goal_half_extents": [.1, .2, .3], "goal_orientation": [0., 0., 0., 1.],
+            "goal_linear_velocity": [0., 0., 0.], "goal_angular_velocity": [0., 0., 0.],
+        }
         sampler = Mock(read=Mock(return_value=measured))
         node = module.BfmTaskStatePublisher("stage", sampler_factory=Mock(return_value=sampler))
         for t in (.02, .04, .06, .08, .1):
@@ -822,23 +828,29 @@ class RecordingPipelineTests(unittest.TestCase):
         reference = UsdGeom.Xform.Define(stage, "/World/Reference")
         reference.AddTranslateOp().Set((10., 0., 0.))
         reference.AddRotateZOp().Set(90.)
-        for name in ("Eef", "Object"):
+        for name in ("Eef", "Object", "Container"):
             prim = UsdGeom.Xform.Define(stage, "/World/" + name).GetPrim()
             UsdPhysics.RigidBodyAPI.Apply(prim)
-        goal = UsdGeom.Xform.Define(stage, "/World/Reference/Goal")
-        goal.AddTranslateOp().Set((50., 0., 0.))
         config = dict(state_frame="fixture", reference_prim_path="/World/Reference",
                       eef_prim_path="/World/Eef", object_prim_path="/World/Object",
-                      goal_prim_path="/World/Reference/Goal")
+                      container_prim_path="/World/Container",
+                      goal_local_center=[0., 0., 0.], goal_half_extents=[.1, .05, .02],
+                      goal_local_orientation=[0., 0., 0., 1.])
         eef = SimpleNamespace(count=1, get_transforms=lambda: [[10., 100., 0., 0., 0., 0., 1.]])
         obj = SimpleNamespace(count=1, get_transforms=lambda: [[10., 200., 0., 0., 0., 0., 1.]],
-                              get_velocities=lambda: [[0., 100., 0., 0., 0., 0.]])
-        simulation = Mock(create_rigid_body_view=Mock(side_effect=[eef, obj]))
+                              get_velocities=lambda: [[0., 100., 0., 0., 0., 0.]],
+                              get_coms=lambda: [[0., 0., 0., 0., 0., 0., 1.]])
+        container = SimpleNamespace(count=1, get_transforms=lambda: [[10., 50., 0., 0., 0., 0., 1.]],
+                              get_velocities=lambda: [[0., 0., 0., 0., 0., 0.]],
+                              get_coms=lambda: [[0., 0., 0., 0., 0., 0., 1.]])
+        simulation = Mock(create_rigid_body_view=Mock(side_effect=[eef, obj, container]))
         values = module.IsaacTaskSampler(stage, config, simulation).read()
-        for actual, expected in zip(values, [[1, 0, 0], [2, 0, 0], [1, 0, 0], [.5, 0, 0]]):
+        for name, expected in zip(["right_eef_position", "object_position", "object_velocity",
+                                   "goal_center"], [[1, 0, 0], [2, 0, 0], [1, 0, 0], [.5, 0, 0]]):
+            actual = values[name]
             for a, b in zip(actual, expected):
                 self.assertAlmostEqual(a, b)
-        for key, value in (("object_prim_path", ""), ("goal_prim_path", "/World/Missing"),
+        for key, value in (("object_prim_path", ""), ("container_prim_path", "/World/Missing"),
                            ("reference_prim_path", "/World/Eef"),
                            ("eef_prim_path", "/World/Reference")):
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
@@ -875,6 +887,15 @@ class RecordingPipelineTests(unittest.TestCase):
                 self.assertIn(f"BFM_COLLECTION_MODE={enabled}", command)
                 self.assertIn("BFM_STATE_FRAME=fixture", command)
                 self.assertNotIn("colcon build", command)
+        legacy_log = directory / "legacy.jsonl"
+        with patch.object(self.recorder.subprocess, "Popen", self.original_popen):
+            result = subprocess.run(["bash", str(ROOT / "start_isaac_control.sh")],
+                capture_output=True, text=True, env={**os.environ,
+                    "PATH": str(directory) + os.pathsep + os.environ["PATH"],
+                    "TEST_TMUX_LOG": str(legacy_log), "BFM_GOAL_PRIM_PATH": "/Old/Goal"})
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("BFM_CONTAINER_PRIM_PATH", result.stderr)
+        self.assertFalse(legacy_log.exists())  # Fail before touching a running session.
 
 
 if __name__ == "__main__":

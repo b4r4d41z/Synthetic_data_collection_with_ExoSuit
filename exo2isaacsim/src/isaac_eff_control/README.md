@@ -287,6 +287,8 @@ From the repository root:
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
   -s tests -p test_recording_pipeline.py -v
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+  -s tests -p test_bfm_goal_region.py -v
 ```
 
 These tests mock ROS, ZMQ, and subprocesses. Real DDS durability and rosbag
@@ -382,78 +384,231 @@ headers are unchanged. Task-state headers use simulation time. The timestamp
 contract above remains authoritative: cross-topic synchronization uses the
 rosbag2/MCAP recorded-message timestamp, not a shared header clock.
 
-### Measured task state inside Isaac
+### Moving sorting goal: scene contract
 
-The recorder does not guess which scene objects are the manipulated object
-and goal. No generic object/goal paths are configured by default. Start the
-runtime publisher inside the active Isaac Sim process with the built packages
-on Isaac's Python path and compatible Jazzy rclpy; a separate external ROS
-process cannot read that simulator's live physics. It uses a separate rclpy
-context and does not change the existing ROS2 bridge context or ActionGraph.
+The measured state uses the packaged
+[sorting_scene.json](isaac_eff_control/sorting_scene.json). It was measured from
+`models/stages/stage_sorting_v1.usd` composed at commit
+`f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2`, including referenced assets and
+scene-level child transforms. Exact runtime paths are:
 
-Use matching configuration for the recorder and the Isaac-side publisher:
+```text
+robot root: /World/s40_sharpa_two_cameras
+right EEF:  /World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC
+object:     /World/orange1
+container:  /World/container_b04
+reference:  /                         (state_frame = world)
+```
 
-| Environment variable | ROS parameter | Default |
+These are active Xforms; object/container have RigidBodyAPI in the composed
+stage. The EEF is the physical right palm, not its visual mesh. It has
+RigidBodyAPI in the robot's existing `Physics=physx` variant, inspected in an
+anonymous session layer without saving a USD. A plain OpenUSD load does not
+select that variant automatically. The runtime sampler requires actual rigid
+bodies in the active Isaac scene and never selects or authors variants itself.
+Use the existing working PhysX import/variant workflow before starting it.
+Root/world is stationary, Z-up, with metersPerUnit=1 in this scene.
+
+No scene, mesh, collider, drive, or ActionGraph file is changed. No prim paths
+are discovered by fuzzy names at runtime. All three exact physics views must
+resolve to **one** live body each; runtime errors/zero or multiple matches
+stop publication. USD schema checks here do not prove live PhysX resolution.
+The check and the resolved counts are logged on the first successful sample.
+
+```text
+orange PhysX state -----------+
+                              |
+right palm PhysX state -------+--> /bfm/state (native simulation updates)
+                              |
+container PhysX pose/twist     |
+      +                       |
+goal local OBB ---------------+
+```
+
+### Interior OBB geometry and object centre
+
+The goal is an **oriented bounding box of allowed orange-skin centre positions**,
+not the container's exterior bounds or a world AABB. Inspection found the
+inner floor at mesh-local Z=0.010474558 m with a flat rectangle approximately
+X=+/-0.169402 m, Y=+/-0.118981 m, and the rim at Z=0.119978175 m. A conservative
+interior box was chosen at X=+/-0.160 m, Y=+/-0.110 m, Z=[0.011,0.118] m.
+None of the 5,776 triangulated mesh faces has an AABB intersecting that box.
+Thus the box avoids walls, floor, rounded edges, and rim rather than treating
+external mesh extents as free space.
+
+The OrangeSkin enclosing radius measured from its vertices is 0.038224021 m.
+Round up to 0.039 m and add a 0.003 m margin, then erode the horizontal
+faces and ceiling by 0.042 m. For the lower centre height use inner floor plus
+the skin's minimum support radius (0.034265208 m from its convex hull), minus
+0.003 m contact tolerance. A full sphere inset at the bottom would incorrectly
+exclude an orange resting on the floor. The upright resting centre is about
+0.047823 m, inside the selected goal region. The composed container mesh has translation -0.08494214117424082 m
+on body-local X and identity rotation. Applying it gives these fixed SI values
+in the container rigid-body frame:
+
+```text
+goal_local_center      = [-0.08494214117424082, 0, 0.05886988293797252] m
+goal_half_extents      = [0.118, 0.068, 0.017130117062027467] m
+goal_local_orientation = [0, 0, 0, 1]                      xyzw
+```
+
+The local orientation is identity because the inspected mesh/body axes agree.
+The usable centre height is about 0.041740..0.076 m above the container body origin.
+Mesh dimensions, transforms, hashes, clearance, and method are stored in the
+JSON provenance. Runtime code contains no sorting-specific geometry numbers.
+This is a geometric region, not a live collision/success certificate: the
+asset uses convex decomposition, whose cooked cavity must still be checked
+inside Isaac.
+
+The scene translates OrangeSkin beneath `/World/orange1`, so its rigid-body
+origin is not the fruit centre. `object_position` measures the live PhysX
+centre of mass, obtained from the live body pose and `get_coms()`;
+`object_velocity` is the measured COM linear velocity. No fixed object pose or
+local centre is configured. Object orientation is used internally to transform
+the measured COM offset, but no object orientation/angular-velocity fields are
+published. The separately offset stem already in the asset is excluded from
+the skin-based goal clearance; its geometry/collision setup is not repaired.
+
+### State schema, motion, frames, and configuration
+
+`dynamic_biped/BfmState` now contains:
+
+```text
+std_msgs/Header header
+float64[3] right_eef_position
+float64[3] object_position
+float64[3] object_velocity
+float64[3] goal_center
+float64[3] goal_half_extents
+float64[4] goal_orientation
+float64[3] goal_linear_velocity
+float64[3] goal_angular_velocity
+```
+
+Positions/half extents use m; linear velocities use m/s; angular velocity uses
+rad/s. `goal_orientation` is a normalized **[x,y,z,w]** quaternion mapping the
+goal-local axes into `header.frame_id`. Half extents stay along those local
+axes; they are unchanged as the container rotates. Header time remains
+simulation time, while **MCAP record timestamp remains authoritative for
+cross-topic synchronization**. Raw input timestamps and action semantics are
+unchanged. The old `goal_position` field is removed; rebuild message users.
+
+For each native update the sampler reads EEF, orange, and container poses and
+orange/container twists from PhysX tensors. For a body-local goal offset c:
+
+```text
+r_world    = R_container * c
+goal_center_world = p_container + r_world
+q_goal_ref = q_ref_from_world * q_container * q_goal_local
+v_goal_world = v_container_origin + omega_world cross r_world
+```
+
+PhysX linear velocities are at the centre of mass. The implementation reads
+`get_coms()` and first calculates
+`v_origin = v_COM - omega cross R_container*COM_local`. This matters because
+this container's auto-computed COM need not equal its body origin. The orange uses its live COM position and linear velocity directly. World vectors
+and orientation are then rotated into the configured **static** reference;
+reference translation affects positions only. Angular velocity is never
+scaled as a linear length. Half extents are already physical meters even if
+another stage uses centimeters.
+
+The reference must be right-handed and unit-scale, with no animated/rigid-body
+ancestors. Moving reference frames are unsupported. Live dynamic poses are
+never read from authored USD transforms or commands, so Fabric disabling USD
+pose writeback does not substitute initial poses for measurements.
+
+Configuration precedence is packaged scene JSON, then environment, then ROS
+parameter overrides. Set the same configuration for the recorder and the
+in-process publisher:
+
+| Environment | ROS parameter | Default |
 | --- | --- | --- |
-| `BFM_COLLECTION_MODE` | `bfm_collection_mode` | false |
+| `BFM_SCENE_CONFIG` | `scene_config_path` | packaged `sorting_scene.json` |
 | `BFM_STATE_FRAME` | `state_frame` | `world` |
-| `BFM_REFERENCE_PRIM_PATH` | `reference_prim_path` | `/` (stage world) |
-| `BFM_EEF_PRIM_PATH` | `eef_prim_path` | empty, must configure |
-| `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | empty, must configure |
-| `BFM_GOAL_PRIM_PATH` | `goal_prim_path` | empty, must configure |
+| `BFM_REFERENCE_PRIM_PATH` | `reference_prim_path` | `/` |
+| `BFM_EEF_PRIM_PATH` | `eef_prim_path` | exact right-palm path above |
+| `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | `/World/orange1` |
+| `BFM_CONTAINER_PRIM_PATH` | `container_prim_path` | `/World/container_b04` |
+| `BFM_GOAL_LOCAL_CENTER` | `goal_local_center` | local OBB centre above |
+| `BFM_GOAL_HALF_EXTENTS` | `goal_half_extents` | local half extents above |
+| `BFM_GOAL_LOCAL_ORIENTATION` | `goal_local_orientation` | identity xyzw |
 
-The launcher passes these environment values to the recorder. Isaac must
-inherit the same values when launched, or receive the matching parameter
-overrides in the function below. Set all three role paths to inspected prims
-from the actual loaded scene, without inventing coordinates. EEF and object
-must be real rigid-body prims in the active PhysX variant. EEF/object position
-is the selected body's origin; object velocity is PhysX's measured linear
-velocity. Goal may be a rigid body or a static Xform. The reference must be
-stationary, right-handed, unit-scale, and have no animated/rigid-body ancestors.
-Moving reference frames are explicitly unsupported.
+Vector environment overrides are JSON arrays; none are needed for this scene.
+ROS vectors use double arrays. All local geometry is validated; zero
+quaternions, non-finite values, and nonpositive half extents fail clearly.
+`BFM_GOAL_PRIM_PATH`/`goal_prim_path` are rejected with a migration error: use a
+container rigid-body path plus local OBB geometry. A static old goal frame is
+not silently reinterpreted as a moving container.
 
-The saved robot has `Physics` variants: sampling validates the currently active
-runtime stage. It does not select variants or change the model. An inactive
-physics variant or a visual-only mesh path fails clearly. PhysX tensor views
-read live positions/velocity even when Fabric disables USD pose writeback;
-only static reference/goal transforms are read from USD. Positions and linear
-velocities are converted from stage units to m and m/s in the same reference
-basis. No command target is used as an observation.
+The launcher forwards this configuration to the recorder. The active Isaac
+process must inherit it or receive matching function/ROS parameter overrides.
+Scene files are read at node startup; restart both publisher and recorder after
+changing JSON. The publisher snapshots its ROS parameters at startup, while
+the recorder snapshots its values per episode. Keep them identical. Metadata
+records configured geometry and provenance; it does not claim live validation.
+The existing top-level `scene` episode parameter remains configurable; the
+BFM task-state provenance explicitly identifies the composed sorting stage.
 
-After configuring the shared environment, run in Isaac's Script Editor:
+### Build, launch, and inspect inside Isaac
+
+This is a breaking `BfmState` type update, not an action-contract change. Stop
+the old state publisher (`bfm_state_handle.stop()`), rebuild both packages,
+and source the new interfaces in the existing Isaac environment:
+
+```bash
+cd /workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select dynamic_biped isaac_eff_control
+source install/setup.bash
+ros2 interface show dynamic_biped/msg/BfmState
+cd ..
+BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
+```
+
+Isaac's Python needs the same built packages and compatible Jazzy rclpy. If it
+already loaded the old generated message, restart that Isaac process so it
+loads the new type. Use the same ROS domain/discovery environment as before.
+No container is created by the launcher.
+
+Load the current sorting stage and use its working PhysX variant. In Script
+Editor, with default scene paths (no initial world XYZ to enter):
 
 ```python
 from isaac_eff_control.bfm_task_state import start_task_state_publisher
 
-# On a repeated run first call bfm_state_handle.stop().
+# If already running: bfm_state_handle.stop()
 bfm_state_handle = start_task_state_publisher(bfm_collection_mode=True)
 ```
 
-Alternatively pass `eef_prim_path`, `object_prim_path`, `goal_prim_path`,
-`reference_prim_path`, and `state_frame` as keyword ROS parameter overrides;
-use identical values for the recorder parameters. Empty/invalid paths fail
-setup, without publishing fabricated zeros. Keep the handle alive. It samples
-once per native Kit post-update with new simulation time while Play advances,
-independently of the 10 Hz gateway. Stop/Play recreates physics views; changing
-the stage or encountering runtime read errors disables publication with an
-error until restarted. Call `bfm_state_handle.stop()` when finished. This hook
-is started each Isaac session; camera preparation and saved USD are unchanged.
+Supply `scene_config_path` or individual parameter keywords for a different
+scene/reference. The publisher runs inside the active Isaac process, using
+its own rclpy context and a native Kit post-update callback while Play advances.
+It is independent of the 10 Hz action timer. Stop/Play recreates physics views;
+invalid roles, failed reads or a changed stage disable publication with an
+error, never fabricated zeros. Call `stop()` before re-running the helper.
+After Play, inspect the live resolution (all three counts must equal one):
 
-`BfmState` contains `std_msgs/Header header` and four `float64[3]` arrays:
-`right_eef_position`, `object_position`, `object_velocity`, and `goal_position`.
-All are measured simulator state, in SI units and the `header.frame_id` basis.
+```python
+print(bfm_state_handle.node.sampler.resolved_body_counts)
+```
+
+This runtime hook is started each Isaac session and changes neither persistent
+camera preparation nor USD/ActionGraph wiring. Its live checks cannot be
+certified by host-only OpenUSD or mocked-PhysX tests.
 
 ### BFM episode metadata and runtime checks
 
 Existing task/instruction, camera snapshot/provenance, timestamp policy, MCAP
 backend, episode directory layout, and clean-stop behavior are preserved.
 Every episode adds `bfm.enabled`, `policy_hz=10`, `policy_dt=0.1`, `action_dim=13`,
-explicit action names/order/units, and task-state paths/frame/units. Normal-mode
-episodes have `bfm.enabled=false`. Task-state configuration is provenance,
+explicit action names/order/units, and task-state paths/frame/units, xyzw
+convention, moving-OBB local geometry, selected scene-config hash/provenance,
+and the explicit object COM convention. Normal-mode episodes have `bfm.enabled=false`.
+Task-state configuration is provenance,
 not proof of runtime validity: `configured` indicates supplied paths and
 `runtime_verified` remains false. No synthetic observations are generated when
-task state is unconfigured. The twelve-topic default retains all eight original
-topics; absent optional BFM topics contribute no messages. `topics` remains
+configuration or sampling is invalid. The twelve-topic default retains all
+eight original topics; absent optional BFM topics contribute no messages. `topics` remains
 configurable. Nothing filters measured JointState or modifies camera streams.
 
 Verify on the actual Isaac/ROS2 environment:
@@ -472,6 +627,9 @@ Expect approximately 10 Hz canonical decisions with matching executed
 right-side targets, 50 Hz low-level hand output, and native-rate task state
 while Play advances. Confirm the gateway is the sole arm command publisher
 and the hand controller consumes only the held hand topic. Move the object
-and check measured position/velocity. Start/stop via the existing recording
+and check measured position/velocity. Translate the container: goal centre
+must follow. Rotate it: goal centre (because offset) and orientation must follow,
+with appropriate linear/angular velocity; half extents must stay fixed.
+Move the robot hand and verify EEF position. Start/stop via the existing recording
 Bool and inspect `ros2 bag info record_NAME/bag` and `episode.json`. Real
 Isaac PhysX/DDS/MCAP execution requires these checks; mocks cannot certify it.

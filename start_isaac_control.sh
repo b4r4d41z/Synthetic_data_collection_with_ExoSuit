@@ -11,11 +11,17 @@ case "$BFM_COLLECTION_MODE" in
   0|1) ;;
   *) echo "BFM_COLLECTION_MODE must be 0 or 1" >&2; exit 1 ;;
 esac
+if [[ -v BFM_GOAL_PRIM_PATH ]]; then
+  echo "BFM_GOAL_PRIM_PATH was removed; use BFM_CONTAINER_PRIM_PATH and a local OBB" >&2
+  exit 1
+fi
 # Existing tmux servers may retain an older environment. Pass this mode and
 # optional source/task-frame configuration explicitly into every node process.
 BFM_ENV="BFM_COLLECTION_MODE=$BFM_COLLECTION_MODE"
-for key in BFM_STATE_FRAME BFM_REFERENCE_PRIM_PATH BFM_EEF_PRIM_PATH \
-           BFM_OBJECT_PRIM_PATH BFM_GOAL_PRIM_PATH ARM_INPUT_TOPIC ARM_OUTPUT_TOPIC \
+for key in BFM_SCENE_CONFIG BFM_STATE_FRAME BFM_REFERENCE_PRIM_PATH BFM_EEF_PRIM_PATH \
+           BFM_OBJECT_PRIM_PATH BFM_CONTAINER_PRIM_PATH \
+           BFM_GOAL_LOCAL_CENTER BFM_GOAL_HALF_EXTENTS BFM_GOAL_LOCAL_ORIENTATION \
+           ARM_INPUT_TOPIC ARM_OUTPUT_TOPIC \
            ARM_INPUT_IS_DEGREES HAND_INPUT_TOPIC; do
   if [[ -v $key ]]; then
     printf -v quoted_value '%q' "${!key}"

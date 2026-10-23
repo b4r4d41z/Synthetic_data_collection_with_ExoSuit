@@ -23,7 +23,10 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool
 
-from .bfm_contract import collection_enabled, collection_metadata, state_defaults
+from .bfm_contract import (
+    collection_enabled, collection_metadata, scene_config_default,
+    scene_configuration, state_defaults,
+)
 
 
 RECORDING_TOPIC = "/data_collection/recording"
@@ -75,7 +78,12 @@ class SimRecorder(Node):
             "camera_metadata_path", str(Path(__file__).with_name("camera_metadata.json"))
         )
         self.declare_parameter("bfm_collection_mode", collection_enabled())
-        for name, default in state_defaults().items():
+        self._scene_config_path = self.declare_parameter(
+            "scene_config_path", scene_config_default()).value
+        defaults = state_defaults(self._scene_config_path)
+        self._state_parameter_names = tuple(defaults)
+        self._scene_configuration = scene_configuration(self._scene_config_path)
+        for name, default in defaults.items():
             self.declare_parameter(name, default)
         if not self.topics or any(
             not isinstance(topic, str)
@@ -159,7 +167,8 @@ class SimRecorder(Node):
             "cameras": cameras,
             "bfm": collection_metadata(
                 self.get_parameter("bfm_collection_mode").value,
-                {key: self.get_parameter(key).value for key in state_defaults()},
+                {key: self.get_parameter(key).value for key in self._state_parameter_names},
+                self._scene_configuration,
             ),
         }
 

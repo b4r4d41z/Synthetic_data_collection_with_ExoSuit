@@ -6,7 +6,7 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(),
-    package_data={package_name: ['camera_metadata.json']},
+    package_data={package_name: ['camera_metadata.json', 'sorting_scene.json']},
     data_files=[
         (
             'share/ament_index/resource_index/packages',
