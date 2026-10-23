@@ -3,6 +3,8 @@
 import importlib.util
 import hashlib
 import json
+import math
+import os
 from pathlib import Path
 import signal
 import subprocess
@@ -24,6 +26,7 @@ class Bool:
 class Message:
     def __init__(self):
         self.name, self.position, self.velocity, self.effort = [], [], [], []
+        self.left_hand_position, self.right_hand_position = [], []
         self.header = SimpleNamespace(
             stamp=SimpleNamespace(sec=0, nanosec=0, secs=0, nsecs=0),
             frame_id="",
@@ -31,6 +34,8 @@ class Message:
 
 
 def load_module(name, path):
+    if "isaac_eff_control/isaac_eff_control/" in path:
+        name = f"isaac_eff_control.{name}"
     spec = importlib.util.spec_from_file_location(name, ROOT / path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -40,11 +45,12 @@ def load_module(name, path):
 def ros_stubs(overrides):
     """Provide only the ROS surface needed by the actual production classes."""
     class Node:
-        def __init__(self, name):
+        def __init__(self, name, **kwargs):
             self.logger = Mock()
             self.publishers = {}
             self.subscriptions = {}
             self.parameters = {}
+            self.timers = []
             self.destroyed = False
 
         def declare_parameter(self, name, default):
@@ -65,7 +71,9 @@ def ros_stubs(overrides):
             return subscription
 
         def create_timer(self, period, callback):
-            return SimpleNamespace(period=period, callback=callback)
+            timer = SimpleNamespace(period=period, callback=callback)
+            self.timers.append(timer)
+            return timer
 
         def get_logger(self):
             return self.logger
@@ -99,6 +107,8 @@ def ros_stubs(overrides):
     modules["std_msgs.msg"].Bool = Bool
     modules["sensor_msgs.msg"].JointState = Message
     modules["dynamic_biped.msg"].RobotHandPosition = Message
+    modules["dynamic_biped.msg"].BfmAction = Message
+    modules["dynamic_biped.msg"].BfmState = Message
     modules["dynamic_biped.msg"].robotHandPosition = Message
     for name in ("Subscriber", "loginfo", "logwarn_throttle"):
         setattr(modules["rospy"], name, Mock())
@@ -111,6 +121,14 @@ def ros_stubs(overrides):
 
 class RecordingPipelineTests(unittest.TestCase):
     def setUp(self):
+        env_patch = patch.dict(os.environ, {"BFM_COLLECTION_MODE": "0"})
+        env_patch.start()
+        self.addCleanup(env_patch.stop)
+        path_patch = patch.object(sys, "path", [
+            str(ROOT / "exo2isaacsim/src/isaac_eff_control"), *sys.path,
+        ])
+        path_patch.start()
+        self.addCleanup(path_patch.stop)
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.overrides = {"output_root": str(Path(temporary.name) / "records")}
@@ -128,6 +146,7 @@ class RecordingPipelineTests(unittest.TestCase):
         self.ros2 = load_module(
             "test_ros2_publisher", "docker/exo_ros_bridge/ros2/bridge/ros2_publisher.py"
         )
+        self.original_popen = subprocess.Popen
         for module, attribute, target in (
             (self.recorder.subprocess, "Popen", "popen"),
             (self.recorder.os, "killpg", "killpg"),
@@ -151,6 +170,10 @@ class RecordingPipelineTests(unittest.TestCase):
             "/sensors/camera/left_wrist/image_raw",
             "/sensors/camera/right_wrist/image_raw",
             "/clock",
+            "/robot_arm_joint_command",
+            "/right_hand_joint_command",
+            "/bfm/action",
+            "/bfm/state",
         ]
         node = self.recorder.SimRecorder()
         self.assertEqual(node.topics, expected)
@@ -322,6 +345,8 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(self.ros1.ROS1_HAND_TOPIC, "/control_robot_hand_position")
         self.assertIn("/robot/command/arm_joint_target", arm.subscriptions)
         self.assertIn("/robot/command/hand_target", hand.subscriptions)
+        self.assertEqual(hand.subscriptions["/robot/command/hand_target"].qos.reliability,
+                         "best_effort")
         self.assertIn(arm_module.INPUT_TOPIC, bridge.publishers)
         self.assertIn(hand_module.HAND_INPUT_TOPIC, bridge.publishers)
         self.assertEqual(len(bridge.publishers), 3)  # No duplicate alias publishers.
@@ -547,6 +572,309 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(arm.header.stamp.sec, 12)
         self.assertEqual(arm.header.stamp.nanosec, 345)
         self.assertEqual(arm.header.frame_id, "exo")
+
+
+    def make_gateway(self):
+        self.overrides["bfm_collection_mode"] = True
+        module = load_module("test_bfm_gateway",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_action_gateway.py")
+        return module, module.BfmActionGateway()
+
+    def arm_source(self):
+        message = Message()
+        # Interleave sides and reverse order; array positions are not the contract.
+        message.name = [f"zarm_{side}{i}_joint" for i in range(7, 0, -1) for side in "lr"]
+        message.position = [i / 10 for i in range(14)]
+        message.header.stamp.sec = 1234
+        return message
+
+    def hand_source(self, right=None):
+        message = Message()
+        message.left_hand_position = [6, 5, 4, 3, 2, 1]
+        message.right_hand_position = right if right is not None else [0, 100, 42, 44, 61, 60]
+        message.header.stamp.sec = 1792639761
+        return message
+
+    def test_bfm_is_opt_in_and_normal_controller_rates_are_unchanged(self):
+        module = load_module("test_disabled_gateway",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_action_gateway.py")
+        gateway = module.BfmActionGateway()
+        gateway.policy_tick()
+        self.assertFalse(gateway.enabled)
+        self.assertEqual(gateway.publishers, {})
+        arm_module = load_module("test_normal_arm",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/arm_control_node.py")
+        hand_module = load_module("test_normal_hand",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py")
+        self.assertIn("/robot_arm_joint_command", arm_module.ArmControlNode().publishers)
+        hand = hand_module.IsaacEffControlNode()
+        self.assertIn("/robot/command/hand_target", hand.subscriptions)
+        self.assertEqual(hand.timer.period, .02)
+        self.assertEqual(hand_module.PUBLISH_HZ, 50.)
+        self.assertFalse(self.recorder.SimRecorder().episode_metadata()["bfm"]["enabled"])
+
+    def test_bfm_routing_reuses_mapping_and_cannot_bypass_hold_via_output_override(self):
+        with patch.dict(os.environ, {"BFM_COLLECTION_MODE": "1", "ARM_OUTPUT_TOPIC": "/bypass"}):
+            arm_module = load_module("test_bfm_arm",
+                "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/arm_control_node.py")
+            hand_module = load_module("test_bfm_hand",
+                "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py")
+        arm, hand = arm_module.ArmControlNode(), hand_module.IsaacEffControlNode()
+        self.assertIn("/bfm/source/arm_joint_target_rad", arm.publishers)
+        self.assertNotIn("/robot_arm_joint_command", arm.publishers)
+        self.assertNotIn("/bypass", arm.publishers)
+        self.assertIn("/bfm/command/hand_target", hand.subscriptions)
+        self.assertEqual(hand.subscriptions["/bfm/command/hand_target"].qos.reliability,
+                         "reliable")
+        self.assertNotIn("/robot/command/hand_target", hand.subscriptions)
+        _, gateway = self.make_gateway()
+        source = self.arm_source()
+        raw_positions = list(source.position)
+        arm.arm_callback(source)
+        mapped = arm.pub.publish.call_args.args[0]
+        gateway.arm_callback(mapped)
+        gateway.hand_callback(self.hand_source())
+        gateway.policy_tick()
+        executed = gateway.arm_pub.publish.call_args.args[0]
+        action = gateway.action_pub.publish.call_args.args[0]
+        by_name = dict(zip(executed.name, executed.position))
+        expected = [math.radians(dict(zip(source.name, source.position))[f"zarm_l{i}_joint"])
+                    for i in range(1, 8)]
+        self.assertEqual(action.right_arm_target, expected)
+        self.assertEqual(action.right_arm_target, [by_name[n] for n in action.right_arm_joint_names])
+        self.assertEqual(source.position, raw_positions)  # Raw degrees were not rewritten.
+
+    def test_bfm_gateway_honors_configured_raw_hand_input(self):
+        with patch.dict(os.environ, {"HAND_INPUT_TOPIC": "/configured/raw_hand"}):
+            _, gateway = self.make_gateway()
+        self.assertIn("/configured/raw_hand", gateway.subscriptions)
+
+    def test_gateway_waits_for_both_sources_and_only_timer_can_forward(self):
+        _, gateway = self.make_gateway()
+        gateway.policy_tick()
+        gateway.arm_callback(self.arm_source())
+        gateway.policy_tick()
+        for publisher in (gateway.action_pub, gateway.arm_pub, gateway.hand_pub):
+            publisher.publish.assert_not_called()
+        self.assertTrue(gateway.logger.warning.called)
+        gateway.hand_callback(self.hand_source())
+        gateway.action_pub.publish.assert_not_called()
+        gateway.policy_tick()
+        gateway.action_pub.publish.assert_called_once()
+
+    def test_gateway_canonical_order_and_executed_13d_targets_match_exactly(self):
+        _, gateway = self.make_gateway()
+        arm, hand = self.arm_source(), self.hand_source()
+        gateway.arm_callback(arm)
+        gateway.hand_callback(hand)
+        gateway.policy_tick()
+        action = gateway.action_pub.publish.call_args.args[0]
+        self.assertEqual(action.right_arm_joint_names, [f"zarm_r{i}_joint" for i in range(1, 8)])
+        positions = dict(zip(arm.name, arm.position))
+        self.assertEqual(action.right_arm_target, [positions[n] for n in action.right_arm_joint_names])
+        self.assertEqual(len(action.right_arm_target) + len(action.right_hand_target), 13)
+        self.assertEqual(action.right_hand_target, [0, 100, 42, 44, 61, 60])
+        executed_hand = gateway.hand_pub.publish.call_args.args[0]
+        executed_arm = gateway.arm_pub.publish.call_args.args[0]
+        self.assertEqual(executed_hand.right_hand_position, action.right_hand_target)
+        self.assertEqual(executed_hand.left_hand_position, hand.left_hand_position)
+        self.assertEqual(executed_arm.position, arm.position)
+        self.assertEqual(executed_arm.header.stamp.sec, 1234)
+        self.assertEqual(executed_hand.header.stamp.sec, 1792639761)
+
+    def test_high_rate_sources_change_only_the_next_policy_snapshot(self):
+        _, gateway = self.make_gateway()
+        gateway.arm_callback(self.arm_source())
+        gateway.hand_callback(self.hand_source())
+        self.assertEqual(gateway.timer.period, .1)
+        gateway.policy_tick()
+        first = gateway.hand_pub.publish.call_args.args[0]
+        arm = self.arm_source()
+        hand = self.hand_source()
+        for value in (10, 20, 30, 40):
+            arm.position = [value / 100] * 14
+            hand.right_hand_position = [value] * 6
+            gateway.arm_callback(arm)
+            gateway.hand_callback(hand)
+        # Mutating source objects after callbacks cannot mutate buffered values.
+        arm.position[0] = 999.
+        hand.right_hand_position[0] = 99
+        for publisher in (gateway.action_pub, gateway.arm_pub, gateway.hand_pub):
+            publisher.publish.assert_called_once()
+        self.assertEqual(first.right_hand_position, [0, 100, 42, 44, 61, 60])
+        gateway.policy_tick()
+        action = gateway.action_pub.publish.call_args.args[0]
+        self.assertEqual(action.right_arm_target, [.4] * 7)
+        self.assertEqual(action.right_hand_target, [40] * 6)
+        self.assertEqual(gateway.action_pub.publish.call_count, 2)
+
+    def test_low_level_hand_interpolation_runs_five_times_per_policy_interval(self):
+        with patch.dict(os.environ, {"BFM_COLLECTION_MODE": "1"}):
+            hand_module = load_module("test_hand_policy_rate",
+                "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py")
+        hand = hand_module.IsaacEffControlNode()
+        _, gateway = self.make_gateway()
+        gateway.arm_callback(self.arm_source())
+        gateway.hand_callback(self.hand_source([80] * 6))
+        gateway.policy_tick()
+        hand.hand_callback(gateway.hand_pub.publish.call_args.args[0])
+        for _ in range(5):
+            gateway.hand_callback(self.hand_source([10] * 6))
+            hand.timer_callback()
+            self.assertEqual(hand.target_right_values, [80] * 6)
+        gateway.action_pub.publish.assert_called_once()
+        self.assertEqual(hand.pub_right.publish.call_count, 5)
+        self.assertEqual(hand.timer.period, .02)
+
+    def test_gateway_rejects_invalid_arm_and_hand_sources(self):
+        _, gateway = self.make_gateway()
+        gateway.hand_callback(self.hand_source())
+        for kind in ("missing", "duplicate", "nan"):
+            arm = self.arm_source()
+            if kind == "missing":
+                arm.name.pop()
+                arm.position.pop()
+            elif kind == "duplicate":
+                arm.name[0] = arm.name[1]
+            else:
+                arm.position[0] = float("nan")
+            gateway.arm_callback(arm)
+            gateway.policy_tick()
+        gateway.arm_callback(self.arm_source())
+        for values in ([], [1] * 5, [101] * 6, [float("nan")] * 6):
+            gateway.hand_callback(self.hand_source(values))
+            gateway.policy_tick()
+        gateway.action_pub.publish.assert_not_called()
+
+    def test_bfm_metadata_extends_existing_camera_and_timestamp_metadata(self):
+        self.overrides.update(bfm_collection_mode=True, task_id="sort_v2",
+                              instruction="Sort items with all six Sharpa channels.",
+                              state_frame="fixture", reference_prim_path="/World/Fixture")
+        node = self.recorder.SimRecorder()
+        node.recording_callback(Bool(True))
+        metadata = json.loads((node._episode_path / "episode.json").read_text())
+        self.assertEqual(metadata["task_id"], "sort_v2")
+        self.assertEqual(metadata["instruction"], self.overrides["instruction"])
+        self.assertEqual(metadata["recording"]["storage_id"], "mcap")
+        self.assertEqual(metadata["time"], {"synchronization_source": "rosbag_record_timestamp",
+                                            "header_stamp": "source_native"})
+        snapshot = json.loads(Path(self.recorder.__file__).with_name("camera_metadata.json").read_text())
+        self.assertEqual(metadata["cameras"], snapshot["cameras"])
+        self.assertEqual(metadata["camera_configuration"], snapshot["provenance"])
+        bfm = metadata["bfm"]
+        self.assertTrue(bfm["enabled"])
+        self.assertEqual((bfm["policy_hz"], bfm["policy_dt"], bfm["action_dim"]), (10, .1, 13))
+        self.assertEqual(bfm["action_semantics"]["right_arm"]["unit"], "rad")
+        self.assertEqual(bfm["action_semantics"]["right_hand"]["range"], [0, 100])
+        self.assertEqual(bfm["action_semantics"]["right_hand"]["value_order"],
+                         [f"right_hand_position[{i}]" for i in range(6)])
+        self.assertEqual(bfm["task_state"]["frame"], "fixture")
+        self.assertEqual(bfm["task_state"]["position_unit"], "m")
+        self.assertEqual(bfm["task_state"]["velocity_unit"], "m/s")
+        self.assertFalse(bfm["task_state"]["configured"])
+        self.assertFalse(bfm["task_state"]["runtime_verified"])
+
+    def test_task_state_native_updates_are_independent_of_policy_rate(self):
+        self.overrides["bfm_collection_mode"] = True
+        module = load_module("test_task_state",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_task_state.py")
+        measured = [[1., 2., 3.], [4., 5., 6.], [.1, .2, .3], [7., 8., 9.]]
+        sampler = Mock(read=Mock(return_value=measured))
+        node = module.BfmTaskStatePublisher("stage", sampler_factory=Mock(return_value=sampler))
+        for t in (.02, .04, .06, .08, .1):
+            node.publish_at(t)
+        self.assertEqual(node.publisher.publish.call_count, 5)
+        node.publish_at(.1)
+        self.assertEqual(node.publisher.publish.call_count, 5)
+        message = node.publisher.publish.call_args.args[0]
+        self.assertEqual(message.object_velocity, [.1, .2, .3])
+        self.assertEqual(message.object_position, [4., 5., 6.])
+        self.assertEqual(message.header.frame_id, "world")
+        self.assertEqual(message.header.stamp.nanosec, 100000000)
+
+    def test_task_state_is_disabled_by_default_and_rejects_invalid_measurements(self):
+        module = load_module("test_task_state_invalid",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_task_state.py")
+        factory = Mock()
+        disabled = module.BfmTaskStatePublisher("stage", sampler_factory=factory)
+        disabled.publish_at(.02)
+        factory.assert_not_called()
+        self.assertEqual(disabled.publishers, {})
+        self.overrides["bfm_collection_mode"] = True
+        with self.assertRaisesRegex(ValueError, "missing prim"):
+            module.BfmTaskStatePublisher("stage", sampler_factory=Mock(
+                side_effect=ValueError("missing prim")))
+        sampler = Mock(read=Mock(return_value=[[float("nan")] * 3] * 4))
+        node = module.BfmTaskStatePublisher("stage", sampler_factory=Mock(return_value=sampler))
+        with self.assertRaises(ValueError):
+            node.publish_at(.02)
+        node.publisher.publish.assert_not_called()
+
+    @unittest.skipUnless(importlib.util.find_spec("pxr"), "Requires OpenUSD, not Isaac GUI")
+    def test_sampler_uses_measured_velocity_and_converts_reference_frame_and_si_units(self):
+        from pxr import Usd, UsdGeom, UsdPhysics
+
+        module = load_module("test_task_sampler",
+            "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_task_state.py")
+        stage = Usd.Stage.CreateInMemory()
+        UsdGeom.SetStageMetersPerUnit(stage, .01)
+        UsdGeom.Xform.Define(stage, "/World")
+        reference = UsdGeom.Xform.Define(stage, "/World/Reference")
+        reference.AddTranslateOp().Set((10., 0., 0.))
+        reference.AddRotateZOp().Set(90.)
+        for name in ("Eef", "Object"):
+            prim = UsdGeom.Xform.Define(stage, "/World/" + name).GetPrim()
+            UsdPhysics.RigidBodyAPI.Apply(prim)
+        goal = UsdGeom.Xform.Define(stage, "/World/Reference/Goal")
+        goal.AddTranslateOp().Set((50., 0., 0.))
+        config = dict(state_frame="fixture", reference_prim_path="/World/Reference",
+                      eef_prim_path="/World/Eef", object_prim_path="/World/Object",
+                      goal_prim_path="/World/Reference/Goal")
+        eef = SimpleNamespace(count=1, get_transforms=lambda: [[10., 100., 0., 0., 0., 0., 1.]])
+        obj = SimpleNamespace(count=1, get_transforms=lambda: [[10., 200., 0., 0., 0., 0., 1.]],
+                              get_velocities=lambda: [[0., 100., 0., 0., 0., 0.]])
+        simulation = Mock(create_rigid_body_view=Mock(side_effect=[eef, obj]))
+        values = module.IsaacTaskSampler(stage, config, simulation).read()
+        for actual, expected in zip(values, [[1, 0, 0], [2, 0, 0], [1, 0, 0], [.5, 0, 0]]):
+            for a, b in zip(actual, expected):
+                self.assertAlmostEqual(a, b)
+        for key, value in (("object_prim_path", ""), ("goal_prim_path", "/World/Missing"),
+                           ("reference_prim_path", "/World/Eef"),
+                           ("eef_prim_path", "/World/Reference")):
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                module.IsaacTaskSampler(stage, {**config, key: value}, simulation)
+        invalid = Mock(create_rigid_body_view=Mock(return_value=SimpleNamespace(count=0)))
+        with self.assertRaises(ValueError):
+            module.IsaacTaskSampler(stage, config, invalid).read()
+
+    def test_launcher_adds_gateway_only_in_bfm_mode_and_passes_configuration(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        directory = Path(temporary.name)
+        fake_tmux = directory / "tmux"
+        fake_tmux.write_text(
+            f"#!{sys.executable}\nimport json, os, sys\n"
+            "with open(os.environ['TEST_TMUX_LOG'], 'a') as out:\n"
+            "    out.write(json.dumps(sys.argv[1:]) + '\\n')\nprint('%1')\n"
+        )
+        fake_tmux.chmod(0o755)
+        for enabled in ("0", "1"):
+            log = directory / f"tmux_{enabled}.jsonl"
+            # The fake tmux logs commands; it starts no controller or ROS process.
+            with patch.object(self.recorder.subprocess, "Popen", self.original_popen):
+                subprocess.run(["bash", str(ROOT / "start_isaac_control.sh")], check=True,
+                    stdout=subprocess.DEVNULL, env={**os.environ,
+                        "PATH": str(directory) + os.pathsep + os.environ["PATH"],
+                        "TEST_TMUX_LOG": str(log), "BFM_COLLECTION_MODE": enabled,
+                        "BFM_STATE_FRAME": "fixture", "BFM_OBJECT_PRIM_PATH": "/World/Object"})
+            calls = [json.loads(line) for line in log.read_text().splitlines()]
+            commands = [c[3] for c in calls if c[0] == "send-keys"]
+            self.assertEqual(len(commands), 4 if enabled == "1" else 3)
+            self.assertEqual(any("bfm_action_gateway_node" in c for c in commands), enabled == "1")
+            for command in commands:
+                self.assertIn(f"BFM_COLLECTION_MODE={enabled}", command)
+                self.assertIn("BFM_STATE_FRAME=fixture", command)
+                self.assertNotIn("colcon build", command)
 
 
 if __name__ == "__main__":

@@ -23,6 +23,8 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool
 
+from .bfm_contract import collection_enabled, collection_metadata, state_defaults
+
 
 RECORDING_TOPIC = "/data_collection/recording"
 DEFAULT_TOPICS = [
@@ -34,6 +36,10 @@ DEFAULT_TOPICS = [
     "/sensors/camera/left_wrist/image_raw",
     "/sensors/camera/right_wrist/image_raw",
     "/clock",
+    "/robot_arm_joint_command",
+    "/right_hand_joint_command",
+    "/bfm/action",
+    "/bfm/state",
 ]
 
 EPISODE_PARAMETERS = {
@@ -68,6 +74,9 @@ class SimRecorder(Node):
         self.declare_parameter(
             "camera_metadata_path", str(Path(__file__).with_name("camera_metadata.json"))
         )
+        self.declare_parameter("bfm_collection_mode", collection_enabled())
+        for name, default in state_defaults().items():
+            self.declare_parameter(name, default)
         if not self.topics or any(
             not isinstance(topic, str)
             or not topic.startswith("/")
@@ -148,6 +157,10 @@ class SimRecorder(Node):
             },
             "camera_configuration": snapshot["provenance"],
             "cameras": cameras,
+            "bfm": collection_metadata(
+                self.get_parameter("bfm_collection_mode").value,
+                {key: self.get_parameter(key).value for key in state_defaults()},
+            ),
         }
 
     def start_recording(self):

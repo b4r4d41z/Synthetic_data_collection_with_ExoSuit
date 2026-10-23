@@ -8,11 +8,14 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import JointState
 
+from .bfm_contract import ARM_SOURCE_TOPIC, collection_enabled
+
 
 INPUT_TOPIC = os.getenv("ARM_INPUT_TOPIC", "/robot/command/arm_joint_target")
 # Internal radians/name-mapped JointState consumed by the saved Isaac graph.
 # Keep this distinct from the bridge's raw ExoSuit targets for compatibility.
-OUTPUT_TOPIC = os.getenv("ARM_OUTPUT_TOPIC", "/robot_arm_joint_command")
+OUTPUT_TOPIC = (ARM_SOURCE_TOPIC if collection_enabled() else
+                os.getenv("ARM_OUTPUT_TOPIC", "/robot_arm_joint_command"))
 
 # Данные из экзоскелета сейчас выглядят как градусы.
 INPUT_IS_DEGREES = os.getenv("ARM_INPUT_IS_DEGREES", "1") == "1"

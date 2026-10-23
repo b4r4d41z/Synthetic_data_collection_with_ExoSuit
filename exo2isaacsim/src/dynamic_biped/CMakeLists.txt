@@ -7,6 +7,8 @@ find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotHandPosition.msg"
+  "msg/BfmAction.msg"
+  "msg/BfmState.msg"
   DEPENDENCIES std_msgs
 )
 

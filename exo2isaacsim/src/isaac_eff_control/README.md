@@ -69,8 +69,8 @@ production scripts and must not publish that different type on the semantic
 currently present in this repository; the table also defines the name mapping
 for historical bags when converters are added.
 
-The default recorded topics include actions, recording state, and Isaac Sim
-observations:
+The default recorded topics include raw inputs, executed commands, optional
+BFM decisions/task state, recording state, and Isaac Sim observations:
 
 ```text
 /robot/command/hand_target
@@ -81,9 +81,13 @@ observations:
 /sensors/camera/left_wrist/image_raw
 /sensors/camera/right_wrist/image_raw
 /clock
+/robot_arm_joint_command
+/right_hand_joint_command
+/bfm/action
+/bfm/state
 ```
 
-All eight topics are recorded independently at their native rates using the
+All twelve topics are recorded independently at their native rates using the
 explicit MCAP storage backend (`ros2 bag record --storage mcap`). The complete
 robot JointState (`name`, `position`, `velocity`, and `effort`) is retained.
 Public arm targets retain ExoSuit-side degrees; only the existing arm controller
@@ -197,7 +201,8 @@ bash start_isaac_control.sh
 ```
 
 The launcher opens hand-controller, arm-controller, and recorder panes with the
-same ROS domain/discovery settings. It does not build or start a container.
+same ROS domain/discovery settings. BFM mode adds one gateway pane. It does not
+build or start a container.
 Build both selected packages: `isaac_eff_control` depends on the local
 `dynamic_biped` interfaces, and building only the former can leave an unknown
 `dynamic_biped` package at runtime.
@@ -205,7 +210,7 @@ Stop an active recording before replacing a tmux session, allowing metadata to
 finish writing before launching another recorder.
 
 Startup parameters can also be supplied when running the recorder directly
-(stop the existing recorder first). Omitting `topics` uses all eight defaults
+(stop the existing recorder first). Omitting `topics` uses all twelve defaults
 above; setting `topics` replaces the complete list:
 
 ```bash
@@ -286,5 +291,187 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
 
 These tests mock ROS, ZMQ, and subprocesses. Real DDS durability and rosbag
 metadata finalization require the manual checks above.
-The saved-graph topic test runs when OpenUSD (`pxr`) is available, as in Isaac
-Sim; otherwise that single test is skipped.
+The camera/saved-graph and task-sampler checks run when OpenUSD (`pxr`) is
+available; otherwise those checks are skipped. PhysX views are mocked in the
+sampler test; no host-only test claims an Isaac runtime check.
+
+## Optional BFM demonstration collection
+
+The default `BFM_COLLECTION_MODE=0` retains the existing direct teleoperation
+pipeline, semantic topic names, side mapping, degree conversion, and 50 Hz
+Sharpa interpolation. Enable the additional mode after rebuilding both
+`dynamic_biped` and `isaac_eff_control` with the build command above:
+
+```bash
+cd /workspace/Synthetic_data_collection_with_ExoSuit
+BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
+```
+
+The bridge already publishes the semantic raw topics; no bridge, ROS1, USD,
+camera, or ActionGraph change is needed. Stop an active bag before replacing
+the tmux session. The launcher supplies the same mode to both controllers,
+the recorder, and the gateway, including with an already running tmux server.
+Set `BFM_COLLECTION_MODE=0` to return to direct control. Existing legacy topic
+overrides still work in normal mode; the gateway also honors `HAND_INPUT_TOPIC`
+for a configured raw hand source.
+
+```text
+ROS1 -> existing ZMQ bridge -> raw ROS2 arm + hand targets
+  arm -> existing arm_control_node (side mapping, degrees -> radians)
+      -> /bfm/source/arm_joint_target_rad --------+
+  raw RobotHandPosition ------------------------+-> gateway @ 10 Hz
+                                                       |
+                      +--------------------------------+-------------------+
+                      v                                v                   v
+             /robot_arm_joint_command      /bfm/command/hand_target     /bfm/action
+                      |                                |
+             existing Isaac graph          existing eff_control_node @ 50 Hz
+                                                       |
+                                         /{left,right}_hand_joint_command
+                                                       |
+                                               existing Isaac graph
+```
+
+Source callbacks only update buffers. Every 100 ms a timer snapshots the
+latest valid full arm and full hand targets, forwards them, and publishes the
+same right-side values as `/bfm/action`. Between policy ticks the high-level
+targets stay held; the low-level hand trajectory continues. In BFM mode the
+arm mapper always publishes to the intermediate topic and the hand controller
+always consumes the held topic, preventing a direct-source bypass even if
+`ARM_OUTPUT_TOPIC`/`HAND_INPUT_TOPIC` were configured for normal mode. Stop any
+other direct controller instances before collecting; ROS remaps or a competing
+publisher can still bypass this routing.
+
+The held hand publisher/subscriber use reliable QoS in BFM mode; the bridge's
+high-rate raw arm/hand streams and normal hand input retain best-effort QoS.
+
+No decision is forwarded until both valid sources exist. Invalid/incomplete
+input is logged and blocks new decisions until replaced by valid input; the
+previous target remains held. There is no added source timeout/watchdog.
+Separate ROS publications are not an atomic transaction or a physics execution
+acknowledgement. The gateway is the actual command path, not a logging mirror.
+
+**BFM policy rate = 10 Hz does not mean Isaac simulation rate = 10 Hz.**
+Physics, joint states, cameras, task state, and the hand controller retain
+their native/faster rates. Nothing here resamples or aligns those streams.
+
+| Role | Topic | Payload |
+| --- | --- | --- |
+| Raw arm/provenance | `/robot/command/arm_joint_target` | JointState, ExoSuit degrees by default |
+| Raw hand/provenance | `/robot/command/hand_target` | RobotHandPosition, six 0..100 channels per hand |
+| Canonical action | `/bfm/action` | dynamic_biped/BfmAction, 13D |
+| Measured robot state | `/robot/state/joint_states` | Full simulator JointState, including measured Sharpa joints |
+| Measured task state | `/bfm/state` | dynamic_biped/BfmState, configured frame |
+| Executed arm/debug | `/robot_arm_joint_command` | Full mapped radians, held at 10 Hz in BFM mode |
+| Low-level hand/debug | `/right_hand_joint_command` | Interpolated physical joint targets, not the canonical action |
+
+`BfmAction` has `std_msgs/Header header`, `string[7] right_arm_joint_names`,
+`float64[7] right_arm_target`, and `float64[6] right_hand_target`. Arm values
+are absolute joint-position targets, extracted by name **after existing side
+mapping** in the explicit order `zarm_r1_joint` through `zarm_r7_joint`.
+Hand values preserve `right_hand_position[0..5]` in controller units `0..100`.
+The existing controller maps channel 0 to thumb MCP/IP, 1 to thumb CMC FE/AA,
+and 2..5 to index/middle/ring/pinky. Metadata uses the precise array-index
+order. No hand deg2rad, binary gripper, or [-1,1] normalization is introduced.
+Left arm/hand values are held too, but are not part of the canonical 13D action.
+
+New action headers use the gateway ROS clock (wall time by default, simulation
+time if `use_sim_time` is explicitly enabled). Forwarded command headers are
+preserved, including the existing mapped-arm timestamp behavior. Raw input
+headers are unchanged. Task-state headers use simulation time. The timestamp
+contract above remains authoritative: cross-topic synchronization uses the
+rosbag2/MCAP recorded-message timestamp, not a shared header clock.
+
+### Measured task state inside Isaac
+
+The recorder does not guess which scene objects are the manipulated object
+and goal. No generic object/goal paths are configured by default. Start the
+runtime publisher inside the active Isaac Sim process with the built packages
+on Isaac's Python path and compatible Jazzy rclpy; a separate external ROS
+process cannot read that simulator's live physics. It uses a separate rclpy
+context and does not change the existing ROS2 bridge context or ActionGraph.
+
+Use matching configuration for the recorder and the Isaac-side publisher:
+
+| Environment variable | ROS parameter | Default |
+| --- | --- | --- |
+| `BFM_COLLECTION_MODE` | `bfm_collection_mode` | false |
+| `BFM_STATE_FRAME` | `state_frame` | `world` |
+| `BFM_REFERENCE_PRIM_PATH` | `reference_prim_path` | `/` (stage world) |
+| `BFM_EEF_PRIM_PATH` | `eef_prim_path` | empty, must configure |
+| `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | empty, must configure |
+| `BFM_GOAL_PRIM_PATH` | `goal_prim_path` | empty, must configure |
+
+The launcher passes these environment values to the recorder. Isaac must
+inherit the same values when launched, or receive the matching parameter
+overrides in the function below. Set all three role paths to inspected prims
+from the actual loaded scene, without inventing coordinates. EEF and object
+must be real rigid-body prims in the active PhysX variant. EEF/object position
+is the selected body's origin; object velocity is PhysX's measured linear
+velocity. Goal may be a rigid body or a static Xform. The reference must be
+stationary, right-handed, unit-scale, and have no animated/rigid-body ancestors.
+Moving reference frames are explicitly unsupported.
+
+The saved robot has `Physics` variants: sampling validates the currently active
+runtime stage. It does not select variants or change the model. An inactive
+physics variant or a visual-only mesh path fails clearly. PhysX tensor views
+read live positions/velocity even when Fabric disables USD pose writeback;
+only static reference/goal transforms are read from USD. Positions and linear
+velocities are converted from stage units to m and m/s in the same reference
+basis. No command target is used as an observation.
+
+After configuring the shared environment, run in Isaac's Script Editor:
+
+```python
+from isaac_eff_control.bfm_task_state import start_task_state_publisher
+
+# On a repeated run first call bfm_state_handle.stop().
+bfm_state_handle = start_task_state_publisher(bfm_collection_mode=True)
+```
+
+Alternatively pass `eef_prim_path`, `object_prim_path`, `goal_prim_path`,
+`reference_prim_path`, and `state_frame` as keyword ROS parameter overrides;
+use identical values for the recorder parameters. Empty/invalid paths fail
+setup, without publishing fabricated zeros. Keep the handle alive. It samples
+once per native Kit post-update with new simulation time while Play advances,
+independently of the 10 Hz gateway. Stop/Play recreates physics views; changing
+the stage or encountering runtime read errors disables publication with an
+error until restarted. Call `bfm_state_handle.stop()` when finished. This hook
+is started each Isaac session; camera preparation and saved USD are unchanged.
+
+`BfmState` contains `std_msgs/Header header` and four `float64[3]` arrays:
+`right_eef_position`, `object_position`, `object_velocity`, and `goal_position`.
+All are measured simulator state, in SI units and the `header.frame_id` basis.
+
+### BFM episode metadata and runtime checks
+
+Existing task/instruction, camera snapshot/provenance, timestamp policy, MCAP
+backend, episode directory layout, and clean-stop behavior are preserved.
+Every episode adds `bfm.enabled`, `policy_hz=10`, `policy_dt=0.1`, `action_dim=13`,
+explicit action names/order/units, and task-state paths/frame/units. Normal-mode
+episodes have `bfm.enabled=false`. Task-state configuration is provenance,
+not proof of runtime validity: `configured` indicates supplied paths and
+`runtime_verified` remains false. No synthetic observations are generated when
+task state is unconfigured. The twelve-topic default retains all eight original
+topics; absent optional BFM topics contribute no messages. `topics` remains
+configurable. Nothing filters measured JointState or modifies camera streams.
+
+Verify on the actual Isaac/ROS2 environment:
+
+```bash
+ros2 topic hz /bfm/action
+ros2 topic echo /bfm/action
+ros2 topic echo /robot_arm_joint_command
+ros2 topic echo /bfm/command/hand_target
+ros2 topic hz /right_hand_joint_command
+ros2 topic echo /bfm/state --qos-reliability best_effort
+ros2 topic info /robot_arm_joint_command --verbose
+```
+
+Expect approximately 10 Hz canonical decisions with matching executed
+right-side targets, 50 Hz low-level hand output, and native-rate task state
+while Play advances. Confirm the gateway is the sole arm command publisher
+and the hand controller consumes only the held hand topic. Move the object
+and check measured position/velocity. Start/stop via the existing recording
+Bool and inspect `ros2 bag info record_NAME/bag` and `episode.json`. Real
+Isaac PhysX/DDS/MCAP execution requires these checks; mocks cannot certify it.

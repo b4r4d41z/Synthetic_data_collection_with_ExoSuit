@@ -10,8 +10,12 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from dynamic_biped.msg import RobotHandPosition
 from sensor_msgs.msg import JointState
 
+from .bfm_contract import HELD_HAND_TOPIC, collection_enabled
 
-HAND_INPUT_TOPIC = os.getenv("HAND_INPUT_TOPIC", "/robot/command/hand_target")
+
+BFM_COLLECTION_MODE = collection_enabled()
+HAND_INPUT_TOPIC = (HELD_HAND_TOPIC if BFM_COLLECTION_MODE else
+                    os.getenv("HAND_INPUT_TOPIC", "/robot/command/hand_target"))
 
 PUBLISH_HZ = 50.0
 
@@ -68,7 +72,8 @@ class IsaacEffControlNode(Node):
         input_qos = QoSProfile(
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
-            reliability=ReliabilityPolicy.BEST_EFFORT,
+            reliability=(ReliabilityPolicy.RELIABLE if BFM_COLLECTION_MODE else
+                         ReliabilityPolicy.BEST_EFFORT),
         )
 
         output_qos = QoSProfile(

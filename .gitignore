@@ -38,3 +38,28 @@ docker/exo_ros_bridge/**/__pycache__/
 
 # Historical host-side launcher (current deployment uses Docker bridges)
 start_isaac_bridge.sh
+
+# RoboLab objects: ignore everything by default
+models/addons/objects/*
+
+# --- orange1 ---
+!models/addons/objects/fruits_veggies/
+models/addons/objects/fruits_veggies/*
+
+!models/addons/objects/fruits_veggies/orange1.usd
+
+# Shared material definitions required by orange1
+!models/addons/objects/fruits_veggies/materials/
+!models/addons/objects/fruits_veggies/materials/**
+
+# Only orange1 textures
+!models/addons/objects/fruits_veggies/textures/
+models/addons/objects/fruits_veggies/textures/*
+!models/addons/objects/fruits_veggies/textures/orange_01/
+!models/addons/objects/fruits_veggies/textures/orange_01/**
+
+# --- container_b04 ---
+!models/addons/objects/vomp/
+models/addons/objects/vomp/*
+!models/addons/objects/vomp/container_b04/
+!models/addons/objects/vomp/container_b04/**

@@ -29,6 +29,7 @@ setup(
             'eff_control_node = isaac_eff_control.eff_control_node:main',
             'arm_control_node = isaac_eff_control.arm_control_node:main',
             'sim_recorder_node = isaac_eff_control.sim_recorder:main',
+            'bfm_action_gateway_node = isaac_eff_control.bfm_action_gateway:main',
         ],
     },
 )
