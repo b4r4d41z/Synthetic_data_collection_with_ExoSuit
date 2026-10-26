@@ -1,0 +1,21 @@
+[package]
+version = "0.1.0"
+title = "BFM Sorting Collection"
+description = "Per-episode fruit placement and native measured BFM state."
+category = "Simulation"
+
+[dependencies]
+"omni.usd" = {}
+"omni.timeline" = {}
+"omni.physx" = {}
+"omni.physics.tensors" = {}
+"isaacsim.ros2.bridge" = {}
+
+[[python.module]]
+name = "bfm_collection"
+
+[settings]
+app.python.extraPaths = [
+    "/workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim/build/isaac_eff_control",
+    "/workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim/install/dynamic_biped/lib/python3.12/site-packages"
+]

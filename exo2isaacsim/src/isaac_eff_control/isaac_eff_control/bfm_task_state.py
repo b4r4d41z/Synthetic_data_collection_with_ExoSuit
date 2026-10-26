@@ -1,8 +1,8 @@
 """Measured task state from the active Isaac process, without USD/graph edits.
 
-Run start_task_state_publisher() in Isaac's Script Editor with the built ROS2
-packages available to Isaac's Python. Keep its handle alive and call stop()
-before rerunning. Configuration and session setup are documented in README.
+The project-local bfm_collection extension owns start_task_state_publisher()
+automatically. The helper remains available for custom scenes; do not start a
+second publisher while the extension is active. See README for setup.
 """
 
 import math
@@ -211,6 +211,11 @@ class BfmTaskStatePublisher(Node):
         self.last_time = None
         self.sampler = None  # Recreate PhysX views after Stop/Play.
         self._reported_counts = False
+
+    def destroy_node(self):
+        # Release tensor views before the extension switches fruit references.
+        self.reset()
+        return super().destroy_node()
 
     def publish_at(self, simulation_seconds):
         if not self.enabled or simulation_seconds == self.last_time:

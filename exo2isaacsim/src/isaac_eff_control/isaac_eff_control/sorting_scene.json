@@ -5,7 +5,7 @@
     "state_frame": "world",
     "reference_prim_path": "/",
     "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-    "object_prim_path": "/World/orange1",
+    "object_prim_path": "/World/Task/Object",
     "container_prim_path": "/World/container_b04",
     "goal_local_center": [
       -0.08494214117424082,
@@ -26,11 +26,9 @@
   },
   "provenance": {
     "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
-    "scene_sha256": "250eaf0e1c50fb7d64728a586b0dbf44b7b3e0386af9496f9750f80dbf524fd0",
+    "scene_sha256": "24f7c9793d6033f1663a77d4e070e23972a656a301bd746f3bf392aec9d5caa1",
     "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
     "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
-    "orange_asset": "models/addons/objects/fruits_veggies/orange1.usd",
-    "orange_asset_sha256": "f3a8c7fc09b6d3d44ec88654fcfd3952e7baff711763b23fbedebc2e085679e3",
     "robot_root": "/World/s40_sharpa_two_cameras",
     "required_robot_physics_variant": "physx",
     "container_mesh": "/World/container_b04/Container_B04_01",
@@ -51,15 +49,51 @@
       0.11,
       0.118
     ],
-    "orange_skin_mesh": "/World/orange1/orange_01_inst/Orange_01/OrangeSkin",
-    "orange_skin_enclosing_radius_m": 0.03822402105197607,
     "clearance_radius_m": 0.039,
     "safety_margin_m": 0.003,
     "quaternion_convention": "xyzw; local goal axes relative to container body",
-    "method": "Inscribed box above the inner floor and below the rim, checked against all 5776 mesh triangles. XY and the ceiling are eroded by skin enclosing radius rounded to 39 mm plus 3 mm margin. The lower centre height is inner floor + minimum skin support radius (ConvexHull) - 3 mm contact tolerance, so normal resting poses remain successful. Mesh/body rotation is identity; local offsets include composed child translations. No initial world coordinates are stored.",
-    "object_position_semantics": "Live PhysX center of mass and its linear velocity, not the displaced body origin or authored USD position. Goal clearance is measured from fruit skin; the separately offset stem in the existing asset is not repaired here.",
+    "method": "Original fixed goal OBB retained: measured container interior, historical 39 mm clearance plus 3 mm margin and support-based floor bound. No fruit-specific goal recalibration in the randomized runtime.",
+    "object_position_semantics": "Live PhysX center of mass and linear velocity of the current /World/Task/Object rigid body.",
     "runtime_verified": false,
-    "orange_skin_minimum_support_radius_m": 0.03426520788759943,
-    "floor_contact_tolerance_m": 0.003
+    "floor_contact_tolerance_m": 0.003,
+    "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
+    "minimum_support_radius_m": 0.03426520788759943
+  },
+  "randomization": {
+    "object_assets": [
+      "models/addons/objects/fruits_veggies/avocado.usd",
+      "models/addons/objects/fruits_veggies/lemon1.usd",
+      "models/addons/objects/fruits_veggies/pomegranate.usd",
+      "models/addons/objects/fruits_veggies/orange2.usd"
+    ],
+    "object_spawn_region": {
+      "x_min": 0.95,
+      "x_max": 1.1,
+      "y_min": 3.99,
+      "y_max": 4.12
+    },
+    "table_prim_path": "/World/SM_SecretaryDeskA",
+    "yaw_min": -3.141592653589793,
+    "yaw_max": 3.141592653589793,
+    "seed": null,
+    "max_attempts": 100,
+    "clearance_m": 0.005,
+    "edge_margin_m": 0.025,
+    "obstacle_margin_m": 0.03,
+    "surface_tolerance_m": 0.002,
+    "placement_provenance": {
+      "baseline_commit": "e2350a71fa6ef9f14adc83e6cf349e27e076b783",
+      "reference_object_xy_m": [
+        1.023983120918274,
+        4.038509845733643
+      ],
+      "container_origin_xy_m": [
+        1.0898085832595825,
+        4.441446304321289
+      ],
+      "method": "Small 15 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
+      "table_geometry_host_verified": false,
+      "isaac_runtime_verified": false
+    }
   }
 }

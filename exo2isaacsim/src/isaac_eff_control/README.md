@@ -395,13 +395,14 @@ scene-level child transforms. Exact runtime paths are:
 ```text
 robot root: /World/s40_sharpa_two_cameras
 right EEF:  /World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC
-object:     /World/orange1
+object:     /World/Task/Object (created by the collection extension on Play)
 container:  /World/container_b04
 reference:  /                         (state_frame = world)
 ```
 
-These are active Xforms; object/container have RigidBodyAPI in the composed
-stage. The EEF is the physical right palm, not its visual mesh. It has
+The extension references the selected fruit default prim directly at the object
+path; that prim and the container have RigidBodyAPI in the composed stage.
+The EEF is the physical right palm, not its visual mesh. It has
 RigidBodyAPI in the robot's existing `Physics=physx` variant, inspected in an
 anonymous session layer without saving a USD. A plain OpenUSD load does not
 select that variant automatically. The runtime sampler requires actual rigid
@@ -409,14 +410,16 @@ bodies in the active Isaac scene and never selects or authors variants itself.
 Use the existing working PhysX import/variant workflow before starting it.
 Root/world is stationary, Z-up, with metersPerUnit=1 in this scene.
 
-No scene, mesh, collider, drive, or ActionGraph file is changed. No prim paths
+The template no longer contains the obsolete `/World/orange1` prim or payload.
+All other template prims, meshes, colliders, drives, and ActionGraphs are preserved.
+No prim paths
 are discovered by fuzzy names at runtime. All three exact physics views must
 resolve to **one** live body each; runtime errors/zero or multiple matches
 stop publication. USD schema checks here do not prove live PhysX resolution.
 The check and the resolved counts are logged on the first successful sample.
 
 ```text
-orange PhysX state -----------+
+current fruit PhysX state ----+
                               |
 right palm PhysX state -------+--> /bfm/state (native simulation updates)
                               |
@@ -427,8 +430,11 @@ goal local OBB ---------------+
 
 ### Interior OBB geometry and object centre
 
-The goal is an **oriented bounding box of allowed orange-skin centre positions**,
-not the container's exterior bounds or a world AABB. Inspection found the
+The goal remains the existing **oriented bounding box**, originally calibrated
+for orange-skin centre positions. It is kept unchanged for this task. Its
+clearance is not recalibrated for larger fruits such as pomegranate and must
+not be interpreted as a fruit-specific containment/success certificate. Inspection
+found the
 inner floor at mesh-local Z=0.010474558 m with a flat rectangle approximately
 X=+/-0.169402 m, Y=+/-0.118981 m, and the rim at Z=0.119978175 m. A conservative
 interior box was chosen at X=+/-0.160 m, Y=+/-0.110 m, Z=[0.011,0.118] m.
@@ -460,14 +466,10 @@ This is a geometric region, not a live collision/success certificate: the
 asset uses convex decomposition, whose cooked cavity must still be checked
 inside Isaac.
 
-The scene translates OrangeSkin beneath `/World/orange1`, so its rigid-body
-origin is not the fruit centre. `object_position` measures the live PhysX
-centre of mass, obtained from the live body pose and `get_coms()`;
-`object_velocity` is the measured COM linear velocity. No fixed object pose or
-local centre is configured. Object orientation is used internally to transform
-the measured COM offset, but no object orientation/angular-velocity fields are
-published. The separately offset stem already in the asset is excluded from
-the skin-based goal clearance; its geometry/collision setup is not repaired.
+The selected fruit's `object_position` measures its live PhysX centre of mass,
+obtained from body pose and `get_coms()`; `object_velocity` is measured COM
+linear velocity. No fixed object pose or local centre is configured. Orientation
+is used internally to transform the live COM offset. The state schema is unchanged.
 
 ### State schema, motion, frames, and configuration
 
@@ -493,8 +495,8 @@ simulation time, while **MCAP record timestamp remains authoritative for
 cross-topic synchronization**. Raw input timestamps and action semantics are
 unchanged. The old `goal_position` field is removed; rebuild message users.
 
-For each native update the sampler reads EEF, orange, and container poses and
-orange/container twists from PhysX tensors. For a body-local goal offset c:
+For each native update the sampler reads EEF, fruit, and container poses and
+fruit/container twists from PhysX tensors. For a body-local goal offset c:
 
 ```text
 r_world    = R_container * c
@@ -506,7 +508,7 @@ v_goal_world = v_container_origin + omega_world cross r_world
 PhysX linear velocities are at the centre of mass. The implementation reads
 `get_coms()` and first calculates
 `v_origin = v_COM - omega cross R_container*COM_local`. This matters because
-this container's auto-computed COM need not equal its body origin. The orange uses its live COM position and linear velocity directly. World vectors
+this container's auto-computed COM need not equal its body origin. The fruit uses its live COM position and linear velocity directly. World vectors
 and orientation are then rotated into the configured **static** reference;
 reference translation affects positions only. Angular velocity is never
 scaled as a linear length. Half extents are already physical meters even if
@@ -527,7 +529,7 @@ in-process publisher:
 | `BFM_STATE_FRAME` | `state_frame` | `world` |
 | `BFM_REFERENCE_PRIM_PATH` | `reference_prim_path` | `/` |
 | `BFM_EEF_PRIM_PATH` | `eef_prim_path` | exact right-palm path above |
-| `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | `/World/orange1` |
+| `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | `/World/Task/Object` |
 | `BFM_CONTAINER_PRIM_PATH` | `container_prim_path` | `/World/container_b04` |
 | `BFM_GOAL_LOCAL_CENTER` | `goal_local_center` | local OBB centre above |
 | `BFM_GOAL_HALF_EXTENTS` | `goal_half_extents` | local half extents above |
@@ -551,9 +553,8 @@ BFM task-state provenance explicitly identifies the composed sorting stage.
 
 ### Build, launch, and inspect inside Isaac
 
-This is a breaking `BfmState` type update, not an action-contract change. Stop
-the old state publisher (`bfm_state_handle.stop()`), rebuild both packages,
-and source the new interfaces in the existing Isaac environment:
+The collection extension automatically owns the state publisher. Build in the
+existing Isaac/ROS2 environment (both message and controller packages):
 
 ```bash
 cd /workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim
@@ -561,40 +562,171 @@ source /opt/ros/jazzy/setup.bash
 colcon build --symlink-install --packages-select dynamic_biped isaac_eff_control
 source install/setup.bash
 ros2 interface show dynamic_biped/msg/BfmState
-cd ..
+```
+
+Isaac's Python needs compatible Jazzy `rclpy` and these built interfaces.
+Restart Isaac after rebuilding a loaded message type. The state node still uses
+its own rclpy context and native Kit post-update callback, independent of 10 Hz
+actions. Do not manually start a second state publisher while the extension is active.
+
+### Persistent extension setup (Isaac Sim 6.1)
+
+The extension ID is **`bfm_collection`** at repository `exts/bfm_collection`.
+Enable Isaac's existing ROS2 bridge and working PhysX robot variant as before.
+The extension declares ROS2 bridge, USD, timeline, PhysX and tensor dependencies;
+it does not choose another robot variant or modify graphs.
+
+One-time GUI setup: in **Window > Extensions**, add
+`/workspace/Synthetic_data_collection_with_ExoSuit/exts` to the extension search
+paths, find **BFM Sorting Collection**, enable it, and turn on **Autoload**.
+Launch Isaac from an environment with the Jazzy setup and this workspace overlay
+sourced, using the same DDS domain/discovery settings as the external controllers.
+Confirm the extension remains enabled after restarting Isaac.
+
+Alternatively, the following launcher explicitly enables the extension on every
+launch, without requiring a saved GUI preference or Script Editor:
+
+```bash
+cd /workspace/Synthetic_data_collection_with_ExoSuit
+export ISAAC_SIM_PATH=/path/to/existing/isaac-sim
+bash launch_bfm_isaac.sh
+```
+
+It sources Jazzy and `exo2isaacsim/install/setup.bash`, then runs the existing
+`isaac-sim.sh --ext-folder REPO/exts --enable bfm_collection`. It does not build,
+create containers, or replace `start_isaac_control.sh`. For a custom Isaac launch
+command use those same Kit arguments after sourcing the overlay. Keep your
+existing ROS_STATIC_PEERS and other DDS settings consistent in both processes.
+
+Open `models/stages/stage_sorting_v1.usd` **with simulation stopped**. The
+extension activates only for this exact repository stage, not robot-only or
+other stages. Start the external stack in a separate terminal:
+
+```bash
+cd /workspace/Synthetic_data_collection_with_ExoSuit
 BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
 ```
 
-Isaac's Python needs the same built packages and compatible Jazzy rclpy. If it
-already loaded the old generated message, restart that Isaac process so it
-loads the new type. Use the same ROS domain/discovery environment as before.
-No container is created by the launcher.
+On Stop -> Play, an early timeline **push** callback synchronously composes one
+fruit and its initial pose before queued timeline consumers/physics updates;
+it then creates/retains the existing state-publisher handle. No asynchronous
+frame is used to switch a running fruit. Pause -> Play retains that episode.
+Duplicate Play events do nothing. Stop closes the publisher and releases its
+sampler/tensor views. Next Play creates a new body reference and new views.
+Stage close/replacement, extension disable and app shutdown close the handle
+and detach the owned runtime layer. Setup failures require fixing the error
+and reloading the extension with simulation stopped. Placement/startup errors
+cancel Play; live state-read failures disable publication and log the error.
+No invalid body or stale state is replaced with fabricated zeros.
 
-Load the current sorting stage and use its working PhysX variant. In Script
-Editor, with default scene paths (no initial world XYZ to enter):
+The early callback ordering, reset behavior, and PhysX initialization must be
+verified in the actual Isaac 6.1 build. Host-only tests cannot certify them.
+The extension does not change robot/container reset logic, native physics,
+cameras, ROS topics, action semantics or external process management.
+
+### Fruit composition and tabletop placement
+
+`sorting_scene.json.randomization` is separate from strict state `parameters`.
+The JSON whitelist contains only the four tracked fruits. Each inspected source
+has one dynamic rigid body at its default prim, but the visual hierarchies differ:
+
+| Asset | Default/body prim | Collision mesh descendants | Minimum local Z (m) |
+| --- | --- | --- | --- |
+| avocado.usd | `/avocado01` | `avocado01_inst/Avocado_01` | 0.0001744634 |
+| lemon1.usd | `/lemon_01` | `lemon_01_inst/Lemon_01` | 0.0011238913 |
+| pomegranate.usd | `/pomegranate01` | `pomegranate01_inst/pomegranate_01` | -0.0002100905 |
+| orange2.usd | `/orange_02` | `orange_02_inst/Orange_02/OrangeSkin` and `OrangeStem` | -0.0000598616 |
+
+All four are meter/Z-up, identity root transforms, with enabled collision meshes.
+The source default/body prim is referenced **directly** at `/World/Task/Object`,
+so that path inherits RigidBodyAPI and resolves the real body, not a visual
+wrapper above another body. Relative material/texture paths remain anchored to
+the source asset. Source assets are never rewritten. USD-level material/texture dependencies resolve
+on the host; NVIDIA MDL imports (including lemon's `OmniPBR_ClearCoat_Opacity`)
+also require Isaac's standard MDL search paths and a runtime appearance check.
+Unsupported/nonunique body
+layouts fail explicitly rather than being silently normalized incorrectly.
+The original orange1 file is not tracked, referenced, or required.
+
+The candidate rectangle is X=[0.95,1.10], Y=[3.99,4.12] m, a small 15 x 13 cm
+patch around the previously authored fruit XY=[1.0239831,4.0385098]. Container
+origin XY=[1.0898086,4.4414463] lies further back. These are **candidate bounds**,
+not certified physical table extents or a kinematic reachability calculation.
+The external NVIDIA desk payload could not be resolved on this host. Runtime
+must load `/World/SM_SecretaryDeskA` and validate geometry; no fallback Z is used.
+
+For each candidate, the runtime rotates the selected fruit's full geometry AABB
+by yaw, centres its footprint on sampled XY, and checks a 3x3 set of support
+points spanning the footprint plus 25 mm edge margin against composed horizontal
+table collision-mesh triangles (or box faces). All must have a support surface,
+with heights agreeing within 2 mm. Missing table geometry, gaps at these support
+points, or stepped/unsupported surfaces reject the pose. This conservative
+sample check targets the existing flat desktop; it is not a general geometric
+proof for arbitrary perforated or concave tabletops. The complete initial fruit
+AABB must also clear every container/robot collision-shape AABB by 30 mm.
+If all 100 attempts fail, Play is cancelled with a clear error.
+
+Z is `highest_support_surface - rotated_fruit_minimum_Z + 0.005 m`, including
+all visible/collision geometry (orange2 includes its stem). Fruit root origins
+are not assumed to be the lowest point. Only XY/asset/yaw are sampled; table,
+container, robot, gravity and materials are untouched. Reachability, contact
+settling/cooking and the final spawn rectangle require manual validation.
+
+An anonymous session sublayer owns only the task-object composition/transforms
+and a defensive deactivation of any legacy orange. Each episode clears that
+owned layer before referencing the next fruit, avoiding stale children/ops or
+velocity values. The source stage is not saved. Normal Save does not persist
+session layers; avoid Flatten/Export including runtime layers for a template.
+The extension removes its sublayer on cleanup.
+
+`seed` defaults to null; set an integer in the same JSON to repeat a sampling
+sequence. The RNG is seeded once when attaching the stage, not on every Play.
+Random sampling may select the same fruit in consecutive episodes; XY/yaw are
+resampled. The log prints asset, body-origin XYZ and yaw (radians) once per run.
+The recorder copies the randomization configuration as provenance, but does not
+claim to know the actual selected per-episode asset/pose. `episode.json` layout
+and recorder behavior are otherwise unchanged.
+
+Optional live diagnostics (no script is required to start collection):
 
 ```python
-from isaac_eff_control.bfm_task_state import start_task_state_publisher
-
-# If already running: bfm_state_handle.stop()
-bfm_state_handle = start_task_state_publisher(bfm_collection_mode=True)
+import bfm_collection
+print(bfm_collection.get_status())
 ```
 
-Supply `scene_config_path` or individual parameter keywords for a different
-scene/reference. The publisher runs inside the active Isaac process, using
-its own rclpy context and a native Kit post-update callback while Play advances.
-It is independent of the 10 Hz action timer. Stop/Play recreates physics views;
-invalid roles, failed reads or a changed stage disable publication with an
-error, never fabricated zeros. Call `stop()` before re-running the helper.
-After Play, inspect the live resolution (all three counts must equal one):
+After Play, `resolved_body_counts` must contain exactly one EEF, object, and
+container body, including `/World/Task/Object: 1`. A missing/zero/multiple body
+or failed tensor read disables measured publication.
 
-```python
-print(bfm_state_handle.node.sampler.resolved_body_counts)
+Host checks, with OpenUSD available in the host Python:
+
+```bash
+python3 -m unittest discover -s tests -p test_recording_pipeline.py -v
+python3 -m unittest discover -s tests -p test_bfm_goal_region.py -v
+python3 -m unittest discover -s tests -p test_bfm_collection_extension.py -v
+python3 -m pytest -q tests/test_hand_command_mapper.py
+bash -n launch_bfm_isaac.sh start_isaac_control.sh
+git diff --check
 ```
 
-This runtime hook is started each Isaac session and changes neither persistent
-camera preparation nor USD/ActionGraph wiring. Its live checks cannot be
-certified by host-only OpenUSD or mocked-PhysX tests.
+Manual runtime validation:
+
+1. Launch Isaac with the extension enabled; open the sorting template stopped.
+2. Confirm the log says `BFM collection ready`, and the robot uses its existing
+   working PhysX composition. There must be no active `/World/orange1`.
+3. Play: exactly one allowed fruit should appear on the tabletop, with one
+   `BFM collection episode object` log entry. Inspect `/World/Task/Object` for
+   RigidBodyAPI and active collisions; verify settling and reachable placement.
+4. Echo `/bfm/state` with the command below. Move the fruit and verify live COM
+   `object_position`/`object_velocity`; optionally inspect resolution counts above.
+5. Pause/resume: fruit/episode must stay the same, without another selection log.
+6. Stop, then Play: another selection/pose log appears, and state follows the
+   current fruit. Repeat several times, including different assets. Robot and
+   container must reset normally; the goal OBB calculation remains unchanged.
+7. Start/stop a short recording through the existing Bool control. Run
+   `ros2 bag info records/record_NAME/bag` and confirm MCAP plus `/bfm/state` with
+   nonzero message count. Reopen the source stage and confirm random poses were
+   not saved. Test stage close/reopen and extension disable/re-enable stopped.
 
 ### BFM episode metadata and runtime checks
 

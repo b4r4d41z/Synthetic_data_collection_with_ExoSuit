@@ -97,6 +97,7 @@ def scene_configuration(path):
     data = json.loads(content)
     return {"file": str(path), "sha256": hashlib.sha256(content).hexdigest(),
             "scene": data.get("scene"), "provenance": data.get("provenance", {}),
+            "randomization": data.get("randomization"),
             "runtime_verified": False}
 
 

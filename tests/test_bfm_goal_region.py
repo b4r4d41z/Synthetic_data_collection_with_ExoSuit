@@ -51,7 +51,7 @@ class GoalConfigTests(GoalTestBase):
 
     def test_scene_defaults_and_environment_overrides_are_explicit(self):
         config = self.contract.state_defaults()
-        self.assertEqual(config["object_prim_path"], "/World/orange1")
+        self.assertEqual(config["object_prim_path"], "/World/Task/Object")
         self.assertEqual(config["container_prim_path"], "/World/container_b04")
         self.assertTrue(config["eef_prim_path"].endswith("/right_hand_C_MC"))
         self.assertEqual(config["reference_prim_path"], "/")
@@ -261,24 +261,44 @@ class MovingGoalTests(GoalTestBase):
         self.assertVector(message.goal_center, [2.5, 0., 0.])
         self.assertFalse(hasattr(message, "goal_position"))
 
+    def test_reset_resolves_replaced_semantic_body_and_destroy_releases_old_views(self):
+        factory = Mock(side_effect=lambda stage, config: self.sampler())
+        publisher = self.module.BfmTaskStatePublisher(self.stage, sampler_factory=factory)
+        publisher.publish_at(.02)
+        old_view = publisher.sampler.views["object_prim_path"]
+        self.bodies["/World/Object"] = FakeBody(pose=[4., 5., 6., 0., 0., 0., 1.])
+        publisher.reset()
+        self.assertIsNone(publisher.sampler)
+        publisher.publish_at(.01)
+        self.assertIsNot(publisher.sampler.views["object_prim_path"], old_view)
+        self.assertVector(publisher.publisher.publish.call_args.args[0].object_position, [4., 5., 6.])
+        publisher.destroy_node()
+        self.assertIsNone(publisher.sampler)
+        self.assertIsNone(publisher.last_time)
+
     def test_packaged_scene_paths_and_interior_measurements_match_composed_assets(self):
         from pxr import Gf, Usd, UsdGeom, UsdPhysics
         data = json.loads(Path(self.contract.scene_config_default()).read_text())
         params, provenance = data["parameters"], data["provenance"]
         mask = Usd.StagePopulationMask()
-        for path in (params["object_prim_path"], params["container_prim_path"], provenance["robot_root"]):
+        for path in ("/World/Task", params["container_prim_path"], provenance["robot_root"]):
             mask.Add(path)
         stage = Usd.Stage.OpenMasked(str(ROOT/data["scene"]), mask)
         # Only the anonymous session is changed for inspection; no USD is saved.
         with Usd.EditContext(stage, stage.GetSessionLayer()):
             stage.GetPrimAtPath(provenance["robot_root"]).GetVariantSets().GetVariantSet(
                 "Physics").SetVariantSelection(provenance["required_robot_physics_variant"])
+        self.assertFalse(stage.GetPrimAtPath("/World/orange1"))
+        self.assertFalse(stage.GetPrimAtPath(params["object_prim_path"]))  # created per Play
+        fruit = ROOT / data["randomization"]["object_assets"][0]
+        with Usd.EditContext(stage, stage.GetSessionLayer()):
+            obj = UsdGeom.Xform.Define(stage, params["object_prim_path"]).GetPrim()
+            obj.GetReferences().AddReference(str(fruit))
         for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
             prim = stage.GetPrimAtPath(params[key])
             self.assertTrue(prim and prim.IsActive() and prim.HasAPI(UsdPhysics.RigidBodyAPI), key)
         self.module.IsaacTaskSampler(stage, params)  # Validation only, no live views claimed.
-        for file_key, hash_key in (("container_asset", "container_asset_sha256"),
-                                   ("orange_asset", "orange_asset_sha256")):
+        for file_key, hash_key in (("container_asset", "container_asset_sha256"),):
             self.assertEqual(hashlib.sha256((ROOT/provenance[file_key]).read_bytes()).hexdigest(),
                              provenance[hash_key])
         self.assertEqual(hashlib.sha256((ROOT/data["scene"]).read_bytes()).hexdigest(),
@@ -295,7 +315,7 @@ class MovingGoalTests(GoalTestBase):
         lo, hi = provenance["conservative_interior_mesh_min_m"], provenance["conservative_interior_mesh_max_m"]
         clearance = provenance["clearance_radius_m"] + provenance["safety_margin_m"]
         lower = (provenance["interior_floor_mesh_z_m"] +
-                 provenance["orange_skin_minimum_support_radius_m"] -
+                 provenance["minimum_support_radius_m"] -
                  provenance["floor_contact_tolerance_m"])
         upper = hi[2] - clearance
         self.assertVector(matrix.Transform(Gf.Vec3d(0., 0., (lower+upper)/2)), params["goal_local_center"])
@@ -316,24 +336,10 @@ class MovingGoalTests(GoalTestBase):
                 overlaps = all(max(v[a] for v in triangle) >= lo[a] and
                                min(v[a] for v in triangle) <= hi[a] for a in range(3))
                 self.assertFalse(overlaps)
-        skin = UsdGeom.Mesh(stage.GetPrimAtPath(provenance["orange_skin_mesh"]))
-        points = skin.GetPointsAttr().Get()
-        center = Gf.Vec3d(*[(min(p[a] for p in points)+max(p[a] for p in points))/2 for a in range(3)])
-        skin_to_body, _ = cache.ComputeRelativeTransform(skin.GetPrim(), stage.GetPrimAtPath(params["object_prim_path"]))
-        for axis in [(1.,0.,0.), (0.,1.,0.), (0.,0.,1.)]:
-            self.assertAlmostEqual(skin_to_body.TransformDir(Gf.Vec3d(*axis)).GetLength(), 1.)
-        self.assertLessEqual(max((Gf.Vec3d(p)-center).GetLength() for p in points),
-                             provenance["clearance_radius_m"])
-        resting = provenance["interior_floor_mesh_z_m"] + center[2] - min(p[2] for p in points)
-        self.assertLessEqual(lower, resting)  # A settled orange must still be a valid goal.
-        self.assertLessEqual(resting, upper)
-        if importlib.util.find_spec("scipy"):
-            # Optional calibration check; scipy is not a runtime dependency.
-            import numpy as np
-            from scipy.spatial import ConvexHull
-            hull = ConvexHull(np.asarray(points)-np.asarray(center))
-            self.assertAlmostEqual(float((-hull.equations[:,3]).min()),
-                                   provenance["orange_skin_minimum_support_radius_m"])
+        # Fixed historical goal geometry is intentionally not recalibrated for
+        # each fruit; the new runtime tests inspect all four current assets.
+        self.assertIn("not recalibrated", provenance["goal_calibration"])
+
 
 
 if __name__ == "__main__":
