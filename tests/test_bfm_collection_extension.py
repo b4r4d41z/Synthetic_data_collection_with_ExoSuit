@@ -48,6 +48,7 @@ class ConfigurationTests(unittest.TestCase):
         import tempfile
         for key, value in (("object_assets", ["missing.usd"]*4),
                            ("seed", True), ("clearance_m", -.1),
+                           ("container_offset_region", dict(x_min=1, x_max=0, y_min=0, y_max=1)),
                            ("object_spawn_region", dict(x_min=1, x_max=0, y_min=0, y_max=1)),
                            ("object_spawn_region", dict(x_min=0, x_max=float('nan'), y_min=0, y_max=1))):
             data = deepcopy(self.data)
@@ -107,7 +108,8 @@ class CompositionTests(unittest.TestCase):
         for path in (self.data["parameters"]["container_prim_path"], self.data["provenance"]["robot_root"]):
             root = UsdGeom.Xform.Define(self.stage, path)
             UsdPhysics.RigidBodyAPI.Apply(root.GetPrim())
-            root.AddTranslateOp().Set((4, 4, 0))  # safely outside candidate rectangle
+            root.AddTranslateOp().Set((1.09, 4.44, .8) if path.endswith("container_b04")
+                                      else (4, 4, 0))
             cube = UsdGeom.Cube.Define(self.stage, path+"/Collider")
             cube.CreateSizeAttr(.1)
             UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
@@ -172,7 +174,8 @@ class CompositionTests(unittest.TestCase):
                     self.randomizer.randomize()
         # A true overlap on supported tabletop, not just lack of surface.
         container = self.stage.GetPrimAtPath(self.data["parameters"]["container_prim_path"])
-        self.UsdGeom.Xformable(container).GetOrderedXformOps()[0].Set((1,4.05,.8))
+        self.randomizer.container_transform.SetTranslateOnly((1,4.05,.8))
+        self.randomizer.container_bounds = ([.95,4.,.75], [1.05,4.1,.85])
         with patch.object(runtime, "sample_candidate", return_value=(asset, 1., 4.05, 0.)):
             with self.assertRaisesRegex(ValueError, "No supported"):
                 self.randomizer.randomize()
@@ -190,9 +193,73 @@ class CompositionTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"dynamic default-prim"):
                 runtime.asset_geometry(path)
 
+    def test_container_sequence_is_seeded_supported_and_does_not_accumulate(self):
+        goal_before = deepcopy(self.data["parameters"])
+        episodes = [self.randomizer.randomize() for _ in range(5)]
+        self.assertEqual(len({tuple(e["container_position"]) for e in episodes}), 5)
+        for episode in episodes:
+            x, y, z = episode["container_position"]
+            self.assertTrue(1.06 <= x <= 1.12)
+            self.assertTrue(4.41 <= y <= 4.47)
+            self.assertEqual(z, .8)
+        self.randomizer.close()
+        again = runtime.SceneRandomizer(self.stage, self.data, ROOT)
+        self.addCleanup(again.close)
+        self.assertEqual(episodes, [again.randomize() for _ in range(5)])
+        self.assertEqual(self.data["parameters"], goal_before)
+        self.assertEqual(self.stage.GetRootLayer().ExportToString(), self.container_before)
+
+    def test_container_outside_support_or_overlapping_robot_rejected(self):
+        with patch.dict(self.data["randomization"]["container_offset_region"],
+                        x_min=10., x_max=11.):
+            with self.assertRaisesRegex(ValueError, "robot-free container"):
+                self.randomizer.randomize()
+        robot = self.stage.GetPrimAtPath(self.data["provenance"]["robot_root"])
+        self.UsdGeom.Xformable(robot).GetOrderedXformOps()[0].Set((1.09, 4.44, .8))
+        with self.assertRaisesRegex(ValueError, "robot-free container"):
+            self.randomizer.randomize()
+        self.assertFalse(self.stage.GetPrimAtPath(runtime.OBJECT_PATH))
+
+    def test_fruit_avoids_new_container_and_failure_restores_runtime_layer(self):
+        episode = self.randomizer.randomize()
+        before = self.randomizer.layer.ExportToString()
+        asset = self.data["randomization"]["object_assets"][0]
+        with patch.object(runtime, "sample_candidate", return_value=(asset, 1.09, 4.44, 0.)):
+            with self.assertRaisesRegex(ValueError, "obstacle-free fruit"):
+                self.randomizer.randomize()
+        self.assertEqual(self.randomizer.layer.ExportToString(), before)
+        self.assertEqual(self.randomizer.last_episode, episode)
+
+    def test_real_container_reference_retains_body_rotation_goal_and_support(self):
+        from pxr import Gf
+        self.randomizer.close()
+        self.stage.RemovePrim(runtime.CONTAINER_PATH)
+        xform = self.UsdGeom.Xform.Define(self.stage, runtime.CONTAINER_PATH)
+        xform.GetPrim().GetReferences().AddReference(str(
+            ROOT / "models/addons/objects/vomp/container_b04/container_b04.usd"))
+        xform.ClearXformOpOrder()
+        xform.AddTransformOp(opSuffix="testTemplate").Set(
+            Gf.Matrix4d(1).SetTranslate((1.0898085832595825, 4.441446304321289, .7499995231628418)))
+        source = self.stage.GetRootLayer().ExportToString()
+        r = runtime.SceneRandomizer(self.stage, self.data, ROOT)
+        self.addCleanup(r.close)
+        for _ in range(5):
+            episode = r.randomize()
+            prim = self.stage.GetPrimAtPath(runtime.CONTAINER_PATH)
+            self.assertTrue(prim.HasAPI(self.UsdPhysics.RigidBodyAPI))
+            matrix = self.UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(self.Usd.TimeCode.Default())
+            self.assertEqual(list(matrix.ExtractTranslation()), episode["container_position"])
+            self.assertEqual(matrix.ExtractRotationQuat(), Gf.Quatd(1))
+            cache = self.UsdGeom.BBoxCache(self.Usd.TimeCode.Default(), ["default", "render", "proxy"])
+            a = cache.ComputeWorldBound(prim).ComputeAlignedRange()
+            b = cache.ComputeWorldBound(self.stage.GetPrimAtPath(runtime.OBJECT_PATH)).ComputeAlignedRange()
+            self.assertAlmostEqual(a.GetMin()[2], .75, places=5)
+            self.assertFalse(runtime.overlaps(a.GetMin(), a.GetMax(), b.GetMin(), b.GetMax(), .03))
+            self.assertEqual(self.stage.GetRootLayer().ExportToString(), source)
+
 
 class AdapterTests(unittest.TestCase):
-    def test_kit_registers_early_push_and_cleans_up_on_shutdown(self):
+    def test_kit_registers_early_pop_and_cleans_up_on_shutdown(self):
         names = ("omni", "omni.ext", "omni.kit", "omni.kit.app", "omni.timeline", "omni.usd", "carb")
         modules = {name: ModuleType(name) for name in names}
         for name in names:
@@ -216,15 +283,17 @@ class AdapterTests(unittest.TestCase):
             spec = importlib.util.spec_from_file_location("bfm_collection.extension", MODULE.with_name("extension.py"))
             adapter = importlib.util.module_from_spec(spec); spec.loader.exec_module(adapter)
             extension = adapter.CollectionExtension()
-            extension.on_startup("bfm_collection")
-            push = timeline.get_timeline_event_stream.return_value.create_subscription_to_push
-            self.assertLess(push.call_args.kwargs["order"], 0)
+            with patch.object(extension, "_bootstrap_ros_python_paths"):
+                extension.on_startup("bfm_collection")
+            pop = timeline.get_timeline_event_stream.return_value.create_subscription_to_pop
+            timeline.get_timeline_event_stream.return_value.create_subscription_to_push.assert_not_called()
+            self.assertLess(pop.call_args.kwargs["order"], 0)
             life = Mock()
             extension.lifecycle = life
             extension.stage = "stage"
             usd.get_stage.return_value = "stage"
             life.play.return_value = None
-            callback = push.call_args.args[0]
+            callback = pop.call_args.args[0]
             for event, method in ((1,life.play),(2,life.pause),(3,life.stop)):
                 callback(SimpleNamespace(type=event)); method.assert_called_once()
             life.play.side_effect = ValueError("bad asset")

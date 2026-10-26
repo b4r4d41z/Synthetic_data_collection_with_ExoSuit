@@ -261,6 +261,7 @@ def start_task_state_publisher(**parameters):
     if unknown:
         raise ValueError(f"Unknown task-state parameters: {sorted(unknown)}")
     import omni.kit.app
+    import omni.physx
     import omni.timeline
     import omni.usd
     from rclpy.context import Context
@@ -283,7 +284,10 @@ def start_task_state_publisher(**parameters):
 
     class Handle:
         subscription = None
-        was_playing = False
+        physics_subscription = None
+        timeline_subscription = None
+        physics_stepped = False
+        reported_ready = False
         stopped = False
 
         def stop(self):
@@ -291,6 +295,9 @@ def start_task_state_publisher(**parameters):
                 return
             self.stopped = True
             self.subscription = None
+            self.physics_subscription = None
+            self.timeline_subscription = None
+            self.physics_stepped = False
             executor.remove_node(node)
             node.destroy_node()
             executor.shutdown()
@@ -299,23 +306,45 @@ def start_task_state_publisher(**parameters):
     handle = Handle()
     handle.node = node  # Inspect sampler.resolved_body_counts after Play in Script Editor.
 
+    def physics_step(_dt):
+        # This callback is dispatched by PhysX, not Kit's timeline/update clock.
+        # Only signal here: access tensors after the step, on Kit post-update.
+        if not handle.stopped and timeline.is_playing():
+            handle.physics_stepped = True
+
+    def timeline_event(event):
+        if event.type == int(omni.timeline.TimelineEventType.STOP):
+            handle.physics_stepped = False
+            handle.reported_ready = False
+            node.reset()
+        # PAUSE retains the current episode and valid views.
+
     def update(_event):
+        if handle.stopped:
+            return
         executor.spin_once(timeout_sec=0.0)
         if not node.enabled:
             return
-        playing = timeline.is_playing()
-        if playing:
+        if timeline.is_playing() and handle.physics_stepped:
+            handle.physics_stepped = False
             try:
                 if omni.usd.get_context().get_stage() != stage:
                     raise ValueError("USD stage changed; restart the task-state publisher")
                 node.publish_at(timeline.get_current_time())
+                if not handle.reported_ready:
+                    node.get_logger().info("[BFM] Physics ready. /bfm/state publisher active.")
+                    handle.reported_ready = True
             except Exception as error:
                 node.enabled = False
                 node.get_logger().error(f"Task-state publication disabled: {error}")
-        elif handle.was_playing:
-            node.reset()
-        handle.was_playing = playing
-
-    handle.subscription = omni.kit.app.get_app().get_post_update_event_stream().create_subscription_to_pop(
-        update, name="bfm_measured_task_state")
+    try:
+        handle.physics_subscription = omni.physx.get_physx_interface().subscribe_physics_step_events(
+            physics_step)
+        handle.timeline_subscription = timeline.get_timeline_event_stream().create_subscription_to_pop(
+            timeline_event, name="bfm_state_reset")
+        handle.subscription = omni.kit.app.get_app().get_post_update_event_stream().create_subscription_to_pop(
+            update, name="bfm_measured_task_state")
+    except Exception:
+        handle.stop()
+        raise
     return handle

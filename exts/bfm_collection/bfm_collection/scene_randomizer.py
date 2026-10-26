@@ -7,11 +7,13 @@ import random
 
 
 OBJECT_PATH = "/World/Task/Object"
+CONTAINER_PATH = "/World/container_b04"
 
 
 def load_configuration(path, repository):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    if data.get("schema_version") != 1 or data["parameters"]["object_prim_path"] != OBJECT_PATH:
+    if (data.get("schema_version") != 1 or data["parameters"]["object_prim_path"] != OBJECT_PATH
+            or data["parameters"]["container_prim_path"] != CONTAINER_PATH):
         raise ValueError("Sorting collection requires schema 1 and /World/Task/Object")
     config = data["randomization"]
     assets = config["object_assets"]
@@ -23,12 +25,13 @@ def load_configuration(path, repository):
         resolved = (root / asset).resolve()
         if not resolved.is_relative_to(root) or not resolved.is_file():
             raise ValueError(f"Missing or out-of-repository fruit: {asset}")
-    region = config["object_spawn_region"]
-    values = [region[k] for k in ("x_min", "x_max", "y_min", "y_max")]
-    if (not all(isinstance(v, (int, float)) and not isinstance(v, bool)
-                and math.isfinite(v) for v in values)
-            or values[0] >= values[1] or values[2] >= values[3]):
-        raise ValueError("Spawn region must be a finite, nonempty XY rectangle in meters")
+    for key in ("object_spawn_region", "container_offset_region"):
+        region = config[key]
+        values = [region[k] for k in ("x_min", "x_max", "y_min", "y_max")]
+        if (not all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                    and math.isfinite(v) for v in values)
+                or values[0] >= values[1] or values[2] >= values[3]):
+            raise ValueError(f"{key} must be a finite, nonempty XY rectangle in meters")
     for key in ("yaw_min", "yaw_max", "surface_tolerance_m", "clearance_m",
                 "edge_margin_m", "obstacle_margin_m"):
         value = config[key]
@@ -161,6 +164,20 @@ class SceneRandomizer:
             raise ValueError("/World/Task is already authored; refusing to overwrite it")
         self.rng = random.Random(self.config["seed"])
         self.assets = {a: asset_geometry(self.repository / a) for a in self.config["object_assets"]}
+        from pxr import UsdPhysics
+        container = stage.GetPrimAtPath(CONTAINER_PATH)
+        if (not container or not container.HasAPI(UsdPhysics.RigidBodyAPI)
+                or UsdPhysics.RigidBodyAPI(container).GetRigidBodyEnabledAttr().Get() is False
+                or not list(collision_shapes(container))):
+            raise ValueError("Container must be an enabled rigid body with collision")
+        # Capture the template once, never accumulate offsets from the last run.
+        self.container_transform = UsdGeom.Xformable(container).ComputeLocalToWorldTransform(
+            Usd.TimeCode.Default())
+        cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), ["default", "render", "proxy"])
+        bounds = [cache.ComputeWorldBound(p).ComputeAlignedRange()
+                  for p in collision_shapes(container)]
+        self.container_bounds = ([min(b.GetMin()[i] for b in bounds) for i in range(3)],
+                                 [max(b.GetMax()[i] for b in bounds) for i in range(3)])
         self.layer = Sdf.Layer.CreateAnonymous("bfm_collection_runtime.usda")
         self.session = stage.GetSessionLayer()
         self.session.subLayerPaths.insert(0, self.layer.identifier)
@@ -171,13 +188,23 @@ class SceneRandomizer:
             self.session.subLayerPaths.remove(self.layer.identifier)
 
     def randomize(self):
+        # Transaction affects only our anonymous layer. On failure restore the
+        # previous episode; CollectionLifecycle stops Play and never publishes it.
+        previous = self.layer.ExportToString()
+        self.layer.Clear()
+        try:
+            return self._randomize()
+        except Exception:
+            self.layer.ImportFromString(previous)
+            raise
+
+    def _randomize(self):
         from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
         triangles = tabletop_triangles(self.stage, self.config["table_prim_path"])
         cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), ["default", "render", "proxy"])
         obstacles = []
         # Inspect each robot collider instead of rejecting its enormous combined AABB.
-        for path in (self.data["parameters"]["container_prim_path"],
-                     self.data["provenance"]["robot_root"]):
+        for path in (self.data["provenance"]["robot_root"],):
             root = self.stage.GetPrimAtPath(path)
             if not root:
                 raise ValueError(f"Missing obstacle: {path}")
@@ -187,6 +214,42 @@ class SceneRandomizer:
             for shape in shapes:
                 bound = cache.ComputeWorldBound(shape).ComputeAlignedRange()
                 obstacles.append((list(bound.GetMin()), list(bound.GetMax())))
+        # Validate the container against live support and robot geometry first.
+        region = self.config["container_offset_region"]
+        for _ in range(self.config["max_attempts"]):
+            offset = [self.rng.uniform(region["x_min"], region["x_max"]),
+                      self.rng.uniform(region["y_min"], region["y_max"]), 0.]
+            low, high = ([v + offset[i] for i, v in enumerate(bound)]
+                         for bound in self.container_bounds)
+            margin = self.config["edge_margin_m"]
+            heights = [surface_height(triangles, x, y)
+                       for x in (low[0]-margin, (low[0]+high[0])/2, high[0]+margin)
+                       for y in (low[1]-margin, (low[1]+high[1])/2, high[1]+margin)]
+            if any(h is None or abs(h-low[2]) > self.config["surface_tolerance_m"]
+                   for h in heights):
+                continue  # Preserve template Z: only the same support height is valid.
+            if any(overlaps(low, high, a, b, self.config["obstacle_margin_m"])
+                   for a, b in obstacles):
+                continue
+            break
+        else:
+            raise ValueError("No supported, robot-free container pose in configured offset region")
+        transform = Gf.Matrix4d(self.container_transform)
+        container_position = self.container_transform.ExtractTranslation() + Gf.Vec3d(*offset)
+        transform.SetTranslateOnly(container_position)
+        with Usd.EditContext(self.stage, self.layer):
+            container = self.stage.GetPrimAtPath(CONTAINER_PATH)
+            xform = UsdGeom.Xformable(container)
+            xform.ClearXformOpOrder()
+            xform.AddTransformOp(opSuffix="bfmEpisode").Set(transform)
+            body = UsdPhysics.RigidBodyAPI(container)
+            body.CreateVelocityAttr().Set(Gf.Vec3f(0))
+            body.CreateAngularVelocityAttr().Set(Gf.Vec3f(0))
+        # A fresh cache is essential after changing the container transform.
+        cache.Clear()
+        for shape in collision_shapes(container):
+            bound = cache.ComputeWorldBound(shape).ComputeAlignedRange()
+            obstacles.append((list(bound.GetMin()), list(bound.GetMax())))
         for _ in range(self.config["max_attempts"]):
             asset, x, y, yaw = sample_candidate(self.config, self.rng)
             root_path, source_lo, source_hi = self.assets[asset]
@@ -213,9 +276,6 @@ class SceneRandomizer:
             break
         else:
             raise ValueError("No supported, obstacle-free fruit pose in configured spawn region")
-        # Clear only this extension's layer, so stale geometry, ops, velocities or
-        # old PhysX writeback cannot leak into the next reference. Never save it.
-        self.layer.Clear()
         with Usd.EditContext(self.stage, self.layer):
             if self.stage.GetPrimAtPath("/World/orange1"):
                 self.stage.OverridePrim("/World/orange1").SetActive(False)
@@ -233,7 +293,8 @@ class SceneRandomizer:
                 raise ValueError("Semantic object is not the sole composed rigid body")
             body.CreateVelocityAttr().Set(Gf.Vec3f(0))
             body.CreateAngularVelocityAttr().Set(Gf.Vec3f(0))
-        self.last_episode = {"asset": Path(asset).name, "position": position, "yaw": yaw}
+        self.last_episode = {"asset": Path(asset).name, "position": position, "yaw": yaw,
+                             "container_position": list(container_position), "container_offset": offset}
         return self.last_episode
 
 

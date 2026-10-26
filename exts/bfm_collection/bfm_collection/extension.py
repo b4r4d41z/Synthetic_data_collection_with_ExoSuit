@@ -280,7 +280,7 @@ class CollectionExtension(omni.ext.IExt):
         )
 
         print(
-            "[BFM] Starting /bfm/state publisher...",
+            "[BFM] Preparing /bfm/state; waiting for PhysX steps...",
             flush=True,
         )
 
@@ -363,10 +363,11 @@ class CollectionExtension(omni.ext.IExt):
 
         try:
             if event.type == play_type:
-                print(
-                    "[BFM] PLAY received. Creating new episode...",
-                    flush=True,
-                )
+                if self.lifecycle.state == "stopped":
+                    print(
+                        "[BFM] PLAY received. Creating new episode...",
+                        flush=True,
+                    )
 
                 episode = self.lifecycle.play()
 
@@ -379,10 +380,12 @@ class CollectionExtension(omni.ext.IExt):
                     )
 
                     print(
-                        "[BFM] Episode object created:\n"
+                        "[BFM] Episode created:\n"
                         f"      asset={episode['asset']}\n"
                         f"      position={episode['position']}\n"
-                        f"      yaw={episode['yaw']}",
+                        f"      yaw={episode['yaw']}\n"
+                        f"      container_position={episode['container_position']}\n"
+                        f"      container_offset={episode['container_offset']}",
                         flush=True,
                     )
 

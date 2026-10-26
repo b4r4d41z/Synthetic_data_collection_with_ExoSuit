@@ -607,24 +607,32 @@ cd /workspace/Synthetic_data_collection_with_ExoSuit
 BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
 ```
 
-On Stop -> Play, an early timeline **push** callback synchronously composes one
-fruit and its initial pose before queued timeline consumers/physics updates;
-it then creates/retains the existing state-publisher handle. No asynchronous
-frame is used to switch a running fruit. Pause -> Play retains that episode.
-Duplicate Play events do nothing. Stop closes the publisher and releases its
-sampler/tensor views. Next Play creates a new body reference and new views.
-Stage close/replacement, extension disable and app shutdown close the handle
-and detach the owned runtime layer. Setup failures require fixing the error
-and reloading the extension with simulation stopped. Placement/startup errors
-cancel Play; live state-read failures disable publication and log the error.
-No invalid body or stale state is replaced with fabricated zeros.
+On Stop -> Play, the tested timeline **POP** callback composes the container
+and fruit episode and creates the ROS publisher handle. Kit post-update alone
+does **not** imply PhysX readiness. The handle subscribes to
+`omni.physx.get_physx_interface().subscribe_physics_step_events()`: a real physics
+step signals that tensor reads may begin on the subsequent Kit post-update.
+No tensor API is called while merely waiting for physics, and no fabricated
+state is published. After the first successful read and three one-body resolutions,
+the log reports `[BFM] Physics ready. /bfm/state publisher active.` This uses
+the PhysX step lifecycle rather than assuming that the UI initialized a
+`SimulationManager`-owned view. It does not require sleeps or a frame countdown.
 
-The early callback ordering, reset behavior, and PhysX initialization must be
-verified in the actual Isaac 6.1 build. Host-only tests cannot certify them.
-The extension does not change robot/container reset logic, native physics,
-cameras, ROS topics, action semantics or external process management.
+Pause -> Play retains the episode, publisher and valid tensor views. Duplicate
+Play does nothing. Stop closes the handle, releases all three subscriptions
+(physics step, timeline reset, post-update) and drops sampler/tensor views.
+Next Play creates a fresh handle and views for the new body. The helper's own
+STOP handler also resets views when used outside the extension. Stage closure,
+replacement, extension disable and application shutdown detach the runtime layer
+and stop publication. An actual read/body-resolution error **after physics has
+stepped** still fails closed with an error; it is not silently retried as readiness.
 
-### Fruit composition and tabletop placement
+The PhysX adapter is host-tested with fake lifecycle events. Isaac Sim/ROS are
+not installed on the validation host; real 6.1 callback ordering and publication
+still require the runtime checks below. The source USD, controllers, native
+physics, camera and action/topic contracts remain unchanged.
+
+### Fruit/container composition and tabletop placement
 
 `sorting_scene.json.randomization` is separate from strict state `parameters`.
 The JSON whitelist contains only the four tracked fruits. Each inspected source
@@ -655,7 +663,20 @@ not certified physical table extents or a kinematic reachability calculation.
 The external NVIDIA desk payload could not be resolved on this host. Runtime
 must load `/World/SM_SecretaryDeskA` and validate geometry; no fallback Z is used.
 
-For each candidate, the runtime rotates the selected fruit's full geometry AABB
+Container XY offset is sampled first from `container_offset_region`: ±30 mm
+in each world axis about the captured template origin
+[1.0898085833, 4.4414463043, 0.7499995232] m. Offsets never accumulate. Its inspected
+collider footprint is approximately 403 × 301 mm; 30 mm is less than 10% of
+both dimensions and keeps the candidate near the previously reachable pose.
+This is a conservative candidate region, not a reachability proof. Every
+footprint plus 25 mm edge margin must pass the same 3x3 support checks at the
+original bottom height (within 2 mm) and clear robot collider AABBs by 30 mm.
+Z, rotation, geometry, physics and goal-local OBB are preserved. A fresh bounds
+cache after authoring the container ensures fruit exclusion uses its new pose.
+Failure restores the previous runtime layer and cancels Play without starting
+a state publisher. This configuration requires the real flat desk payload.
+
+For each fruit candidate, the runtime rotates the selected fruit's full geometry AABB
 by yaw, centres its footprint on sampled XY, and checks a 3x3 set of support
 points spanning the footprint plus 25 mm edge margin against composed horizontal
 table collision-mesh triangles (or box faces). All must have a support surface,
@@ -668,12 +689,12 @@ If all 100 attempts fail, Play is cancelled with a clear error.
 
 Z is `highest_support_surface - rotated_fruit_minimum_Z + 0.005 m`, including
 all visible/collision geometry (orange2 includes its stem). Fruit root origins
-are not assumed to be the lowest point. Only XY/asset/yaw are sampled; table,
-container, robot, gravity and materials are untouched. Reachability, contact
+are not assumed to be the lowest point. Fruit XY/asset/yaw and container XY
+offset are sampled; table, robot, gravity and materials are untouched. Reachability, contact
 settling/cooking and the final spawn rectangle require manual validation.
 
-An anonymous session sublayer owns only the task-object composition/transforms
-and a defensive deactivation of any legacy orange. Each episode clears that
+An anonymous session sublayer owns the task-object composition/transforms,
+container episode transform/zero initial velocity and a defensive deactivation of any legacy orange. Each episode clears that
 owned layer before referencing the next fruit, avoiding stale children/ops or
 velocity values. The source stage is not saved. Normal Save does not persist
 session layers; avoid Flatten/Export including runtime layers for a template.
@@ -682,7 +703,8 @@ The extension removes its sublayer on cleanup.
 `seed` defaults to null; set an integer in the same JSON to repeat a sampling
 sequence. The RNG is seeded once when attaching the stage, not on every Play.
 Random sampling may select the same fruit in consecutive episodes; XY/yaw are
-resampled. The log prints asset, body-origin XYZ and yaw (radians) once per run.
+resampled. The log prints fruit asset, body-origin XYZ, yaw (radians), container XYZ and
+container offset once per run.
 The recorder copies the randomization configuration as provenance, but does not
 claim to know the actual selected per-episode asset/pose. `episode.json` layout
 and recorder behavior are otherwise unchanged.
@@ -704,6 +726,8 @@ Host checks, with OpenUSD available in the host Python:
 python3 -m unittest discover -s tests -p test_recording_pipeline.py -v
 python3 -m unittest discover -s tests -p test_bfm_goal_region.py -v
 python3 -m unittest discover -s tests -p test_bfm_collection_extension.py -v
+python3 -m unittest discover -s tests -p test_bfm_physics_readiness.py -v
+python3 -m unittest discover -s tests -p test_hand_symmetry.py -v
 python3 -m pytest -q tests/test_hand_command_mapper.py
 bash -n launch_bfm_isaac.sh start_isaac_control.sh
 git diff --check
@@ -712,21 +736,64 @@ git diff --check
 Manual runtime validation:
 
 1. Launch Isaac with the extension enabled; open the sorting template stopped.
-2. Confirm the log says `BFM collection ready`, and the robot uses its existing
+2. Confirm the log says `[BFM READY]`, and the robot uses its existing
    working PhysX composition. There must be no active `/World/orange1`.
 3. Play: exactly one allowed fruit should appear on the tabletop, with one
-   `BFM collection episode object` log entry. Inspect `/World/Task/Object` for
+   `[BFM] Episode created` log entry, including the new container pose. Inspect `/World/Task/Object` for
    RigidBodyAPI and active collisions; verify settling and reachable placement.
 4. Echo `/bfm/state` with the command below. Move the fruit and verify live COM
    `object_position`/`object_velocity`; optionally inspect resolution counts above.
-5. Pause/resume: fruit/episode must stay the same, without another selection log.
+5. Pause/resume: fruit/container episode must stay the same, without another selection log.
 6. Stop, then Play: another selection/pose log appears, and state follows the
    current fruit. Repeat several times, including different assets. Robot and
-   container must reset normally; the goal OBB calculation remains unchanged.
+   container must reset normally on Stop; the next Play resamples its XY. Check
+   support/robot clearance and that measured goal follows its new pose. Goal-local
+   OBB geometry remains unchanged.
 7. Start/stop a short recording through the existing Bool control. Run
    `ros2 bag info records/record_NAME/bag` and confirm MCAP plus `/bfm/state` with
    nonzero message count. Reopen the source stage and confirm random poses were
    not saved. Test stage close/reopen and extension disable/re-enable stopped.
+
+### Hand symmetry audit and live check
+
+At baseline `502074f`, both six-channel mappings and smoothing already mirror:
+right targets are the negatives of left, including fixed thumb CMC_AA (+20°
+right / -20° left). Tests cover emitted targets at 0/25/50/75/100, the thumb gate,
+and full opening/closure. Composed USD tests verify corresponding joint frames,
+mirrored limits, identical drive gains/force limits, and the two graph subscribers
+connected to the correct controllers. No mapping/drive compensation was applied:
+these static checks did not reproduce the reported unequal physical closure.
+The saved thumb CMC states are approximately ±90° flexion and ∓20° abduction;
+other initial finger states are approximately zero with small numerical residuals.
+
+Both sides currently request index MCP 100° against a 90° limit and DIP 100°
+against an 80° limit. Clamping is symmetric in the inspected USD; this alone does
+not establish a side-specific fault. Measured closure/contact forces, live USD
+opinions and competing publishers need checking in the running scene.
+
+For an isolated check, keep hands clear of objects/table and stop the upstream
+hand publisher to avoid two writers. Keep the existing controller running in
+normal mode (or provide a valid arm input so the BFM gateway can tick). Publish
+identical logical values to both hands, changing all six entries successively
+to 0, 25, 50, 75, 100 and finally 0; allow smoothing to settle at each value:
+
+```bash
+ros2 topic pub -r 10 /robot/command/hand_target dynamic_biped/msg/RobotHandPosition \
+  '{left_hand_position: [100,100,100,100,100,100], right_hand_position: [100,100,100,100,100,100]}'
+ros2 topic echo /left_hand_joint_command --once
+ros2 topic echo /right_hand_joint_command --once
+ros2 topic echo /robot/state/joint_states --once --qos-reliability best_effort
+ros2 topic info /left_hand_joint_command -v
+ros2 topic info /right_hand_joint_command -v
+```
+
+Compare matching named positions, not array indices: command pairs should be
+opposites; measured magnitudes should match once settled except where contacts
+block motion. At 25 the intentional thumb gate can retain its previous value
+until guide fingers reach 40, identically on both sides. If targets differ,
+inspect input/history/writers; if targets match but measurements differ, inspect
+live limits, drive opinions, contacts and controller execution. Host tests do
+not establish that the observed physical asymmetry is fixed.
 
 ### BFM episode metadata and runtime checks
 
