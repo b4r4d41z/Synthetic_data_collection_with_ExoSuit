@@ -199,8 +199,8 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(len({tuple(e["container_position"]) for e in episodes}), 5)
         for episode in episodes:
             x, y, z = episode["container_position"]
-            self.assertTrue(1.06 <= x <= 1.12)
-            self.assertTrue(4.41 <= y <= 4.47)
+            self.assertTrue(1.03 <= x <= 1.15)
+            self.assertTrue(4.38 <= y <= 4.50)
             self.assertEqual(z, .8)
         self.randomizer.close()
         again = runtime.SceneRandomizer(self.stage, self.data, ROOT)
@@ -208,6 +208,38 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(episodes, [again.randomize() for _ in range(5)])
         self.assertEqual(self.data["parameters"], goal_before)
         self.assertEqual(self.stage.GetRootLayer().ExportToString(), self.container_before)
+
+    def test_six_cm_offsets_are_reachable_when_supported(self):
+        self.assertEqual(self.data["randomization"]["container_offset_region"],
+                         dict(x_min=-.06, x_max=.06, y_min=-.06, y_max=.06))
+        asset = self.data["randomization"]["object_assets"][0]
+        for dx, dy in ((-.0599, -.0599), (-.0599, .0599),
+                       (.0599, -.0599), (.0599, .0599)):
+            with patch.object(self.randomizer.rng, "uniform", side_effect=[dx, dy]), \
+                    patch.object(runtime, "sample_candidate", return_value=(asset, 1., 4.05, 0.)):
+                episode = self.randomizer.randomize()
+            self.assertEqual(episode["container_offset"], [dx, dy, 0.])
+            self.assertAlmostEqual(episode["container_position"][0], 1.09 + dx)
+            self.assertAlmostEqual(episode["container_position"][1], 4.44 + dy)
+
+    def test_existing_episode_op_is_reused_without_add_or_accumulation(self):
+        container = self.stage.GetPrimAtPath(runtime.CONTAINER_PATH)
+        xform = self.UsdGeom.Xformable(container)
+        # Mimic an op surviving in another layer after our runtime layer clears.
+        existing = xform.AddTransformOp(opSuffix="bfmEpisode")
+        existing.Set(self.randomizer.container_transform)
+        xform.SetXformOpOrder([existing])
+        source = self.stage.GetRootLayer().ExportToString()
+        with patch.object(self.UsdGeom.Xformable, "AddTransformOp",
+                          side_effect=AssertionError("Existing op must not be added again")):
+            for _ in range(10):
+                episode = self.randomizer.randomize()
+                ops = xform.GetOrderedXformOps()
+                self.assertEqual([op.GetOpName() for op in ops], ["xformOp:transform:bfmEpisode"])
+                position = xform.ComputeLocalToWorldTransform(self.Usd.TimeCode.Default()).ExtractTranslation()
+                self.assertEqual(list(position), episode["container_position"])
+                self.assertAlmostEqual(position[0], 1.09 + episode["container_offset"][0])
+                self.assertEqual(self.stage.GetRootLayer().ExportToString(), source)
 
     def test_container_outside_support_or_overlapping_robot_rejected(self):
         with patch.dict(self.data["randomization"]["container_offset_region"],

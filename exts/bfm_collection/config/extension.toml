@@ -9,6 +9,7 @@ category = "Simulation"
 "omni.timeline" = {}
 "omni.physx" = {}
 "omni.physics.tensors" = {}
+"isaacsim.core.simulation_manager" = {}
 "isaacsim.ros2.bridge" = {}
 
 [[python.module]]

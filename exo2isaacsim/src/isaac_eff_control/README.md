@@ -609,23 +609,26 @@ BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
 
 On Stop -> Play, the tested timeline **POP** callback composes the container
 and fruit episode and creates the ROS publisher handle. Kit post-update alone
-does **not** imply PhysX readiness. The handle subscribes to
-`omni.physx.get_physx_interface().subscribe_physics_step_events()`: a real physics
-step signals that tensor reads may begin on the subsequent Kit post-update.
-No tensor API is called while merely waiting for physics, and no fabricated
-state is published. After the first successful read and three one-body resolutions,
-the log reports `[BFM] Physics ready. /bfm/state publisher active.` This uses
-the PhysX step lifecycle rather than assuming that the UI initialized a
-`SimulationManager`-owned view. It does not require sleeps or a frame countdown.
+does **not** imply PhysX readiness, and neither does the first PhysX step.
+On each playing post-update, the handle checks
+`SimulationManager.get_physics_simulation_view()`. A missing or invalid view
+means keep waiting without reading tensors, publishing state or disabling the
+node. Once valid, the sampler borrows that initialized view to create the three
+rigid-body views; it does not create a second tensor backend or change the
+manager's subspace roots. After the first successful measured read, the log
+reports `[BFM] Physics ready. /bfm/state publisher active.` There are no sleeps
+or frame countdowns. If the manager replaces its view, old rigid-body views
+are discarded. Actual read/body-resolution errors after readiness fail closed.
 
 Pause -> Play retains the episode, publisher and valid tensor views. Duplicate
-Play does nothing. Stop closes the handle, releases all three subscriptions
-(physics step, timeline reset, post-update) and drops sampler/tensor views.
+Play does nothing. Stop closes the handle, releases its timeline-reset and
+post-update subscriptions and drops references to sampler/tensor views; it does
+not invalidate the manager-owned shared simulation view.
 Next Play creates a fresh handle and views for the new body. The helper's own
 STOP handler also resets views when used outside the extension. Stage closure,
 replacement, extension disable and application shutdown detach the runtime layer
-and stop publication. An actual read/body-resolution error **after physics has
-stepped** still fails closed with an error; it is not silently retried as readiness.
+and stop publication. An actual read/body-resolution error **after manager readiness** still fails
+closed with an error; it is not silently retried as readiness.
 
 The PhysX adapter is host-tested with fake lifecycle events. Isaac Sim/ROS are
 not installed on the validation host; real 6.1 callback ordering and publication
@@ -663,11 +666,11 @@ not certified physical table extents or a kinematic reachability calculation.
 The external NVIDIA desk payload could not be resolved on this host. Runtime
 must load `/World/SM_SecretaryDeskA` and validate geometry; no fallback Z is used.
 
-Container XY offset is sampled first from `container_offset_region`: ±30 mm
+Container XY offset is sampled first from `container_offset_region`: ±60 mm
 in each world axis about the captured template origin
 [1.0898085833, 4.4414463043, 0.7499995232] m. Offsets never accumulate. Its inspected
-collider footprint is approximately 403 × 301 mm; 30 mm is less than 10% of
-both dimensions and keeps the candidate near the previously reachable pose.
+collider footprint is approximately 403 × 301 mm. The 120 × 120 mm offset
+region expands around the previously valid pose; invalid samples are rejected.
 This is a conservative candidate region, not a reachability proof. Every
 footprint plus 25 mm edge margin must pass the same 3x3 support checks at the
 original bottom height (within 2 mm) and clear robot collider AABBs by 30 mm.
@@ -698,7 +701,10 @@ container episode transform/zero initial velocity and a defensive deactivation o
 owned layer before referencing the next fruit, avoiding stale children/ops or
 velocity values. The source stage is not saved. Normal Save does not persist
 session layers; avoid Flatten/Export including runtime layers for a template.
-The extension removes its sublayer on cleanup.
+The extension removes its sublayer on cleanup. If a `bfmEpisode` transform
+attribute survives in another layer, it is reused and assigned as the sole
+container transform op instead of being added again. Offsets always derive
+from the captured template transform.
 
 `seed` defaults to null; set an integer in the same JSON to repeat a sampling
 sequence. The RNG is seeded once when attaching the stage, not on every Play.

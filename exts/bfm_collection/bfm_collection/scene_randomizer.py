@@ -241,7 +241,13 @@ class SceneRandomizer:
             container = self.stage.GetPrimAtPath(CONTAINER_PATH)
             xform = UsdGeom.Xformable(container)
             xform.ClearXformOpOrder()
-            xform.AddTransformOp(opSuffix="bfmEpisode").Set(transform)
+            attr = container.GetAttribute("xformOp:transform:bfmEpisode")
+            # The attribute can survive in a stronger session/writeback layer.
+            # ClearXformOpOrder does not remove attributes. Reuse instead of Add.
+            op = (UsdGeom.XformOp(attr) if attr else
+                  xform.AddTransformOp(opSuffix="bfmEpisode"))
+            xform.SetXformOpOrder([op])
+            op.Set(transform)
             body = UsdPhysics.RigidBodyAPI(container)
             body.CreateVelocityAttr().Set(Gf.Vec3f(0))
             body.CreateAngularVelocityAttr().Set(Gf.Vec3f(0))

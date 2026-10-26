@@ -73,10 +73,10 @@
       "y_max": 4.12
     },
     "container_offset_region": {
-      "x_min": -0.03,
-      "x_max": 0.03,
-      "y_min": -0.03,
-      "y_max": 0.03
+      "x_min": -0.06,
+      "x_max": 0.06,
+      "y_min": -0.06,
+      "y_max": 0.06
     },
     "table_prim_path": "/World/SM_SecretaryDeskA",
     "yaw_min": -3.141592653589793,
@@ -98,7 +98,7 @@
         4.441446304321289
       ],
       "method": "Small 15 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
-      "container_method": "Translation only: +/-30 mm around template origin (1.08980858, 4.44144630, 0.74999952) m. This is below 10% of the inspected 403 x 301 mm collider footprint; it limits displacement from the known reachable pose. Preserve template rotation and Z. Reject unless footprint plus 25 mm margin is supported at the original height and clears robot colliders by 30 mm. Place fruit against the new container bounds. External table support still requires Isaac runtime validation.",
+      "container_method": "Translation only: +/-60 mm around template origin (1.08980858, 4.44144630, 0.74999952) m. This is a requested 120 x 120 mm candidate offset region around the known valid pose, not a certified safe region; all support and collision checks remain mandatory. Preserve template rotation and Z. Reject unless footprint plus 25 mm margin is supported at the original height and clears robot colliders by 30 mm. Place fruit against the new container bounds. External table support still requires Isaac runtime validation.",
       "table_geometry_host_verified": false,
       "isaac_runtime_verified": false
     }
