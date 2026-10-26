@@ -42,21 +42,23 @@ start_isaac_bridge.sh
 # RoboLab objects: ignore everything by default
 models/addons/objects/*
 
-# --- orange1 ---
+# --- fruits used for randomized collection ---
 !models/addons/objects/fruits_veggies/
 models/addons/objects/fruits_veggies/*
 
-!models/addons/objects/fruits_veggies/orange1.usd
+# Selected fruit assets
+!models/addons/objects/fruits_veggies/avocado.usd
+!models/addons/objects/fruits_veggies/lemon1.usd
+!models/addons/objects/fruits_veggies/pomegranate.usd
+!models/addons/objects/fruits_veggies/orange2.usd
 
-# Shared material definitions required by orange1
+# Shared materials
 !models/addons/objects/fruits_veggies/materials/
 !models/addons/objects/fruits_veggies/materials/**
 
-# Only orange1 textures
+# Fruit textures
 !models/addons/objects/fruits_veggies/textures/
-models/addons/objects/fruits_veggies/textures/*
-!models/addons/objects/fruits_veggies/textures/orange_01/
-!models/addons/objects/fruits_veggies/textures/orange_01/**
+!models/addons/objects/fruits_veggies/textures/**
 
 # --- container_b04 ---
 !models/addons/objects/vomp/
