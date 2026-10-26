@@ -61,38 +61,53 @@ class ConfigurationTests(unittest.TestCase):
 
 
 class LifecycleTests(unittest.TestCase):
-    def test_randomize_once_per_stop_play_but_not_resume_or_duplicate_play(self):
-        order = []
-        r = Mock()
-        r.randomize.side_effect = lambda: order.append("compose") or {"asset": "fruit"}
-        handles = [Mock(), Mock()]
-        start = Mock(side_effect=lambda: order.append("publisher") or handles[start.call_count-1])
-        life = runtime.CollectionLifecycle(r, start)
+    def test_prepare_play_pause_stop_and_duplicates(self):
+        r, start = Mock(), Mock()
+        stopped = Mock(return_value=True)
+        life = runtime.CollectionLifecycle(r, start, stopped)
+        self.assertTrue(life.pending_prepare)
+        life.prepare(); life.prepare()
+        self.assertEqual(life.state, "prepared")
+        r.randomize.assert_called_once()
+        start.assert_not_called()
+        stopped.return_value = False
         life.play(); life.play(); life.pause(); life.play()
-        self.assertEqual(r.randomize.call_count, 1)
-        self.assertEqual(order, ["compose", "publisher"])
-        life.stop()
-        handles[0].stop.assert_called_once()
-        self.assertIsNone(life.handle)
-        life.play()
+        self.assertEqual(life.state, "playing")
+        r.randomize.assert_called_once()
+        start.assert_called_once()
+        life.stop(); life.stop()
+        start.return_value.stop.assert_called_once()
+        self.assertTrue(life.pending_prepare)
+        r.randomize.assert_called_once()  # STOP does not compose anything.
+        with self.assertRaisesRegex(RuntimeError, "stopped timeline"):
+            life.prepare()
+        with self.assertRaisesRegex(RuntimeError, "prepared before Play"):
+            life.play()
+        stopped.return_value = True
+        life.prepare()
+        life.stop()  # Late duplicate STOP must not consume the prepared episode.
+        life.prepare()
         self.assertEqual(r.randomize.call_count, 2)
-        self.assertIs(life.handle, handles[1])
+        self.assertEqual(life.state, "prepared")
+        life.play()
+        self.assertEqual(start.call_count, 2)
         life.close()
-        handles[1].stop.assert_called_once()
         r.close.assert_called_once()
+        self.assertFalse(life.pending_prepare)
 
     def test_failed_composition_never_starts_or_reuses_publisher(self):
         r, start = Mock(), Mock()
         r.randomize.side_effect = ValueError("no valid body")
-        life = runtime.CollectionLifecycle(r, start)
-        with self.assertRaises(ValueError): life.play()
+        life = runtime.CollectionLifecycle(r, start, lambda: True)
+        with self.assertRaises(ValueError): life.prepare()
+        self.assertEqual(life.state, "failed")
+        self.assertFalse(life.pending_prepare)
         start.assert_not_called()
         with self.assertRaises(RuntimeError): life.play()
         life.stop()
         r.randomize.side_effect = None
-        life.play()
+        life.prepare(); life.play()
         start.assert_called_once()
-
 
 @unittest.skipUnless(importlib.util.find_spec("pxr"), "Requires OpenUSD; not live PhysX")
 class CompositionTests(unittest.TestCase):
@@ -122,6 +137,25 @@ class CompositionTests(unittest.TestCase):
         self.container_before = self.stage.GetRootLayer().ExportToString()
         self.randomizer = runtime.SceneRandomizer(self.stage, self.data, ROOT)
         self.addCleanup(self.randomizer.close)
+
+    def test_episode_exists_before_play_and_play_pause_never_mutate_usd(self):
+        stopped = Mock(return_value=True)
+        start = Mock()
+        life = runtime.CollectionLifecycle(self.randomizer, start, stopped)
+        life.prepare()
+        self.assertTrue(self.stage.GetPrimAtPath(runtime.OBJECT_PATH))
+        before = self.randomizer.layer.ExportToString()
+        episode = deepcopy(self.randomizer.last_episode)
+        stopped.return_value = False
+        with patch.object(self.randomizer, "randomize", side_effect=AssertionError("PLAY composition")):
+            life.play(); life.play(); life.pause(); life.play(); life.stop()
+            self.assertEqual(self.randomizer.layer.ExportToString(), before)
+            self.assertEqual(self.randomizer.last_episode, episode)
+        stopped.return_value = True
+        life.prepare()
+        self.assertNotEqual(self.randomizer.last_episode, episode)
+        self.assertEqual(self.stage.GetRootLayer().ExportToString(), self.container_before)
+        life.close()
 
     def test_inspected_default_prims_bounds_colliders_and_dependencies(self):
         from pxr import UsdUtils
@@ -320,6 +354,47 @@ class AdapterTests(unittest.TestCase):
             pop = timeline.get_timeline_event_stream.return_value.create_subscription_to_pop
             timeline.get_timeline_event_stream.return_value.create_subscription_to_push.assert_not_called()
             self.assertLess(pop.call_args.kwargs["order"], 0)
+            # Exercise real attachment/lifecycle with fake Kit and ROS services.
+            stage = Mock()
+            stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/stage_sorting_v1.usd")
+            contract = ModuleType("isaac_eff_control.bfm_contract")
+            contract.scene_config_default = lambda: str(CONFIG)
+            contract.state_defaults = lambda _: runtime.load_configuration(CONFIG, ROOT)["parameters"]
+            r = Mock()
+            def compose():
+                self.assertTrue(timeline.is_stopped())
+                return dict(asset="lemon1.usd", position=[1,4,.8], yaw=0,
+                            container_position=[1,4.4,.75], container_offset=[0,0,0])
+            r.randomize.side_effect = compose
+            with patch.dict(sys.modules, {"isaac_eff_control.bfm_contract": contract}), \
+                    patch.object(adapter, "SceneRandomizer", return_value=r), \
+                    patch.object(extension, "_start_publisher", return_value=Mock()) as start:
+                usd.get_stage.return_value = stage
+                timeline.is_stopped.return_value = True
+                extension._update(None)
+                self.assertEqual(extension.lifecycle.state, "prepared")
+                r.randomize.assert_called_once()
+                start.assert_not_called()
+                extension._update(None)  # No repeat preparation on idle updates.
+                timeline.is_stopped.return_value = False
+                callback = pop.call_args.args[0]
+                callback(SimpleNamespace(type=1)); callback(SimpleNamespace(type=1))
+                callback(SimpleNamespace(type=2)); callback(SimpleNamespace(type=1))
+                self.assertEqual(r.randomize.call_count, 1)
+                start.assert_called_once()
+                callback(SimpleNamespace(type=3)); callback(SimpleNamespace(type=3))
+                start.return_value.stop.assert_called_once()
+                self.assertEqual(r.randomize.call_count, 1)
+                extension._update(None)  # STOP event received but timeline still unwinding.
+                self.assertEqual(r.randomize.call_count, 1)
+                timeline.is_stopped.return_value = True
+                extension._update(None)
+                self.assertEqual(r.randomize.call_count, 2)
+                self.assertEqual(extension.lifecycle.state, "prepared")
+                callback(SimpleNamespace(type=3)); extension._update(None)
+                self.assertEqual(r.randomize.call_count, 2)
+                extension._detach()
+                r.close.assert_called_once()
             life = Mock()
             extension.lifecycle = life
             extension.stage = "stage"

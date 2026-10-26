@@ -115,6 +115,19 @@ class IsaacTaskSampler:
                 raise ValueError(f"PhysX returned invalid {label}")
             return values
 
+        def tensor_row(values, size, label):
+            # Warp arrays deliberately forbid Python item indexing. numpy()
+            # performs the supported host transfer (including CUDA arrays).
+            # Torch tensors need detach/cpu before numpy; NumPy/list inputs
+            # already support indexing. Never index the backend array first.
+            if hasattr(values, "detach"):
+                values = values.detach()
+            if hasattr(values, "cpu"):
+                values = values.cpu()
+            if hasattr(values, "numpy"):
+                values = values.numpy()
+            return vector(values[0], size, label)
+
         def quaternion(xyzw):
             x, y, z, w = xyzw
             norm = math.hypot(x, y, z, w)
@@ -123,16 +136,16 @@ class IsaacTaskSampler:
             return Gf.Quatd(w / norm, Gf.Vec3d(x / norm, y / norm, z / norm))
 
         def pose(key):
-            raw = vector(self.views[key].get_transforms()[0], 7, "pose")
+            raw = tensor_row(self.views[key].get_transforms(), 7, "pose")
             return Gf.Vec3d(*raw[:3]) * self.scale, quaternion(raw[3:])
 
         def body_state(key):
             position, orientation = pose(key)
             rotation = Gf.Rotation(orientation)
-            twist = vector(self.views[key].get_velocities()[0], 6, "velocity")
+            twist = tensor_row(self.views[key].get_velocities(), 6, "velocity")
             # Tensor twists are world-space velocities at the center of mass.
             # Never assume that an auto-computed COM equals the USD body origin.
-            com = vector(self.views[key].get_coms()[0], 7, "local COM pose")
+            com = tensor_row(self.views[key].get_coms(), 7, "local COM pose")
             omega = Gf.Vec3d(*twist[3:])  # PhysX angular velocities are rad/s.
             com_offset = rotation.TransformDir(Gf.Vec3d(*com[:3]) * self.scale)
             return position, orientation, Gf.Vec3d(*twist[:3]) * self.scale, omega, com_offset

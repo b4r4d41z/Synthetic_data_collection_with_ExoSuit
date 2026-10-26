@@ -607,9 +607,24 @@ cd /workspace/Synthetic_data_collection_with_ExoSuit
 BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
 ```
 
-On Stop -> Play, the tested timeline **POP** callback composes the container
-and fruit episode and creates the ROS publisher handle. Kit post-update alone
-does **not** imply PhysX readiness, and neither does the first PhysX step.
+Episode composition happens **only while STOPPED**. On stage attachment the
+extension constructs the randomizer, prepares the first fruit/container episode,
+validates active dynamic rigid bodies and collision geometry, then prints
+`[BFM READY] Episode prepared. You can press PLAY now.` The fruit and container
+pose must already be visible before pressing Play.
+
+The lifecycle is `stopped -> preparing -> prepared -> playing <-> paused`.
+The tested timeline **POP** callback on PLAY only starts the measured publisher
+(or resumes it); it never samples, replaces references, moves bodies, clears
+layers or authors velocities. PhysX starts from an already composed scene.
+STOP closes the publisher and releases local tensor views, then sets pending
+preparation. A subsequent Kit update, with the same stage active and
+`timeline.is_stopped()` true, prepares exactly one next episode and prints READY.
+Duplicate PLAY/STOP/update events do not consume extra episodes. Preparation
+errors enter `failed`, do not announce READY and do not retry every frame.
+Stop/retry or reload the extension after correcting the cause.
+
+A physics step still does **not** imply tensor readiness.
 On each playing post-update, the handle checks
 `SimulationManager.get_physics_simulation_view()`. A missing or invalid view
 means keep waiting without reading tensors, publishing state or disabling the
@@ -619,12 +634,18 @@ manager's subspace roots. After the first successful measured read, the log
 reports `[BFM] Physics ready. /bfm/state publisher active.` There are no sleeps
 or frame countdowns. If the manager replaces its view, old rigid-body views
 are discarded. Actual read/body-resolution errors after readiness fail closed.
+Tensor results may use Warp, Torch or NumPy frontends. Before any row indexing,
+Warp arrays are transferred with their supported `.numpy()` host-copy API;
+Torch tensors use `.detach().cpu().numpy()`. NumPy/list results already support
+indexing. Pose, twist and local COM measurements all take this path; the existing
+COM correction, goal OBB mathematics and full measured state contract are unchanged.
 
 Pause -> Play retains the episode, publisher and valid tensor views. Duplicate
 Play does nothing. Stop closes the handle, releases its timeline-reset and
 post-update subscriptions and drops references to sampler/tensor views; it does
 not invalidate the manager-owned shared simulation view.
-Next Play creates a fresh handle and views for the new body. The helper's own
+The next stopped preparation composes a new body; next Play creates a fresh
+handle and views for that already prepared body. The helper's own
 STOP handler also resets views when used outside the extension. Stage closure,
 replacement, extension disable and application shutdown detach the runtime layer
 and stop publication. An actual read/body-resolution error **after manager readiness** still fails
@@ -744,15 +765,18 @@ Manual runtime validation:
 1. Launch Isaac with the extension enabled; open the sorting template stopped.
 2. Confirm the log says `[BFM READY]`, and the robot uses its existing
    working PhysX composition. There must be no active `/World/orange1`.
-3. Play: exactly one allowed fruit should appear on the tabletop, with one
-   `[BFM] Episode created` log entry, including the new container pose. Inspect `/World/Task/Object` for
-   RigidBodyAPI and active collisions; verify settling and reachable placement.
+3. Before Play: exactly one allowed fruit and the randomized container must
+   already be visible, with `[BFM] Episode prepared` and READY logs. Inspect
+   `/World/Task/Object` for dynamic RigidBodyAPI and active collision geometry.
+   Press Play; no new selection/composition log should appear. Confirm gravity,
+   desk contact, robot pushing/grasping and physically measured motion.
 4. Echo `/bfm/state` with the command below. Move the fruit and verify live COM
    `object_position`/`object_velocity`; optionally inspect resolution counts above.
 5. Pause/resume: fruit/container episode must stay the same, without another selection log.
-6. Stop, then Play: another selection/pose log appears, and state follows the
-   current fruit. Repeat several times, including different assets. Robot and
-   container must reset normally on Stop; the next Play resamples its XY. Check
+6. Stop: after reset completes, the next fruit/container is prepared and READY
+   appears while still stopped. Next Play runs that existing episode. Repeat
+   several times, including different assets. Robot resets normally; container
+   XY is sampled during stopped preparation. Check
    support/robot clearance and that measured goal follows its new pose. Goal-local
    OBB geometry remains unchanged.
 7. Start/stop a short recording through the existing Bool control. Run

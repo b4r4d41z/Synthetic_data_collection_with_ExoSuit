@@ -299,47 +299,78 @@ class SceneRandomizer:
                 raise ValueError("Semantic object is not the sole composed rigid body")
             body.CreateVelocityAttr().Set(Gf.Vec3f(0))
             body.CreateAngularVelocityAttr().Set(Gf.Vec3f(0))
+        for path in (OBJECT_PATH, CONTAINER_PATH):
+            prim = self.stage.GetPrimAtPath(path)
+            body = UsdPhysics.RigidBodyAPI(prim)
+            if (not prim.IsActive() or not body
+                    or body.GetRigidBodyEnabledAttr().Get() is False
+                    or body.GetKinematicEnabledAttr().Get() is True
+                    or not list(collision_shapes(prim))
+                    or [p for p in Usd.PrimRange(prim) if p.HasAPI(UsdPhysics.RigidBodyAPI)] != [prim]):
+                raise ValueError(f"Prepared role must be one active dynamic body with collision: {path}")
         self.last_episode = {"asset": Path(asset).name, "position": position, "yaw": yaw,
                              "container_position": list(container_position), "container_offset": offset}
         return self.last_episode
 
 
 class CollectionLifecycle:
-    """Timeline state machine; PAUSE never creates a new episode."""
-    def __init__(self, randomizer, start_publisher):
+    """Compose only while stopped; PLAY merely activates measured services."""
+    def __init__(self, randomizer, start_publisher, is_stopped):
         self.randomizer, self.start_publisher = randomizer, start_publisher
+        self.is_stopped = is_stopped
         self.state, self.handle = "stopped", None
+        self.pending_prepare = True
+
+    def prepare(self):
+        if not self.is_stopped():
+            raise RuntimeError("Episode preparation requires a stopped timeline")
+        if self.state == "prepared":
+            return None
+        if self.state != "stopped" or not self.pending_prepare:
+            raise RuntimeError("Stop before preparing another episode")
+        self.state, self.pending_prepare = "preparing", False
+        try:
+            episode = self.randomizer.randomize()
+        except Exception:
+            self.state = "failed"
+            raise
+        self.state = "prepared"
+        return episode
 
     def play(self):
         if self.state == "playing":
-            return None
+            return
         if self.state == "paused":
             self.state = "playing"
-            return None
-        if self.state != "stopped":
-            raise RuntimeError("Stop before retrying collection after an error")
+            return
+        if self.state != "prepared":
+            raise RuntimeError("Wait for an episode to be prepared before Play")
         try:
-            episode = self.randomizer.randomize()
             self.handle = self.start_publisher()
         except Exception:
             self.state = "failed"
             raise
         self.state = "playing"
-        return episode
 
     def pause(self):
         if self.state == "playing":
             self.state = "paused"
 
     def stop(self):
+        # A duplicate STOP after preparation must not consume the next episode.
+        if self.state in ("prepared", "stopped", "closed"):
+            return
         try:
             if self.handle is not None:
                 self.handle.stop()
         finally:
             self.handle, self.state = None, "stopped"
+            self.pending_prepare = True
 
     def close(self):
         try:
             self.stop()
         finally:
+            self.pending_prepare = False
+            self.state = "closed"
             self.randomizer.close()

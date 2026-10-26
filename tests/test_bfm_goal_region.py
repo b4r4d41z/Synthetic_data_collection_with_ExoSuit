@@ -166,6 +166,42 @@ class MovingGoalTests(GoalTestBase):
         for a, b in zip(actual, expected):
             self.assertAlmostEqual(a, b, places=9)
 
+    @unittest.skipUnless(importlib.util.find_spec("warp"), "Optional real Warp CPU validation")
+    def test_real_warp_transform_and_spatial_vector_arrays(self):
+        import warp as wp
+        self.bodies["/World/Object"].pose[:3] = [1., 2., 3.]
+        self.bodies["/World/Object"].velocity[:3] = [4., 5., 6.]
+        expected = self.sampler().read()
+        for body in self.bodies.values():
+            for method, dtype in (("get_transforms", wp.transform),
+                                  ("get_velocities", wp.spatial_vector),
+                                  ("get_coms", wp.transform)):
+                original = getattr(body, method)
+                setattr(body, method, lambda original=original, dtype=dtype:
+                        wp.array(original(), dtype=dtype, device="cpu"))
+        self.assertEqual(self.sampler().read(), expected)
+        self.bodies["/World/Object"].pose[0] = 10.
+        self.assertEqual(self.sampler().read()["object_position"], [10., 2., 3.])
+
+    def test_warp_style_arrays_convert_before_any_indexing_and_keep_measured_values(self):
+        class WarpArray:
+            def __init__(self, data):
+                self.data = data
+            def __getitem__(self, key):
+                raise TypeError("Item indexing is not supported on wp.array objects")
+            def numpy(self):
+                return self.data
+        self.bodies["/World/Object"].pose[:3] = [1., 2., 3.]
+        self.bodies["/World/Object"].velocity[:3] = [4., 5., 6.]
+        expected = self.sampler().read()
+        for body in self.bodies.values():
+            for method in ("get_transforms", "get_velocities", "get_coms"):
+                original = getattr(body, method)
+                setattr(body, method, lambda original=original: WarpArray(original()))
+        self.assertEqual(self.sampler().read(), expected)
+        self.bodies["/World/Object"].pose[0] = 10.
+        self.assertEqual(self.sampler().read()["object_position"], [10., 2., 3.])
+
     def test_translation_uses_live_pose_not_authored_usd_and_keeps_local_dimensions(self):
         from pxr import UsdGeom
         UsdGeom.Xformable(self.stage.GetPrimAtPath("/World/Container")).AddTranslateOp().Set((999,999,999))

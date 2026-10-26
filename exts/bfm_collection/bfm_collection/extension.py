@@ -1,7 +1,7 @@
 """Kit lifecycle adapter. Simulation must be stopped when enabling the extension.
 
 Timeline POP subscription handles PLAY/PAUSE/STOP events from the Isaac Sim UI.
-Runtime object composition is performed when PLAY is received.
+Runtime object composition is performed only while the timeline is stopped.
 """
 
 import importlib
@@ -241,28 +241,16 @@ class CollectionExtension(omni.ext.IExt):
             self.lifecycle = CollectionLifecycle(
                 randomizer,
                 self._start_publisher,
+                self.timeline.is_stopped,
             )
 
             self.stage = stage
 
-            message = (
-                "BFM collection ready: "
-                "next Stop -> Play selects one fruit"
-            )
-
-            carb.log_info(message)
-
-            print(
-                "\n"
-                "============================================\n"
-                "[BFM READY] Scene is ready.\n"
-                "[BFM READY] You can press PLAY now.\n"
-                "============================================\n",
-                flush=True,
-            )
+            self._prepare_episode()
 
         except Exception as error:
             self.failed_stage = stage
+            self._detach()
 
             carb.log_error(
                 f"BFM collection setup disabled: {error}. "
@@ -274,13 +262,31 @@ class CollectionExtension(omni.ext.IExt):
                 flush=True,
             )
 
+    def _prepare_episode(self):
+        """Called on attach or a stopped update, never from a timeline event."""
+        print("[BFM] Preparing episode while simulation is stopped...", flush=True)
+        episode = self.lifecycle.prepare()
+        if episode is None:
+            return
+        print(
+            "[BFM] Episode prepared:\n"
+            f"      asset={episode['asset']}\n"
+            f"      position={episode['position']}\n"
+            f"      yaw={episode['yaw']}\n"
+            f"      container_position={episode['container_position']}\n"
+            f"      container_offset={episode['container_offset']}\n\n"
+            "============================================\n"
+            "[BFM READY] Episode prepared.\n"
+            "[BFM READY] You can press PLAY now.\n"
+            "============================================", flush=True)
+
     def _start_publisher(self):
         from isaac_eff_control.bfm_task_state import (
             start_task_state_publisher,
         )
 
         print(
-            "[BFM] Preparing /bfm/state; waiting for PhysX steps...",
+            "[BFM] Waiting for PhysX state...",
             flush=True,
         )
 
@@ -333,6 +339,17 @@ class CollectionExtension(omni.ext.IExt):
             self._detach()
 
         self._attach()
+        # STOP's event can arrive while PhysX is unwinding. Defer all USD edits
+        # to a later Kit update with an explicitly stopped, still-active stage.
+        if (not self.closing and self.lifecycle is not None
+                and self.usd.get_stage() == self.stage
+                and self.lifecycle.pending_prepare and self.timeline.is_stopped()):
+            try:
+                self._prepare_episode()
+            except Exception as error:
+                carb.log_error(f"BFM episode preparation failed: {error}")
+                print(f"[BFM ERROR] Episode preparation failed: {error}", flush=True)
+                # prepare() marks failed and clears pending; no per-frame retry.
 
     def _timeline_event(self, event):
         types = omni.timeline.TimelineEventType
@@ -363,31 +380,11 @@ class CollectionExtension(omni.ext.IExt):
 
         try:
             if event.type == play_type:
-                if self.lifecycle.state == "stopped":
-                    print(
-                        "[BFM] PLAY received. Creating new episode...",
-                        flush=True,
-                    )
-
-                episode = self.lifecycle.play()
-
-                if episode is not None:
-                    carb.log_info(
-                        "BFM collection episode object: "
-                        f"asset={episode['asset']} "
-                        f"position={episode['position']} "
-                        f"yaw={episode['yaw']}"
-                    )
-
-                    print(
-                        "[BFM] Episode created:\n"
-                        f"      asset={episode['asset']}\n"
-                        f"      position={episode['position']}\n"
-                        f"      yaw={episode['yaw']}\n"
-                        f"      container_position={episode['container_position']}\n"
-                        f"      container_offset={episode['container_offset']}",
-                        flush=True,
-                    )
+                if self.lifecycle.state == "paused":
+                    print("[BFM] PLAY received. Resuming prepared episode.", flush=True)
+                elif self.lifecycle.state != "playing":
+                    print("[BFM] PLAY received. Starting prepared episode...", flush=True)
+                self.lifecycle.play()
 
             elif event.type == pause_type:
                 print(
