@@ -1,8 +1,7 @@
 """Kit lifecycle adapter. Simulation must be stopped when enabling the extension.
 
-Timeline PUSH subscription (early order) authors the object synchronously on
-PLAY, before queued timeline consumers/physics updates. It performs no async
-work. Validate this ordering in the target Isaac 6.1 runtime before collection.
+Timeline POP subscription handles PLAY/PAUSE/STOP events from the Isaac Sim UI.
+Runtime object composition is performed when PLAY is received.
 """
 
 import importlib
@@ -81,11 +80,14 @@ class CollectionExtension(omni.ext.IExt):
             )
         )
 
+        # IMPORTANT:
+        # UI PLAY/PAUSE/STOP events are received through POP subscription
+        # in the current Isaac Sim 6.1 runtime.
         self.timeline_subscription = (
-            self.timeline.get_timeline_event_stream().create_subscription_to_push(
+            self.timeline.get_timeline_event_stream().create_subscription_to_pop(
                 self._timeline_event,
                 order=-10000,
-                name="bfm_collection_before_physics",
+                name="bfm_collection_timeline",
             )
         )
 
@@ -333,13 +335,25 @@ class CollectionExtension(omni.ext.IExt):
         self._attach()
 
     def _timeline_event(self, event):
+        types = omni.timeline.TimelineEventType
+
+        play_type = int(types.PLAY)
+        pause_type = int(types.PAUSE)
+        stop_type = int(types.STOP)
+
+        # Ignore high-frequency timeline events such as type=4.
+        if event.type not in (
+            play_type,
+            pause_type,
+            stop_type,
+        ):
+            return
+
         print(
             f"[BFM DEBUG] timeline event: type={event.type}",
             flush=True,
         )
 
-        # Synchronous push callback:
-        # never wait a frame before changing references.
         if self.lifecycle is None:
             return
 
@@ -347,10 +361,8 @@ class CollectionExtension(omni.ext.IExt):
             self._detach()
             return
 
-        types = omni.timeline.TimelineEventType
-
         try:
-            if event.type == int(types.PLAY):
+            if event.type == play_type:
                 print(
                     "[BFM] PLAY received. Creating new episode...",
                     flush=True,
@@ -374,7 +386,7 @@ class CollectionExtension(omni.ext.IExt):
                         flush=True,
                     )
 
-            elif event.type == int(types.PAUSE):
+            elif event.type == pause_type:
                 print(
                     "[BFM] PAUSE received.",
                     flush=True,
@@ -382,7 +394,7 @@ class CollectionExtension(omni.ext.IExt):
 
                 self.lifecycle.pause()
 
-            elif event.type == int(types.STOP):
+            elif event.type == stop_type:
                 print(
                     "[BFM] STOP received.",
                     flush=True,
@@ -391,8 +403,6 @@ class CollectionExtension(omni.ext.IExt):
                 self.lifecycle.stop()
 
         except Exception as error:
-            # A failed sample/composition/publisher must never
-            # leave old state alive.
             carb.log_error(
                 f"BFM collection Play cancelled: {error}"
             )
