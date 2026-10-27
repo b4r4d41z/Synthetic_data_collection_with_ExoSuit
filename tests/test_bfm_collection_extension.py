@@ -72,7 +72,7 @@ class LifecycleTests(unittest.TestCase):
         start.assert_not_called()
         stopped.return_value = False
         life.play(); life.play(); life.pause(); life.play()
-        self.assertEqual(life.state, "playing")
+        self.assertEqual(life.state, "waiting_for_physics")
         r.randomize.assert_called_once()
         start.assert_called_once()
         life.stop(); life.stop()
@@ -94,6 +94,23 @@ class LifecycleTests(unittest.TestCase):
         life.close()
         r.close.assert_called_once()
         self.assertFalse(life.pending_prepare)
+
+    def test_startup_phases_duplicate_play_and_pause_never_restart_reset(self):
+        randomizer, start = Mock(), Mock()
+        life = runtime.CollectionLifecycle(randomizer,start,lambda:True)
+        life.prepare(); life.play()
+        for phase in ("waiting_for_physics", "applying_reset", "verifying_reset", "settling", "playing"):
+            start.return_value.phase=phase
+            life.sync()
+            self.assertEqual(life.state,phase)
+            life.play();life.pause();life.sync()
+            self.assertEqual(life.state,"paused")
+            life.play()
+            self.assertEqual(life.state,phase)
+        start.assert_called_once();randomizer.randomize.assert_called_once()
+        life.stop();life.prepare();life.play()
+        self.assertEqual(start.call_count,2)
+        self.assertEqual(randomizer.randomize.call_count,2)
 
     def test_failed_composition_never_starts_or_reuses_publisher(self):
         r, start = Mock(), Mock()
@@ -145,12 +162,12 @@ class CompositionTests(unittest.TestCase):
         life = runtime.CollectionLifecycle(self.randomizer, start, stopped)
         life.prepare()
         self.assertTrue(self.stage.GetPrimAtPath(runtime.OBJECT_PATH))
-        before = self.randomizer.layer.ExportToString()
+        before = self.stage.GetSessionLayer().ExportToString()
         episode = deepcopy(self.randomizer.last_episode)
         stopped.return_value = False
         with patch.object(self.randomizer, "randomize", side_effect=AssertionError("PLAY composition")):
             life.play(); life.play(); life.pause(); life.play(); life.stop()
-            self.assertEqual(self.randomizer.layer.ExportToString(), before)
+            self.assertEqual(self.stage.GetSessionLayer().ExportToString(), before)
             self.assertEqual(self.randomizer.last_episode, episode)
         stopped.return_value = True
         life.prepare()
@@ -187,7 +204,13 @@ class CompositionTests(unittest.TestCase):
             ops = self.UsdGeom.Xformable(prim).GetOrderedXformOps()
             self.assertEqual(len(ops), 1)
             bound = self.UsdGeom.BBoxCache(self.Usd.TimeCode.Default(), ["default", "render", "proxy"]).ComputeWorldBound(prim).ComputeAlignedRange()
-            self.assertAlmostEqual(bound.GetMin()[2], .755)
+            # Only the desired pose changes; the parked USD transform stays intact.
+            from pxr import Gf
+            _, low, high = self.randomizer.assets[asset]
+            rotation = Gf.Rotation(Gf.Vec3d(0,0,1), math.degrees(episode["yaw"]))
+            bottom = min(rotation.TransformDir(Gf.Vec3d(x,y,z))[2]
+                         for x in (low[0],high[0]) for y in (low[1],high[1]) for z in (low[2],high[2]))
+            self.assertAlmostEqual(episode["position"][2]+bottom, .755)
             self.assertEqual(episode["asset"], Path(asset).name)
             self.assertEqual(self.stage.GetRootLayer().ExportToString(), self.container_before)
         self.randomizer.close()
@@ -200,10 +223,12 @@ class CompositionTests(unittest.TestCase):
                      str(p.GetMetadata("references")), p.IsActive())
                     for p in self.stage.Traverse()]
         before = topology()
+        usd_before = self.stage.ExportToString()
         for asset in self.randomizer.pool:
             with patch.object(runtime, "sample_candidate", return_value=(asset, 1., 4.05, .4)):
                 episode = self.randomizer.randomize()
             self.assertEqual(topology(), before)
+            self.assertEqual(self.stage.ExportToString(), usd_before)
             self.assertEqual(self.randomizer.current_object_path, runtime.fruit_path(asset))
             self.assertEqual(episode["object_prim_path"], self.randomizer.current_object_path)
             self.assertEqual(len(episode["parking_positions"]), 3)
@@ -211,7 +236,7 @@ class CompositionTests(unittest.TestCase):
                 prim = self.stage.GetPrimAtPath(path)
                 pos = self.UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(
                     self.Usd.TimeCode.Default()).ExtractTranslation()
-                self.assertEqual(list(pos), expected)
+                self.assertEqual(episode["body_poses"][path], [*expected,0.,0.,0.,1.])
             for path in self.randomizer.pool.values():
                 body = self.UsdPhysics.RigidBodyAPI(self.stage.GetPrimAtPath(path))
                 self.assertEqual(list(body.GetVelocityAttr().Get()), [0,0,0])
@@ -219,16 +244,17 @@ class CompositionTests(unittest.TestCase):
         self.randomizer.close()
         self.assertEqual(topology(), before)
 
-    def test_stronger_writeback_pose_fails_without_changing_episode_or_topology(self):
+    def test_planning_leaves_stronger_stale_usd_pose_untouched(self):
         episode = self.randomizer.randomize()
         prim = self.stage.GetPrimAtPath(runtime.OBJECT_PATH)
         from pxr import Gf
         with self.Usd.EditContext(self.stage, self.stage.GetSessionLayer()):
             prim.GetAttribute("xformOp:transform:bfmEpisode").Set(
                 Gf.Matrix4d(1).SetTranslate((900,900,900)))
-        with self.assertRaisesRegex(ValueError, "reset pose is overridden"):
-            self.randomizer.randomize()
-        self.assertEqual(self.randomizer.last_episode, episode)
+        before = self.stage.GetSessionLayer().ExportToString()
+        next_episode = self.randomizer.randomize()
+        self.assertNotEqual(episode["episode_id"], next_episode["episode_id"])
+        self.assertEqual(self.stage.GetSessionLayer().ExportToString(), before)
         for path in self.randomizer.pool.values():
             self.assertTrue(self.stage.GetPrimAtPath(path).IsActive())
 
@@ -312,8 +338,8 @@ class CompositionTests(unittest.TestCase):
                 ops = xform.GetOrderedXformOps()
                 self.assertEqual([op.GetOpName() for op in ops], ["xformOp:transform:bfmEpisode"])
                 position = xform.ComputeLocalToWorldTransform(self.Usd.TimeCode.Default()).ExtractTranslation()
-                self.assertEqual(list(position), episode["container_position"])
-                self.assertAlmostEqual(position[0], 1.09 + episode["container_offset"][0])
+                self.assertEqual(list(position), list(self.randomizer.container_transform.ExtractTranslation()))
+                self.assertAlmostEqual(episode["container_position"][0], 1.09 + episode["container_offset"][0])
                 self.assertEqual(self.stage.GetRootLayer().ExportToString(), source)
 
     def test_container_outside_support_or_overlapping_robot_rejected(self):
@@ -329,12 +355,12 @@ class CompositionTests(unittest.TestCase):
 
     def test_fruit_avoids_new_container_and_failure_restores_runtime_layer(self):
         episode = self.randomizer.randomize()
-        before = self.randomizer.layer.ExportToString()
+        before = self.stage.GetSessionLayer().ExportToString()
         asset = self.data["randomization"]["object_assets"][0]
         with patch.object(runtime, "sample_candidate", return_value=(asset, 1.09, 4.44, 0.)):
             with self.assertRaisesRegex(ValueError, "obstacle-free fruit"):
                 self.randomizer.randomize()
-        self.assertEqual(self.randomizer.layer.ExportToString(), before)
+        self.assertEqual(self.stage.GetSessionLayer().ExportToString(), before)
         self.assertEqual(self.randomizer.last_episode, episode)
 
     def test_real_container_reference_retains_body_rotation_goal_and_support(self):
@@ -355,10 +381,12 @@ class CompositionTests(unittest.TestCase):
             prim = self.stage.GetPrimAtPath(runtime.CONTAINER_PATH)
             self.assertTrue(prim.HasAPI(self.UsdPhysics.RigidBodyAPI))
             matrix = self.UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(self.Usd.TimeCode.Default())
-            self.assertEqual(list(matrix.ExtractTranslation()), episode["container_position"])
+            self.assertEqual(list(matrix.ExtractTranslation()), list(r.container_transform.ExtractTranslation()))
             self.assertEqual(matrix.ExtractRotationQuat(), Gf.Quatd(1))
             cache = self.UsdGeom.BBoxCache(self.Usd.TimeCode.Default(), ["default", "render", "proxy"])
             a = cache.ComputeWorldBound(prim).ComputeAlignedRange()
+            # Geometry planning uses the new container bounds without moving USD.
+            self.assertEqual(episode["body_poses"][runtime.CONTAINER_PATH][:3], episode["container_position"])
             b = cache.ComputeWorldBound(self.stage.GetPrimAtPath(r.current_object_path)).ComputeAlignedRange()
             self.assertAlmostEqual(a.GetMin()[2], .75, places=5)
             self.assertFalse(runtime.overlaps(a.GetMin(), a.GetMax(), b.GetMin(), b.GetMax(), .03))

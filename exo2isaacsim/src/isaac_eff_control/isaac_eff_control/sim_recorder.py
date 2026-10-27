@@ -255,6 +255,8 @@ class SimRecorder(Node):
                 f"Cannot start MCAP episode: {error}. Toggle recording false/true to retry."
             )
             return
+        if metadata["bfm"]["enabled"]:
+            self.get_logger().info("[BFM READY] recording started")
         self.get_logger().info(
             f"Started MCAP ros2 bag pid={self._process.pid}: {self._bag_path}; "
             f"task: {metadata['task_id']}; instruction: {metadata['instruction']}; "

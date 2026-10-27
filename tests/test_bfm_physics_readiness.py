@@ -4,6 +4,7 @@ from types import ModuleType, SimpleNamespace
 from unittest.mock import Mock, patch
 
 from test_bfm_goal_region import GoalTestBase
+from test_physics_object_pool import fixture
 
 
 class PhysicsReadinessTests(GoalTestBase):
@@ -127,3 +128,93 @@ class PhysicsReadinessTests(GoalTestBase):
         self.assertIsNone(self.node.sampler)
         self.ready(); self.update(None)
         self.assertIsNot(self.node.sampler, first)
+
+    def install_live_episode(self):
+        self.handle.stop()
+        stage, ep, bodies, view = fixture()
+        view.is_valid = True
+        self.overrides['object_prim_path'] = ep['object_prim_path']
+        self.node = self.module.BfmTaskStatePublisher(stage, sampler_factory=self.factory)
+        self.modules['omni.usd'].get_context = lambda: SimpleNamespace(get_stage=lambda: stage)
+        with patch.object(self.module, 'BfmTaskStatePublisher', return_value=self.node):
+            self.handle = self.module.start_task_state_publisher(episode=ep, bfm_collection_mode=True)
+        self.addCleanup(self.handle.stop)
+        self.update = self.app.get_post_update_event_stream.return_value.create_subscription_to_pop.call_args.args[0]
+        self.event = self.timeline.get_timeline_event_stream.return_value.create_subscription_to_pop.call_args.args[0]
+        return bodies,view
+
+    def test_live_reset_precedes_publication_and_waits_for_a_real_step_and_parking(self):
+        bodies,view = self.install_live_episode()
+        self.update(None)
+        self.assertEqual(self.handle.phase,'waiting_for_physics')
+        self.assertTrue(all(not b.writes for b in bodies.values()))
+        self.manager.get_physics_simulation_view.return_value = view
+        self.update(None)
+        self.assertEqual(self.handle.phase,'settling')
+        self.assertTrue(self.handle.object_pool.verified)
+        self.node.publisher.publish.assert_not_called()
+        self.node.sampler.read.assert_not_called()
+        self.update(None)  # Same physics time cannot activate or apply twice.
+        self.node.publisher.publish.assert_not_called()
+        parked = next(path for path in bodies if path not in
+                      (self.node.config['object_prim_path'],'/World/container_b04'))
+        bodies[parked].velocity[0,0] = .1
+        self.timeline.get_current_time.return_value = .02
+        self.update(None)
+        self.node.publisher.publish.assert_not_called()
+        bodies[parked].velocity[:] = 0
+        self.timeline.get_current_time.return_value = .03
+        self.update(None)
+        self.assertEqual(self.handle.phase,'playing')
+        self.assertTrue(self.handle.reported_ready)
+        self.node.publisher.publish.assert_called_once()
+        self.assertIs(self.node.sampler.body_views,self.handle.object_pool.bodies)
+        self.assertTrue(all(b.writes == ['pose','velocity'] for b in bodies.values()))
+
+    def test_live_reset_readback_failure_never_publishes_and_fails_once(self):
+        bodies,view = self.install_live_episode()
+        bodies[self.node.config['object_prim_path']].ignore_pose = True
+        self.manager.get_physics_simulation_view.return_value = view
+        self.update(None); self.update(None)
+        self.assertEqual(self.handle.phase,'failed')
+        self.assertFalse(self.node.enabled)
+        self.assertFalse(self.handle.reported_ready)
+        self.node.publisher.publish.assert_not_called()
+        self.assertFalse(self.handle.object_pool.bodies)
+        self.assertIn(self.node.config['object_prim_path'],self.node.get_logger().error.call_args.args[0])
+
+    def test_stop_releases_live_pool_next_play_rebinds_and_pause_does_not_reset(self):
+        bodies,view = self.install_live_episode()
+        self.manager.get_physics_simulation_view.return_value = view
+        self.update(None)
+        self.timeline.get_current_time.return_value = .02; self.update(None)
+        pool = self.handle.object_pool
+        self.timeline.is_playing.return_value = False
+        self.event(SimpleNamespace(type=3)); self.update(None)
+        self.assertTrue(pool.verified)
+        self.timeline.is_playing.return_value = True
+        self.timeline.get_current_time.return_value = .03; self.update(None)
+        self.assertTrue(all(b.writes == ['pose','velocity'] for b in bodies.values()))
+        self.event(SimpleNamespace(type=2))
+        self.assertFalse(pool.bodies); self.assertIsNone(pool.simulation_view)
+        self.assertIsNone(self.node.sampler)
+        self.timeline.is_playing.return_value = False; self.update(None)
+        self.assertEqual(view.create_rigid_body_view.call_count,5)
+        self.timeline.is_playing.return_value = True
+        self.timeline.get_current_time.return_value = .01; self.update(None)
+        self.assertEqual(view.create_rigid_body_view.call_count,10)
+        self.assertEqual(self.handle.phase,'settling')
+        self.assertTrue(all(b.writes == ['pose','velocity','pose','velocity'] for b in bodies.values()))
+
+    def test_manager_replacement_cannot_silently_reset_an_active_collection(self):
+        bodies,view = self.install_live_episode()
+        self.manager.get_physics_simulation_view.return_value = view
+        self.update(None)
+        self.timeline.get_current_time.return_value = .02; self.update(None)
+        published = self.node.publisher.publish.call_count
+        self.ready()  # Unexpected new manager view, not a user STOP/PLAY.
+        self.update(None)
+        self.assertFalse(self.node.enabled)
+        self.assertEqual(self.handle.phase,'failed')
+        self.assertEqual(self.node.publisher.publish.call_count,published)
+        self.assertTrue(all(b.writes == ['pose','velocity'] for b in bodies.values()))

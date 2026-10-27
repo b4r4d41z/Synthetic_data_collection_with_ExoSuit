@@ -167,6 +167,16 @@ class MovingGoalTests(GoalTestBase):
         for a, b in zip(actual, expected):
             self.assertAlmostEqual(a, b, places=9)
 
+    def test_sampler_reuses_reset_object_and_container_views_without_reresolving(self):
+        sampler = self.sampler()
+        sampler.body_views = {path: self.bodies[path] for path in ("/World/Object", "/World/Container")}
+        create = Mock(side_effect=lambda path: self.bodies[path])
+        sampler.simulation_view = SimpleNamespace(create_rigid_body_view=create)
+        self.bodies["/World/Object"].pose[:3] = [3.,4.,5.]
+        result = sampler.read()
+        create.assert_called_once_with("/World/Eef")
+        self.assertVector(result["object_position"], [3.,4.,5.])
+
     def test_each_episode_selected_pool_body_supplies_live_com_and_velocity(self):
         from pxr import UsdGeom, UsdPhysics
         for index, fruit in enumerate(("avocado", "lemon1", "pomegranate", "orange2")):

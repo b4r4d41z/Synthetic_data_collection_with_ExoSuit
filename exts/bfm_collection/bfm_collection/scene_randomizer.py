@@ -1,4 +1,4 @@
-"""Pose-only stopped resets of a pre-authored stable rigid-body pool."""
+"""Read-only geometric episode planning for a pre-authored rigid-body pool."""
 
 import json
 import math
@@ -155,7 +155,7 @@ def overlaps(lo, hi, other_lo, other_hi, margin):
 
 class SceneRandomizer:
     def __init__(self, stage, data, repository):
-        from pxr import Sdf, UsdGeom
+        from pxr import UsdGeom
         self.stage, self.data, self.repository = stage, data, Path(repository)
         self.config = data["randomization"]
         if UsdGeom.GetStageMetersPerUnit(stage) != 1 or UsdGeom.GetStageUpAxis(stage) != "Z":
@@ -182,9 +182,6 @@ class SceneRandomizer:
                   for p in collision_shapes(container)]
         self.container_bounds = ([min(b.GetMin()[i] for b in bounds) for i in range(3)],
                                  [max(b.GetMax()[i] for b in bounds) for i in range(3)])
-        self.layer = Sdf.Layer.CreateAnonymous("bfm_collection_runtime.usda")
-        self.session = stage.GetSessionLayer()
-        self.session.subLayerPaths.insert(0, self.layer.identifier)
         self.last_episode = None
         self.pool = {a: fruit_path(a) for a in self.assets}
         self.parking = {}
@@ -216,8 +213,7 @@ class SceneRandomizer:
             raise
 
     def close(self):
-        if self.layer.identifier in self.session.subLayerPaths:
-            self.session.subLayerPaths.remove(self.layer.identifier)
+        """The planner owns no USD layers or physics handles."""
 
     @property
     def current_object_path(self):
@@ -237,12 +233,11 @@ class SceneRandomizer:
             raise ValueError(f"Prepared role must be one active dynamic body with collision: {path}")
 
     def randomize(self):
-        # Planning completes before touching poses. No layer clear/import or
-        # topology mutations, even on rejection. Failed preparation cannot PLAY.
+        # Rejected placement preserves the previous plan; never author USD here.
         return self._randomize()
 
     def _randomize(self):
-        from pxr import Gf, Usd, UsdGeom, UsdPhysics
+        from pxr import Gf, Usd, UsdGeom
         triangles = tabletop_triangles(self.stage, self.config["table_prim_path"])
         cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), ["default", "render", "proxy"])
         obstacles = []
@@ -309,49 +304,18 @@ class SceneRandomizer:
             break
         else:
             raise ValueError("No supported, obstacle-free fruit pose in configured spawn region")
-        planned = {path: Gf.Matrix4d(1).SetTranslate(Gf.Vec3d(*self.parking[a]))
-                   for a, path in self.pool.items()}
         selected = self.pool[asset]
-        planned[selected] = Gf.Matrix4d(1).SetRotate(rotation).SetTranslateOnly(Gf.Vec3d(*position))
-        planned[CONTAINER_PATH] = transform
-        for path in planned:
+        orientation = [*rotation.GetQuat().GetImaginary(), rotation.GetQuat().GetReal()]
+        container_rotation = transform.ExtractRotationQuat().GetNormalized()
+        poses = {path: [*self.parking[a], 0., 0., 0., 1.] for a, path in self.pool.items()}
+        poses[selected] = [*position, *orientation]
+        poses[CONTAINER_PATH] = [*container_position, *container_rotation.GetImaginary(), container_rotation.GetReal()]
+        for path in poses:
             self._validate_body(path)
-        # Snapshot property values only. Rollback must never remove physical prims.
-        snapshots = []
-        with Usd.EditContext(self.stage, self.layer):
-            try:
-                for path, matrix in planned.items():
-                    prim = self.stage.GetPrimAtPath(path)
-                    xform = UsdGeom.Xformable(prim)
-                    attr = prim.GetAttribute("xformOp:transform:bfmEpisode")
-                    op = UsdGeom.XformOp(attr) if attr else xform.AddTransformOp(opSuffix="bfmEpisode")
-                    body = UsdPhysics.RigidBodyAPI(prim)
-                    attrs = [op.GetAttr(), xform.GetXformOpOrderAttr(),
-                             body.CreateVelocityAttr(), body.CreateAngularVelocityAttr()]
-                    snapshots.extend((attr, attr.Get()) for attr in attrs)
-                    xform.SetXformOpOrder([op])
-                    op.Set(matrix)
-                    attrs[2].Set(Gf.Vec3f(0)); attrs[3].Set(Gf.Vec3f(0))
-                # Detect stronger USD/writeback opinions rather than announcing a
-                # prepared pose that physics would never receive.
-                for path, matrix in planned.items():
-                    prim = self.stage.GetPrimAtPath(path)
-                    actual = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-                    if not Gf.IsClose(actual, matrix, 1e-8):
-                        raise ValueError(f"Composed reset pose is overridden: {path}")
-                    body = UsdPhysics.RigidBodyAPI(prim)
-                    if body.GetVelocityAttr().Get() != Gf.Vec3f(0) or body.GetAngularVelocityAttr().Get() != Gf.Vec3f(0):
-                        raise ValueError(f"Composed reset velocity is overridden: {path}")
-            except Exception:
-                for attr, value in reversed(snapshots):
-                    if value is not None:
-                        attr.Set(value)
-                    else:
-                        attr.Clear()
-                raise
         self.last_episode = {"episode_id": uuid4().hex, "asset": Path(asset).name, "asset_path": asset,
                              "object_prim_path": selected, "position": position, "yaw": yaw,
-                             "orientation_xyzw": [*rotation.GetQuat().GetImaginary(), rotation.GetQuat().GetReal()],
+                             "orientation_xyzw": orientation,
+                             "body_poses": poses,
                              "parking_positions": {self.pool[a]: list(p) for a, p in self.parking.items() if a != asset},
                              "container_prim_path": CONTAINER_PATH,
                              "container_position": list(container_position), "container_offset": offset,
@@ -361,7 +325,7 @@ class SceneRandomizer:
 
 
 class CollectionLifecycle:
-    """Reset poses only while stopped; PLAY activates measured services."""
+    """STOP plans; PLAY waits for a verified live reset before activation."""
     def __init__(self, randomizer, start_publisher, is_stopped):
         self.randomizer, self.start_publisher = randomizer, start_publisher
         self.is_stopped = is_stopped
@@ -385,10 +349,10 @@ class CollectionLifecycle:
         return episode
 
     def play(self):
-        if self.state == "playing":
+        if self.state in ("playing", "waiting_for_physics", "applying_reset", "verifying_reset", "settling"):
             return
         if self.state == "paused":
-            self.state = "playing"
+            self.state = self.resume_state
             return
         if self.state != "prepared":
             raise RuntimeError("Wait for an episode to be prepared before Play")
@@ -397,10 +361,15 @@ class CollectionLifecycle:
         except Exception:
             self.state = "failed"
             raise
-        self.state = "playing"
+        self.state = "waiting_for_physics"
+
+    def sync(self):
+        if self.handle is not None and self.state not in ("paused", "stopped", "failed", "closed"):
+            self.state = self.handle.phase
 
     def pause(self):
-        if self.state == "playing":
+        if self.state in ("playing", "waiting_for_physics", "applying_reset", "verifying_reset", "settling"):
+            self.resume_state = self.state
             self.state = "paused"
 
     def stop(self):

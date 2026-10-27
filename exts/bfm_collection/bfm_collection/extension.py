@@ -1,7 +1,7 @@
 """Kit lifecycle adapter. Simulation must be stopped when enabling the extension.
 
 Timeline POP subscription handles PLAY/PAUSE/STOP events from the Isaac Sim UI.
-Only existing body poses and velocities change while stopped.
+STOP plans without writes. PLAY resets existing actors through live PhysX.
 """
 
 import importlib
@@ -40,6 +40,7 @@ def get_status():
     return {
         "attached": True,
         "state": lifecycle.state,
+        "physics_phase": getattr(lifecycle.handle, "phase", None),
         "episode": lifecycle.randomizer.last_episode,
         "resolved_body_counts": getattr(
             sampler,
@@ -268,22 +269,22 @@ class CollectionExtension(omni.ext.IExt):
     def _prepare_episode(self):
         """Called on attach or a stopped update, never from a timeline event."""
         if not self.episode_channel.quiescent:
-            return  # Never mutate poses until every connected recorder finalized.
-        print("[BFM] Preparing episode while simulation is stopped...", flush=True)
+            return  # Do not advance episode identity until recorders finalize.
+        print("[BFM] Planning next episode while simulation is stopped...", flush=True)
         episode = self.lifecycle.prepare()
         if episode is None:
             return
         self.episode_channel.publish("prepared", episode)
         print(
-            "[BFM] Episode prepared:\n"
+            "[BFM] Episode plan prepared:\n"
             f"      asset={episode['asset']}\n"
             f"      position={episode['position']}\n"
             f"      yaw={episode['yaw']}\n"
             f"      container_position={episode['container_position']}\n"
             f"      container_offset={episode['container_offset']}\n\n"
             "============================================\n"
-            "[BFM READY] Episode prepared.\n"
-            "[BFM READY] You can press PLAY now.\n"
+            "[BFM PLAN READY] Episode planned; live reset will be applied after PLAY.\n"
+            "[BFM PLAN READY] You can press PLAY now.\n"
             "============================================", flush=True)
 
     def _start_publisher(self):
@@ -353,7 +354,9 @@ class CollectionExtension(omni.ext.IExt):
         if self.episode_channel is not None:
             self.episode_channel.poll()
             life = self.lifecycle
-            if life is not None and life.state == "playing" and life.handle is not None:
+            if life is not None:
+                life.sync()
+            if life is not None and life.state != "paused" and life.handle is not None:
                 if not life.handle.node.enabled:
                     self.episode_channel.publish("failed", life.randomizer.last_episode)
                     self.episode_channel.begin_stop()
@@ -363,7 +366,7 @@ class CollectionExtension(omni.ext.IExt):
                     self.episode_channel.publish("waiting", life.randomizer.last_episode)
                 elif life.handle.reported_ready and self.episode_channel.status.get("phase") != "playing":
                     self.episode_channel.publish("playing", life.randomizer.last_episode)
-        # STOP's event can arrive while PhysX is unwinding. Defer all USD edits
+        # STOP's event can arrive while PhysX is unwinding. Defer planning
         # to a later Kit update with an explicitly stopped, still-active stage.
         if (not self.closing and self.lifecycle is not None
                 and self.usd.get_stage() == self.stage
@@ -406,7 +409,7 @@ class CollectionExtension(omni.ext.IExt):
             if event.type == play_type:
                 if self.lifecycle.state == "paused":
                     print("[BFM] PLAY received. Resuming prepared episode.", flush=True)
-                elif self.lifecycle.state != "playing":
+                elif self.lifecycle.state == "prepared":
                     print("[BFM] PLAY received. Starting prepared episode...", flush=True)
                 self.lifecycle.play()
 

@@ -92,6 +92,7 @@ class IsaacTaskSampler:
         self.reference_orientation = matrix.ExtractRotationQuat().GetNormalized()
         self.simulation_view = simulation_view
         self.views = {}
+        self.body_views = {}  # Borrow selected object/container views from the reset component.
         self.resolved_body_counts = {}
 
     def read(self):
@@ -102,7 +103,9 @@ class IsaacTaskSampler:
         if not self.views:
             views = {}
             for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
-                view = self.simulation_view.create_rigid_body_view(self.config[key])
+                path = self.config[key]
+                view = (self.body_views[path] if path in self.body_views else
+                        self.simulation_view.create_rigid_body_view(path))
                 if view.count != 1:
                     raise ValueError(f"PhysX did not resolve one body for {self.config[key]}")
                 views[key] = view
@@ -226,7 +229,7 @@ class BfmTaskStatePublisher(Node):
         self.reset()
         return super().destroy_node()
 
-    def publish_at(self, simulation_seconds, simulation_view=None):
+    def publish_at(self, simulation_seconds, simulation_view=None, body_views=None):
         if not self.enabled or simulation_seconds == self.last_time:
             return
         if not math.isfinite(simulation_seconds) or simulation_seconds < 0:
@@ -237,6 +240,8 @@ class BfmTaskStatePublisher(Node):
             self.sampler = self.factory(self.stage, self.config)
         if simulation_view is not None:
             self.sampler.simulation_view = simulation_view
+        if body_views is not None:
+            self.sampler.body_views = body_views
         values = self.sampler.read()
         if (not isinstance(values, dict) or set(values) != set(STATE_FIELD_SIZES)
                 or any(len(values[key]) != size or not all(math.isfinite(x) for x in values[key])
@@ -264,8 +269,8 @@ def start_task_state_publisher(*, episode=None, **parameters):
     Keywords are ROS parameters: bfm_collection_mode, eef_prim_path,
     object_prim_path, container_prim_path, reference_prim_path, state_frame,
     scene_config_path and local SI goal geometry. Goal quaternions use xyzw.
-    Optional episode is the prepared descriptor, used only to verify live reset
-    readiness; it never supplies published state values.
+    Optional episode is the read-only plan applied to existing actors via live
+    setters before any publication. Published state always comes from PhysX.
     Start per Isaac session; this does not author a persistent USD sensor.
     """
     if "goal_prim_path" in parameters:
@@ -301,33 +306,39 @@ def start_task_state_publisher(*, episode=None, **parameters):
         simulation_view = None
         reported_ready = False
         stopped = False
+        phase = "waiting_for_physics"
+        reset_time = None
 
         def stop(self):
             if self.stopped:
                 return
             self.stopped = True
+            self.phase = "stopped"
             self.subscription = None
             self.timeline_subscription = None
             self.simulation_view = None
-            if reset_gate is not None:
-                reset_gate.release()
+            if object_pool is not None:
+                object_pool.release()
             executor.remove_node(node)
             node.destroy_node()
             executor.shutdown()
             context.shutdown()
 
-    from .bfm_episode import EpisodePhysicsGate
-    reset_gate = EpisodePhysicsGate(episode) if episode is not None else None
+    from .physics_object_pool import PhysicsObjectPool
+    object_pool = None
     handle = Handle()
     handle.node = node  # Inspect sampler.resolved_body_counts after Play in Script Editor.
+    handle.object_pool = object_pool
 
     def timeline_event(event):
         if not handle.stopped and event.type == int(omni.timeline.TimelineEventType.STOP):
             handle.simulation_view = None
             handle.reported_ready = False
             node.reset()
-            if reset_gate is not None:
-                reset_gate.release()
+            handle.phase = "waiting_for_physics"
+            handle.reset_time = None
+            if object_pool is not None:
+                object_pool.release()
         # PAUSE retains the current episode and valid views.
 
     def update(_event):
@@ -348,27 +359,57 @@ def start_task_state_publisher(*, episode=None, **parameters):
                 if callable(valid):
                     valid = valid()
                 if not valid:
+                    if object_pool is not None and object_pool.applied:
+                        raise RuntimeError("PhysX view lost after live reset; STOP before another episode")
                     if handle.simulation_view is not None:
                         node.reset()
-                        if reset_gate is not None:
-                            reset_gate.release()
+                        if object_pool is not None:
+                            object_pool.release()
                         handle.simulation_view = None
                         handle.reported_ready = False
                     return
                 if handle.simulation_view is not None and handle.simulation_view is not view:
+                    if object_pool is not None and object_pool.applied:
+                        raise RuntimeError("PhysX view replaced after live reset; STOP before another episode")
                     node.reset()  # Manager rebuilt physics; discard old body views.
                     handle.reported_ready = False
                 handle.simulation_view = view
-                if reset_gate is not None and not reset_gate.ready(view):
-                    return
-                node.publish_at(timeline.get_current_time(), simulation_view=view)
+                now = timeline.get_current_time()
+                if object_pool is not None:
+                    if not object_pool.applied:
+                        object_pool.bind(view)
+                        handle.phase = "applying_reset"
+                        object_pool.apply_episode()
+                        handle.phase = "verifying_reset"
+                        object_pool.verify_episode()
+                        handle.reset_time = now
+                        # Observe a real integration step after verification. No
+                        # frame countdown, sleep, or arbitrary elapsed-time delay.
+                        handle.phase = "settling"
+                        return
+                    if now <= handle.reset_time or not object_pool.parking_settled():
+                        return
+                node.publish_at(now, simulation_view=view,
+                                body_views=object_pool.bodies if object_pool is not None else None)
+                handle.phase = "playing"
                 if not handle.reported_ready:
                     node.get_logger().info("[BFM] Physics ready. /bfm/state publisher active.")
                     handle.reported_ready = True
             except Exception as error:
+                handle.phase = "failed"
+                handle.reported_ready = False
                 node.enabled = False
+                if object_pool is not None:
+                    object_pool.release()
+                node.reset()
                 node.get_logger().error(f"Task-state publication disabled: {error}")
     try:
+        object_pool = PhysicsObjectPool(stage, episode, log=lambda msg: node.get_logger().info(msg)) if episode is not None else None
+        handle.object_pool = object_pool
+        if object_pool is not None:
+            for key in ("object_prim_path", "container_prim_path"):
+                if node.config[key] != episode[key]:
+                    raise ValueError(f"Measured {key} disagrees with episode identity")
         handle.timeline_subscription = timeline.get_timeline_event_stream().create_subscription_to_pop(
             timeline_event, name="bfm_state_reset")
         handle.subscription = omni.kit.app.get_app().get_post_update_event_stream().create_subscription_to_pop(

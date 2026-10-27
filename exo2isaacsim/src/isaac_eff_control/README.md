@@ -608,58 +608,75 @@ cd /workspace/Synthetic_data_collection_with_ExoSuit
 BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
 ```
 
-Episode pose preparation happens **only while STOPPED**. On stage attachment the
-extension validates the pre-authored pool, prepares the first fruit/container episode,
-validates active dynamic rigid bodies and collision geometry, then prints
-`[BFM READY] Episode prepared. You can press PLAY now.` The fruit and container
-pose must already be visible before pressing Play.
+The stopped stage attachment validates the existing pool and prepares a read-only
+episode plan. `[BFM PLAN READY]` means the user can press PLAY; it does **not**
+mean the physical reset has happened. Fruit/container USD transforms may still
+show their authored or previous poses while stopped. No xform, velocity,
+activation, reference or layer edits apply an episode at STOP.
 
-The lifecycle is `stopped -> preparing -> prepared -> playing <-> paused`.
-The tested timeline **POP** callback on PLAY only starts the measured publisher
-(or resumes it); it never samples, replaces references, moves bodies, clears
-layers or authors velocities. PhysX starts from an already composed scene.
-STOP closes the measured publisher and releases local tensor views. It publishes
-a new STOP boundary on `/bfm/recorder_control`; connected recorders acknowledge
-on `/bfm/recorder_ack` only after the bag process has finalized. Pending
-preparation waits for those acknowledgements without blocking Kit. A subsequent
-Kit update, with the same stage active and
-`timeline.is_stopped()` true, prepares exactly one next episode and prints READY.
-Duplicate PLAY/STOP/update events do not consume extra episodes. Preparation
-errors enter `failed`, do not announce READY and do not retry every frame.
-Stop/retry or reload the extension after correcting the cause.
+The startup sequence is:
 
-A physics step still does **not** imply tensor readiness.
-On each playing post-update, the handle checks
-`SimulationManager.get_physics_simulation_view()`. A missing or invalid view
-means keep waiting without reading tensors, publishing state or disabling the
-node. Once valid, the sampler borrows that initialized view to create the three
-rigid-body views; it does not create a second tensor backend or change the
-manager's subspace roots. After the first successful measured read, the log
-reports `[BFM] Physics ready. /bfm/state publisher active.` There are no sleeps
-or frame countdowns. If the manager replaces its view, old rigid-body views
-are discarded. Actual read/body-resolution errors after readiness fail closed.
-Tensor results may use Warp, Torch or NumPy frontends. Before any row indexing,
-Warp arrays are transferred with their supported `.numpy()` host-copy API;
-Torch tensors use `.detach().cpu().numpy()`. NumPy/list results already support
-indexing. Pose, twist and local COM measurements all take this path; the existing
-COM correction, goal OBB mathematics and full measured state contract are unchanged.
+```text
+stopped -> preparing -> prepared (PLAN READY)
+PLAY -> waiting_for_physics -> applying_reset -> verifying_reset -> settling -> playing
+PAUSE/PLAY retains the plan and existing views, without applying reset again
+STOP releases local views -> recorder STOP acknowledgement -> plan next episode
+```
 
-Pause -> Play retains the episode, publisher and valid tensor views. Duplicate
-Play does nothing. Stop closes the handle, releases its timeline-reset and
-post-update subscriptions and drops references to sampler/tensor views; it does
-not invalidate the manager-owned shared simulation view.
-The next stopped preparation resets the same four bodies; next Play creates a
-fresh measured publisher handle and views for the selected existing body. The helper's own
-STOP handler also resets views when used outside the extension. Stage closure,
-replacement, extension disable and application shutdown detach the runtime layer
-and stop publication. An actual read/body-resolution error **after manager readiness** still fails
-closed with an error; it is not silently retried as readiness.
+PLAY installs the measured callback without publishing. Each playing Kit
+post-update borrows `SimulationManager.get_physics_simulation_view()`; missing or
+invalid readiness waits without sleeps or spin loops. `PhysicsObjectPool` resolves
+exactly four fruit bodies and the existing container, validates their dynamic USD
+composition and live finite pose/velocity, positive mass and positive-definite
+inertia, then uses `set_transforms(data, indices)` and `set_velocities(data, indices)`.
+All five actors pass preflight before any setter is called. It never creates a
+physics world, changes manager settings, rebuilds articulations or touches robot
+controllers/graphs. The sampler reuses its selected fruit/container body views;
+the existing EEF measurement is read separately from the same shared manager view.
 
-The PhysX adapter is host-tested with fake lifecycle events. Isaac Sim/ROS are
-not installed on the validation host; real 6.1 callback ordering and publication
-still require the runtime checks below. The sorting stage adds only the pool
-sublayer; existing robot, controller, camera and action/topic composition remains
-unchanged.
+Readback from the same live actors immediately after setters must match positions
+within 0.1 mm, normalized xyzw quaternion absolute dot within 1e-6, and linear /
+angular velocities within 1e-5 m/s / rad/s of zero. A failed setter or readback
+reports the exact actor and measured/desired values and cancels collection.
+USD state is never used to conceal a reset failure. At least one actual advance
+of simulation time after verification is observed, and parked fruit must settle
+below .005 m/s and .005 rad/s before measured publication. There is no arbitrary
+wall-clock delay or frame countdown. Only the first successful measured read
+permits the retained episode status to become `playing`; only that status allows
+the recorder to start a bag. Its normal recording=false/true control is retained.
+
+STOP closes measured publication and drops all local body views/buffers. The
+existing `/bfm/recorder_control` / `/bfm/recorder_ack` handshake finalizes old bags
+before planning the next episode. Duplicate STOP/PLAY never consumes another plan
+or performs another reset. Pause/resume retains the same plan and views, even
+when paused during startup. Closing/replacing the stage or disabling the extension
+releases local handles without altering topology. Once a live reset has been
+applied, an unexpected loss/replacement of the manager view fails closed; it does
+not silently teleport an active episode back to its initial pose. STOP/PLAY
+reacquires new views for the next plan. Standalone measurement without an episode
+plan retains the existing manager-readiness behavior.
+
+API conventions were checked against the official Isaac Sim **v6.1.0**, commit
+`7c206f75bdadd9e05fc457f19863ca4c3f0cb693`, not an older Isaac Gym API:
+
+- [RigidPrim tensor calls](https://github.com/isaac-sim/IsaacSim/blob/7c206f75bdadd9e05fc457f19863ca4c3f0cb693/source/deprecated/isaacsim.core.prims/python/impl/rigid_prim.py):
+  raw transforms are `[x,y,z,qx,qy,qz,qw]`; velocity is `[vx,vy,vz,wx,wy,wz]`.
+- [SimulationManager](https://github.com/isaac-sim/IsaacSim/blob/7c206f75bdadd9e05fc457f19863ca4c3f0cb693/source/extensions/isaacsim.core.simulation_manager/python/impl/simulation_manager.py):
+  `get_physics_simulation_view()` returns the existing Warp view.
+- [Warp conversion/index helpers](https://github.com/isaac-sim/IsaacSim/blob/7c206f75bdadd9e05fc457f19863ca4c3f0cb693/source/deprecated/isaacsim.core.utils/python/impl/warp/tensor.py):
+  contiguous float32 data and explicit int32 actor indices on the same device.
+
+The reset converts SI planned positions to stage-length units using
+`metersPerUnit`; angular velocities are rad/s. It matches the getter's actual
+frontend/device for Warp, Torch or NumPy, never changes the shared backend, and
+host-transfers Warp/Torch arrays before indexing readback. COM position/velocity,
+static-reference transforms and moving-goal OBB semantics in `/bfm/state` are
+unchanged. The reset sets body-origin poses; the sampler still measures COMs.
+
+Isaac Sim/ROS and a GPU are not installed on this validation host. Host tests
+exercise real OpenUSD composition and NumPy/Warp CPU arrays with fake actors;
+they do not establish live contact cooking, gravity or robot-control behavior.
+The real 6.1 installation must be checked using the procedure below.
 
 ### Stable fruit pool and tabletop placement
 
@@ -703,9 +720,9 @@ footprint plus 25 mm edge margin must pass the same 3x3 support checks at the
 original bottom height (within 2 mm) and clear robot collider AABBs by 30 mm.
 Z, rotation, geometry, physics and goal-local OBB are preserved. Fruit exclusion
 uses the planned translated container bounds. Planning completes before any
-pose writes; rejected placement leaves the previous episode intact. Property
-write failures restore prior property values, never remove physical prims,
-and cancel Play without starting a state publisher. This configuration requires the real flat desk payload.
+physics setters; rejected placement leaves the previous plan intact.
+A live setter/readback failure cancels collection without recording or attempting
+a global physics reset. This configuration requires the real flat desk payload.
 
 For each fruit candidate, the runtime rotates the selected fruit's full geometry AABB
 by yaw, centres its footprint on sampled XY, and checks a 3x3 set of support
@@ -731,23 +748,20 @@ actual floor height and the fruit geometry minimum Z. Cradle floors and walls
 remain in the scene throughout simulation; parked fruits remain dynamic with
 enabled collisions. They are never hidden, disabled or made kinematic.
 
-An anonymous session sublayer owns only pose and velocity overrides. Every reset
-moves all four existing bodies and the existing container, zeros their linear
-and angular velocities, then verifies composed poses and velocities before READY.
-The layer is never cleared, imported or detached during an episode transition.
-Cleanup removes only these overrides; the four physical bodies remain authored.
-Stronger writeback opinions that prevent a reset produce an explicit error.
-The source stage and source assets are never saved by the runtime extension.
+`SceneRandomizer` owns no runtime USD layer and only returns desired state.
+`last_episode` remains the authoritative descriptor; `current_object_path`
+supplies the selected physical path to the sampler. The descriptor retains all
+existing metadata and adds `body_poses`: world SI body-origin position plus xyzw
+orientation for each of the five actors. Selection, parking poses, and container
+pose are checked for consistency before binding physics. The existing static
+pool/cradles, four source assets and container geometry remain unchanged.
+All fruit mesh colliders already use `convexDecomposition`; no source asset or
+collision representation needed rewriting. Actor resolution and mass/inertia
+checks are necessary runtime checks, not a claim that USD schemas prove contacts.
 
-`SceneRandomizer.last_episode` is the authoritative descriptor. Its
-`current_object_path` property supplies the measured publisher's `object_prim_path`.
-The descriptor contains a unique episode ID, asset name/path, physical body path,
-position, yaw, xyzw orientation, parked positions, container pose and offset.
-READY means the stopped USD reset is verified. On PLAY, live PhysX must resolve
-all reset bodies and confirm the initial poses; parked bodies must settle below
-5 mm/s and 0.005 rad/s before any `/bfm/state` publication. Parking allows 20 cm of settling displacement inside the 80 cm cradles. Later
-escaped or moving parked bodies fail collection closed. The object COM and velocity remain live
-PhysX measurements, never values copied from the descriptor.
+Parking uses the existing cradle floor geometry and allows 20 cm settling drift
+inside each 80 cm cradle; an escaped parked fruit cancels collection. These remote
+cradles and threshold still require checking against the loaded runtime scenery.
 
 `seed` defaults to null; set an integer in the same JSON to repeat a sampling
 sequence. The RNG is seeded once when attaching the stage, not on every Play.
@@ -793,37 +807,47 @@ python3 -m unittest discover -s tests -p test_recording_pipeline.py -v
 python3 -m unittest discover -s tests -p test_bfm_goal_region.py -v
 python3 -m unittest discover -s tests -p test_bfm_collection_extension.py -v
 python3 -m unittest discover -s tests -p test_bfm_physics_readiness.py -v
+python3 -m pytest -q tests/test_physics_object_pool.py tests/test_bfm_episode.py
 python3 -m unittest discover -s tests -p test_hand_symmetry.py -v
 python3 -m pytest -q tests/test_hand_command_mapper.py
 bash -n launch_bfm_isaac.sh start_isaac_control.sh
 git diff --check
 ```
 
-Manual runtime validation:
+Manual runtime validation (rebuild the existing ROS workspace after applying):
 
-1. Launch Isaac with the extension enabled; open the sorting template stopped.
-2. Confirm the log says `[BFM READY]`, and the robot uses its existing
-   working PhysX composition. There must be no active `/World/orange1`.
-3. Before Play: exactly one allowed fruit and the randomized container must
-   already be visible, with `[BFM] Episode prepared` and READY logs. Inspect
-   the selected `episode.object_prim_path` for dynamic RigidBodyAPI and collision
-   geometry. All four pool bodies and parking cradles must already exist.
-   Press Play; no new selection/composition log should appear. Confirm parked
-   fruits settle in their cradles and no old bag spans the transition. Confirm gravity,
-   desk contact, robot pushing/grasping and physically measured motion.
-4. Echo `/bfm/state` with the command below. Move the fruit and verify live COM
-   `object_position`/`object_velocity`; optionally inspect resolution counts above.
-5. Pause/resume: fruit/container episode must stay the same, without another selection log.
-6. Stop: after reset completes, the next fruit/container is prepared and READY
-   appears while still stopped. Next Play runs that existing episode. Repeat
-   several times, including different assets. Robot resets normally; container
-   XY is sampled during stopped preparation. Check
-   support/robot clearance and that measured goal follows its new pose. Goal-local
-   OBB geometry remains unchanged.
-7. Start/stop a short recording through the existing Bool control. Run
-   `ros2 bag info records/record_NAME/bag` and confirm MCAP plus `/bfm/state` with
-   nonzero message count. Reopen the source stage and confirm random poses were
-   not saved. Test stage close/reopen and extension disable/re-enable stopped.
+1. Open the sorting stage while **STOPPED**, with the existing working PhysX
+   robot import/variant. Confirm `[BFM PLAN READY]`; all four fruit actors and
+   parking cradles already exist. The planned table pose is applied on PLAY.
+2. Press PLAY. Confirm `[BFM PHYSX] fruit pool resolved: 4/4; container resolved: 1`,
+   `applying episode <id>`, then `reset verified`. No `/bfm/state` or bag may contain
+   pre-reset samples. After measured publication starts, toggle recording false /
+   true if needed; `[BFM READY] recording started` is printed only by the recorder.
+3. Confirm the selected fruit is dynamic and settles/supports against the table.
+4. Move the robot arm and confirm it remains controllable. Move **both** hands
+   and confirm both remain controllable.
+5. Push the selected fruit with the robot; confirm physical response. Attempt a
+   grasp and inspect finger contact. Check `/bfm/state` position follows the
+   selected fruit's live COM and velocity changes during the push.
+6. Confirm the existing container is physically interactive as intended, its
+   measured goal follows its motion, and parked fruits remain in their cradles
+   without interfering with the task or cameras.
+7. Check `/bfm/action`: unchanged 13-dimensional, 10 Hz command contract, with
+   the same arm joint order, hand mapping, units and topics. No robot handle,
+   articulation, controller or ROS graph is recreated by collection.
+8. STOP. Confirm robot reset still works, the old bag finalizes, and exactly one
+   **next plan** is announced while stopped. Its physical application waits for PLAY.
+9. PLAY again. Confirm a fresh live reset/readback and working arm/both hands.
+   Repeat several episodes covering all four fruits; source prim paths and
+   topology stay constant. Test pause/resume and duplicate PLAY without a reset.
+10. Inspect `episode.json.bfm.episode` and `bfm.task_state.object_prim_path` against
+    `bfm_collection.get_status()`. Every bag must contain only its own active
+    object identity; a retained recording=true must not restart the next bag.
+    Verify MCAP counts with `ros2 bag info records/record_NAME/bag`.
+11. Test stage close/reopen and extension disable/re-enable while stopped. No
+    random reset pose should have been authored by the planner into the source
+    USD. A readback error must print path/desired/measured state and prevent
+    recording; repair the cause before retrying STOP/PLAY.
 
 ### Hand symmetry audit and live check
 
