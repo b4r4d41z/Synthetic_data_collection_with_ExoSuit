@@ -105,6 +105,7 @@ def ros_stubs(overrides):
     qos.DurabilityPolicy = SimpleNamespace(TRANSIENT_LOCAL="transient_local")
     qos.HistoryPolicy = SimpleNamespace(KEEP_LAST="keep_last")
     modules["std_msgs.msg"].Bool = Bool
+    modules["std_msgs.msg"].String = Message
     modules["sensor_msgs.msg"].JointState = Message
     modules["dynamic_biped.msg"].RobotHandPosition = Message
     modules["dynamic_biped.msg"].BfmAction = Message
@@ -746,13 +747,57 @@ class RecordingPipelineTests(unittest.TestCase):
             gateway.policy_tick()
         gateway.action_pub.publish.assert_not_called()
 
+    def test_bfm_recorder_blocks_until_measured_play_and_finalizes_before_stop_ack(self):
+        self.overrides["bfm_collection_mode"] = True
+        node = self.recorder.SimRecorder()
+        node.recording_callback(Bool(True))
+        self.popen.assert_not_called()
+        episode = dict(episode_id="one", asset="orange2.usd", object_prim_path="/World/Task/Fruits/orange2")
+        def status(phase, episode=episode):
+            node.episode_callback(SimpleNamespace(data=json.dumps(dict(
+                boundary_id="stop-one", phase=phase, episode=episode))))
+        status("prepared")
+        node.recording_callback(Bool(False)); node.recording_callback(Bool(True))
+        self.popen.assert_not_called()
+        status("playing")
+        # No implicit restart from a retained recording=true.
+        self.popen.assert_not_called()
+        node.recording_callback(Bool(False)); node.recording_callback(Bool(True))
+        self.popen.assert_called_once()
+        order = []
+        self.process.wait.side_effect = lambda **_: order.append("finalized") or 0
+        node._ack_pub.publish.side_effect = lambda _: order.append("ack")
+        status("stopped", None)
+        self.assertEqual(order, ["finalized", "ack"])
+        self.assertIsNone(node._process)
+        status("playing", dict(episode, episode_id="two"))
+        node.recording_callback(Bool(True))
+        self.popen.assert_called_once()
+        node.recording_callback(Bool(False)); node.recording_callback(Bool(True))
+        self.assertEqual(self.popen.call_count, 2)
+        metadata = json.loads((node._episode_path / "episode.json").read_text())
+        self.assertEqual(metadata["bfm"]["episode"]["episode_id"], "two")
+
+    def test_bfm_recorder_never_acknowledges_a_failed_bag_shutdown(self):
+        self.overrides["bfm_collection_mode"] = True
+        node = self.recorder.SimRecorder()
+        with patch.object(node, "stop_recording", return_value=False):
+            node.episode_callback(SimpleNamespace(data=json.dumps(dict(
+                phase="stopped", boundary_id="wait", episode=None))))
+        node._ack_pub.publish.assert_not_called()
+        self.assertIsNone(node._episode_status)
+
     def test_bfm_metadata_extends_existing_camera_and_timestamp_metadata(self):
         self.overrides.update(bfm_collection_mode=True, task_id="sort_v2",
                               instruction="Sort items with all six Sharpa channels.",
                               state_frame="fixture", reference_prim_path="/World/Fixture")
         node = self.recorder.SimRecorder()
+        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase="playing", episode=dict(
+            episode_id="one", asset="lemon1.usd", object_prim_path="/World/Task/Fruits/lemon1")))))
         node.recording_callback(Bool(True))
         metadata = json.loads((node._episode_path / "episode.json").read_text())
+        self.assertEqual(metadata["bfm"]["task_state"]["object_prim_path"], "/World/Task/Fruits/lemon1")
+        self.assertEqual(metadata["bfm"]["episode"]["episode_id"], "one")
         self.assertEqual(metadata["task_id"], "sort_v2")
         self.assertEqual(metadata["instruction"], self.overrides["instruction"])
         self.assertEqual(metadata["recording"]["storage_id"], "mcap")

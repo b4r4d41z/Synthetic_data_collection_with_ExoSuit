@@ -51,7 +51,7 @@ class GoalConfigTests(GoalTestBase):
 
     def test_scene_defaults_and_environment_overrides_are_explicit(self):
         config = self.contract.state_defaults()
-        self.assertEqual(config["object_prim_path"], "/World/Task/Object")
+        self.assertEqual(config["object_prim_path"], "/World/Task/Fruits/avocado")
         self.assertEqual(config["container_prim_path"], "/World/container_b04")
         self.assertTrue(config["eef_prim_path"].endswith("/right_hand_C_MC"))
         self.assertEqual(config["reference_prim_path"], "/")
@@ -104,6 +104,7 @@ class GoalConfigTests(GoalTestBase):
                 container_prim_path="/Custom/Container", goal_half_extents=[.2, .1, .05])
             recorder = load_module("test_goal_recorder",
                 "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/sim_recorder.py").SimRecorder()
+            recorder._episode_status = dict(phase="playing", episode=dict(episode_id="fixture", object_prim_path="/World/Task/Fruits/avocado"))
             metadata = recorder.episode_metadata()
         state = metadata["bfm"]["task_state"]
         self.assertEqual(state["goal_representation"], "oriented_bounding_box")
@@ -165,6 +166,24 @@ class MovingGoalTests(GoalTestBase):
         self.assertEqual(len(actual), len(expected))
         for a, b in zip(actual, expected):
             self.assertAlmostEqual(a, b, places=9)
+
+    def test_each_episode_selected_pool_body_supplies_live_com_and_velocity(self):
+        from pxr import UsdGeom, UsdPhysics
+        for index, fruit in enumerate(("avocado", "lemon1", "pomegranate", "orange2")):
+            path = "/World/Task/Fruits/"+fruit
+            prim = UsdGeom.Xform.Define(self.stage, path).GetPrim()
+            UsdPhysics.RigidBodyAPI.Apply(prim)
+            UsdGeom.Xformable(prim).AddTranslateOp().Set((999,999,999))
+            self.bodies[path] = FakeBody(pose=[index+1.,2.,3.,0.,0.,0.,1.],
+                velocity=[.1+index,.2,.3,0.,0.,0.], com=[.05,0.,0.,0.,0.,0.,1.])
+            self.config["object_prim_path"] = path
+            sampler = self.sampler()
+            result = sampler.read()
+            self.assertVector(result["object_position"], [index+1.05,2.,3.])
+            self.assertVector(result["object_velocity"], [.1+index,.2,.3])
+            self.bodies[path].pose[0] += .2
+            self.assertVector(sampler.read()["object_position"], [index+1.25,2.,3.])
+            self.assertEqual(sampler.resolved_body_counts[path], 1)
 
     @unittest.skipUnless(importlib.util.find_spec("warp"), "Optional real Warp CPU validation")
     def test_real_warp_transform_and_spatial_vector_arrays(self):
@@ -325,11 +344,7 @@ class MovingGoalTests(GoalTestBase):
             stage.GetPrimAtPath(provenance["robot_root"]).GetVariantSets().GetVariantSet(
                 "Physics").SetVariantSelection(provenance["required_robot_physics_variant"])
         self.assertFalse(stage.GetPrimAtPath("/World/orange1"))
-        self.assertFalse(stage.GetPrimAtPath(params["object_prim_path"]))  # created per Play
-        fruit = ROOT / data["randomization"]["object_assets"][0]
-        with Usd.EditContext(stage, stage.GetSessionLayer()):
-            obj = UsdGeom.Xform.Define(stage, params["object_prim_path"]).GetPrim()
-            obj.GetReferences().AddReference(str(fruit))
+        self.assertTrue(stage.GetPrimAtPath(params["object_prim_path"]))  # pre-authored pool
         for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
             prim = stage.GetPrimAtPath(params[key])
             self.assertTrue(prim and prim.IsActive() and prim.HasAPI(UsdPhysics.RigidBodyAPI), key)

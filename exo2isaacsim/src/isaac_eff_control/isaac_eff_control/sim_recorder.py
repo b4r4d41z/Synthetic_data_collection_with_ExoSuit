@@ -23,6 +23,8 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool
 
+from .bfm_episode import ACK_TOPIC, CONTROL_TOPIC, EPISODE_TOPIC
+
 from .bfm_contract import (
     collection_enabled, collection_metadata, scene_config_default,
     scene_configuration, state_defaults,
@@ -99,6 +101,8 @@ class SimRecorder(Node):
 
         self.output_root = Path(output_root).expanduser().resolve()
         self.output_root.mkdir(parents=True, exist_ok=True)
+        self._episode_status = None
+        self._recorder_id = uuid4().hex
         self._recording_enabled = False
         self._process = None
         self._episode_path = None
@@ -110,6 +114,14 @@ class SimRecorder(Node):
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
         )
+        if self.get_parameter("bfm_collection_mode").value:
+            from std_msgs.msg import String
+            self._episode_string = String
+            self._ack_pub = self.create_publisher(String, ACK_TOPIC, 10)
+            self._episode_subscription = self.create_subscription(
+                String, CONTROL_TOPIC, self.episode_callback, qos)
+            if EPISODE_TOPIC not in self.topics:
+                self.topics.append(EPISODE_TOPIC)
         self._subscription = self.create_subscription(
             Bool, RECORDING_TOPIC, self.recording_callback, qos
         )
@@ -118,6 +130,35 @@ class SimRecorder(Node):
             f"Recording control: {RECORDING_TOPIC} (reliable, transient local); "
             f"output root: {self.output_root}; topics: {self.topics}"
         )
+
+    def episode_callback(self, msg):
+        """Fail closed at a timeline boundary before acknowledging reset safety."""
+        try:
+            status = json.loads(msg.data)
+            phase = status["phase"]
+            if phase == "playing":
+                episode = status["episode"]
+                if not episode.get("episode_id") or not episode.get("object_prim_path"):
+                    raise ValueError("Playing episode lacks identity")
+            previous = self._episode_status
+            changed = (previous is not None and
+                       (previous.get("episode") or {}).get("episode_id") !=
+                       (status.get("episode") or {}).get("episode_id"))
+            if phase != "playing" or changed:
+                # A retained true is never carried over to a new task episode.
+                # Leave the Bool latch true until the operator sends false.
+                if not self.stop_recording():
+                    raise ValueError("Recorder has not finalized; refusing reset acknowledgement")
+            self._episode_status = status
+            if phase == "stopped":
+                ack = self._episode_string()
+                ack.data = json.dumps(dict(boundary_id=status["boundary_id"],
+                                           recorder_id=self._recorder_id))
+                self._ack_pub.publish(ack)
+        except (ValueError, KeyError, TypeError, AttributeError) as error:
+            self._episode_status = None
+            self.stop_recording()
+            self.get_logger().error(f"Invalid BFM episode control: {error}")
 
     def recording_callback(self, msg):
         """Treat the Bool as desired state, not a repeated start/stop event."""
@@ -149,6 +190,17 @@ class SimRecorder(Node):
         for name, topic in CAMERA_TOPICS.items():
             if not isinstance(cameras[name], dict) or cameras[name].get("topic") != topic:
                 raise ValueError(f"Camera metadata topic does not match {name}: {topic}")
+        bfm = collection_metadata(
+            self.get_parameter("bfm_collection_mode").value,
+            {key: self.get_parameter(key).value for key in self._state_parameter_names},
+            self._scene_configuration,
+        )
+        if bfm["enabled"]:
+            if self._episode_status is None or self._episode_status["phase"] != "playing":
+                raise ValueError("BFM recording requires a prepared episode and live PhysX measurements")
+            episode = json.loads(json.dumps(self._episode_status["episode"], allow_nan=False))
+            bfm["episode"] = episode
+            bfm["task_state"]["object_prim_path"] = episode["object_prim_path"]
         return {
             "schema_version": 1,
             **fields,
@@ -165,11 +217,7 @@ class SimRecorder(Node):
             },
             "camera_configuration": snapshot["provenance"],
             "cameras": cameras,
-            "bfm": collection_metadata(
-                self.get_parameter("bfm_collection_mode").value,
-                {key: self.get_parameter(key).value for key in self._state_parameter_names},
-                self._scene_configuration,
-            ),
+            "bfm": bfm,
         }
 
     def start_recording(self):

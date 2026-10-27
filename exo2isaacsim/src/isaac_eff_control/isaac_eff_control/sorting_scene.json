@@ -5,7 +5,7 @@
     "state_frame": "world",
     "reference_prim_path": "/",
     "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-    "object_prim_path": "/World/Task/Object",
+    "object_prim_path": "/World/Task/Fruits/avocado",
     "container_prim_path": "/World/container_b04",
     "goal_local_center": [
       -0.08494214117424082,
@@ -26,7 +26,7 @@
   },
   "provenance": {
     "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
-    "scene_sha256": "24f7c9793d6033f1663a77d4e070e23972a656a301bd746f3bf392aec9d5caa1",
+    "scene_sha256": "3772e5b394d5438bcb7fc372df69033e67b5e4789d1f6b8bcd76e40c4baa3d4e",
     "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
     "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
     "robot_root": "/World/s40_sharpa_two_cameras",
@@ -53,11 +53,13 @@
     "safety_margin_m": 0.003,
     "quaternion_convention": "xyzw; local goal axes relative to container body",
     "method": "Original fixed goal OBB retained: measured container interior, historical 39 mm clearance plus 3 mm margin and support-based floor bound. No fruit-specific goal recalibration in the randomized runtime.",
-    "object_position_semantics": "Live PhysX center of mass and linear velocity of the current /World/Task/Object rigid body.",
+    "object_position_semantics": "Live PhysX center of mass and linear velocity of the episode-selected fruit pool rigid body (episode.object_prim_path).",
     "runtime_verified": false,
     "floor_contact_tolerance_m": 0.003,
     "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
-    "minimum_support_radius_m": 0.03426520788759943
+    "minimum_support_radius_m": 0.03426520788759943,
+    "fruit_pool_asset": "models/stages/fruit_pool.usda",
+    "fruit_pool_sha256": "31826aadfc5f1810d0f6d713377670c214e8404007a7ac7e04ace9dd3f2359b8"
   },
   "randomization": {
     "object_assets": [

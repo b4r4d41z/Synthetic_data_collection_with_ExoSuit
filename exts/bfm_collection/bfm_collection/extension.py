@@ -1,7 +1,7 @@
 """Kit lifecycle adapter. Simulation must be stopped when enabling the extension.
 
 Timeline POP subscription handles PLAY/PAUSE/STOP events from the Isaac Sim UI.
-Runtime object composition is performed only while the timeline is stopped.
+Only existing body poses and velocities change while stopped.
 """
 
 import importlib
@@ -54,6 +54,7 @@ class CollectionExtension(omni.ext.IExt):
         global _active
 
         self.lifecycle = None
+        self.episode_channel = None
         self.stage = None
         self.failed_stage = None
         self.closing = False
@@ -227,7 +228,7 @@ class CollectionExtension(omni.ext.IExt):
             ):
                 raise ValueError(
                     "Remove BFM_OBJECT_PRIM_PATH override; "
-                    "collection uses /World/Task/Object"
+                    "collection owns the episode-selected pool path"
                 )
 
             self.config_path = path
@@ -244,6 +245,8 @@ class CollectionExtension(omni.ext.IExt):
                 self.timeline.is_stopped,
             )
 
+            from isaac_eff_control.bfm_episode import EpisodeChannel
+            self.episode_channel = EpisodeChannel()
             self.stage = stage
 
             self._prepare_episode()
@@ -264,10 +267,13 @@ class CollectionExtension(omni.ext.IExt):
 
     def _prepare_episode(self):
         """Called on attach or a stopped update, never from a timeline event."""
+        if not self.episode_channel.quiescent:
+            return  # Never mutate poses until every connected recorder finalized.
         print("[BFM] Preparing episode while simulation is stopped...", flush=True)
         episode = self.lifecycle.prepare()
         if episode is None:
             return
+        self.episode_channel.publish("prepared", episode)
         print(
             "[BFM] Episode prepared:\n"
             f"      asset={episode['asset']}\n"
@@ -290,10 +296,12 @@ class CollectionExtension(omni.ext.IExt):
             flush=True,
         )
 
+        parameters = dict(self.parameters, object_prim_path=self.lifecycle.randomizer.current_object_path)
         return start_task_state_publisher(
+            episode=self.lifecycle.randomizer.last_episode,
             bfm_collection_mode=True,
             scene_config_path=self.config_path,
-            **self.parameters,
+            **parameters,
         )
 
     def _detach(self):
@@ -312,6 +320,9 @@ class CollectionExtension(omni.ext.IExt):
             )
 
         finally:
+            if self.episode_channel is not None:
+                self.episode_channel.close()
+                self.episode_channel = None
             self.lifecycle = None
             self.stage = None
 
@@ -339,6 +350,19 @@ class CollectionExtension(omni.ext.IExt):
             self._detach()
 
         self._attach()
+        if self.episode_channel is not None:
+            self.episode_channel.poll()
+            life = self.lifecycle
+            if life is not None and life.state == "playing" and life.handle is not None:
+                if not life.handle.node.enabled:
+                    self.episode_channel.publish("failed", life.randomizer.last_episode)
+                    self.episode_channel.begin_stop()
+                    life.stop()
+                    self.timeline.stop()
+                elif not life.handle.reported_ready and self.episode_channel.status.get("phase") == "playing":
+                    self.episode_channel.publish("waiting", life.randomizer.last_episode)
+                elif life.handle.reported_ready and self.episode_channel.status.get("phase") != "playing":
+                    self.episode_channel.publish("playing", life.randomizer.last_episode)
         # STOP's event can arrive while PhysX is unwinding. Defer all USD edits
         # to a later Kit update with an explicitly stopped, still-active stage.
         if (not self.closing and self.lifecycle is not None
@@ -392,6 +416,7 @@ class CollectionExtension(omni.ext.IExt):
                     flush=True,
                 )
 
+                self.episode_channel.publish("paused", self.lifecycle.randomizer.last_episode)
                 self.lifecycle.pause()
 
             elif event.type == stop_type:
@@ -400,6 +425,8 @@ class CollectionExtension(omni.ext.IExt):
                     flush=True,
                 )
 
+                if self.lifecycle.state not in ("prepared", "stopped", "closed"):
+                    self.episode_channel.begin_stop()
                 self.lifecycle.stop()
 
         except Exception as error:
@@ -413,6 +440,7 @@ class CollectionExtension(omni.ext.IExt):
             )
 
             try:
+                self.episode_channel.begin_stop()
                 self.lifecycle.stop()
 
             finally:

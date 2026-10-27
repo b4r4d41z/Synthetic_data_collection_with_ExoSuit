@@ -222,7 +222,7 @@ class BfmTaskStatePublisher(Node):
         self._reported_counts = False
 
     def destroy_node(self):
-        # Release tensor views before the extension switches fruit references.
+        # Release tensor views before the extension prepares the next episode.
         self.reset()
         return super().destroy_node()
 
@@ -258,12 +258,14 @@ class BfmTaskStatePublisher(Node):
         self.last_time = simulation_seconds
 
 
-def start_task_state_publisher(**parameters):
+def start_task_state_publisher(*, episode=None, **parameters):
     """Install a live Kit callback and return a handle with idempotent stop().
 
     Keywords are ROS parameters: bfm_collection_mode, eef_prim_path,
     object_prim_path, container_prim_path, reference_prim_path, state_frame,
     scene_config_path and local SI goal geometry. Goal quaternions use xyzw.
+    Optional episode is the prepared descriptor, used only to verify live reset
+    readiness; it never supplies published state values.
     Start per Isaac session; this does not author a persistent USD sensor.
     """
     if "goal_prim_path" in parameters:
@@ -307,11 +309,15 @@ def start_task_state_publisher(**parameters):
             self.subscription = None
             self.timeline_subscription = None
             self.simulation_view = None
+            if reset_gate is not None:
+                reset_gate.release()
             executor.remove_node(node)
             node.destroy_node()
             executor.shutdown()
             context.shutdown()
 
+    from .bfm_episode import EpisodePhysicsGate
+    reset_gate = EpisodePhysicsGate(episode) if episode is not None else None
     handle = Handle()
     handle.node = node  # Inspect sampler.resolved_body_counts after Play in Script Editor.
 
@@ -320,6 +326,8 @@ def start_task_state_publisher(**parameters):
             handle.simulation_view = None
             handle.reported_ready = False
             node.reset()
+            if reset_gate is not None:
+                reset_gate.release()
         # PAUSE retains the current episode and valid views.
 
     def update(_event):
@@ -342,6 +350,8 @@ def start_task_state_publisher(**parameters):
                 if not valid:
                     if handle.simulation_view is not None:
                         node.reset()
+                        if reset_gate is not None:
+                            reset_gate.release()
                         handle.simulation_view = None
                         handle.reported_ready = False
                     return
@@ -349,6 +359,8 @@ def start_task_state_publisher(**parameters):
                     node.reset()  # Manager rebuilt physics; discard old body views.
                     handle.reported_ready = False
                 handle.simulation_view = view
+                if reset_gate is not None and not reset_gate.ready(view):
+                    return
                 node.publish_at(timeline.get_current_time(), simulation_view=view)
                 if not handle.reported_ready:
                     node.get_logger().info("[BFM] Physics ready. /bfm/state publisher active.")

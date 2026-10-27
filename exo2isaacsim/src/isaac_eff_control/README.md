@@ -395,13 +395,14 @@ scene-level child transforms. Exact runtime paths are:
 ```text
 robot root: /World/s40_sharpa_two_cameras
 right EEF:  /World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC
-object:     /World/Task/Object (created by the collection extension on Play)
+object:     episode.object_prim_path (one of /World/Task/Fruits/{avocado,lemon1,pomegranate,orange2})
 container:  /World/container_b04
 reference:  /                         (state_frame = world)
 ```
 
-The extension references the selected fruit default prim directly at the object
-path; that prim and the container have RigidBodyAPI in the composed stage.
+The stage loads `models/stages/fruit_pool.usda` before simulation. Each fruit
+default prim is referenced once at its stable physical path. The selected fruit
+and the existing container have RigidBodyAPI in the composed stage.
 The EEF is the physical right palm, not its visual mesh. It has
 RigidBodyAPI in the robot's existing `Physics=physx` variant, inspected in an
 anonymous session layer without saving a USD. A plain OpenUSD load does not
@@ -529,7 +530,7 @@ in-process publisher:
 | `BFM_STATE_FRAME` | `state_frame` | `world` |
 | `BFM_REFERENCE_PRIM_PATH` | `reference_prim_path` | `/` |
 | `BFM_EEF_PRIM_PATH` | `eef_prim_path` | exact right-palm path above |
-| `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | `/World/Task/Object` |
+| `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | `/World/Task/Fruits/avocado` |
 | `BFM_CONTAINER_PRIM_PATH` | `container_prim_path` | `/World/container_b04` |
 | `BFM_GOAL_LOCAL_CENTER` | `goal_local_center` | local OBB centre above |
 | `BFM_GOAL_HALF_EXTENTS` | `goal_half_extents` | local half extents above |
@@ -607,8 +608,8 @@ cd /workspace/Synthetic_data_collection_with_ExoSuit
 BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
 ```
 
-Episode composition happens **only while STOPPED**. On stage attachment the
-extension constructs the randomizer, prepares the first fruit/container episode,
+Episode pose preparation happens **only while STOPPED**. On stage attachment the
+extension validates the pre-authored pool, prepares the first fruit/container episode,
 validates active dynamic rigid bodies and collision geometry, then prints
 `[BFM READY] Episode prepared. You can press PLAY now.` The fruit and container
 pose must already be visible before pressing Play.
@@ -617,8 +618,11 @@ The lifecycle is `stopped -> preparing -> prepared -> playing <-> paused`.
 The tested timeline **POP** callback on PLAY only starts the measured publisher
 (or resumes it); it never samples, replaces references, moves bodies, clears
 layers or authors velocities. PhysX starts from an already composed scene.
-STOP closes the publisher and releases local tensor views, then sets pending
-preparation. A subsequent Kit update, with the same stage active and
+STOP closes the measured publisher and releases local tensor views. It publishes
+a new STOP boundary on `/bfm/recorder_control`; connected recorders acknowledge
+on `/bfm/recorder_ack` only after the bag process has finalized. Pending
+preparation waits for those acknowledgements without blocking Kit. A subsequent
+Kit update, with the same stage active and
 `timeline.is_stopped()` true, prepares exactly one next episode and prints READY.
 Duplicate PLAY/STOP/update events do not consume extra episodes. Preparation
 errors enter `failed`, do not announce READY and do not retry every frame.
@@ -644,8 +648,8 @@ Pause -> Play retains the episode, publisher and valid tensor views. Duplicate
 Play does nothing. Stop closes the handle, releases its timeline-reset and
 post-update subscriptions and drops references to sampler/tensor views; it does
 not invalidate the manager-owned shared simulation view.
-The next stopped preparation composes a new body; next Play creates a fresh
-handle and views for that already prepared body. The helper's own
+The next stopped preparation resets the same four bodies; next Play creates a
+fresh measured publisher handle and views for the selected existing body. The helper's own
 STOP handler also resets views when used outside the extension. Stage closure,
 replacement, extension disable and application shutdown detach the runtime layer
 and stop publication. An actual read/body-resolution error **after manager readiness** still fails
@@ -653,10 +657,11 @@ closed with an error; it is not silently retried as readiness.
 
 The PhysX adapter is host-tested with fake lifecycle events. Isaac Sim/ROS are
 not installed on the validation host; real 6.1 callback ordering and publication
-still require the runtime checks below. The source USD, controllers, native
-physics, camera and action/topic contracts remain unchanged.
+still require the runtime checks below. The sorting stage adds only the pool
+sublayer; existing robot, controller, camera and action/topic composition remains
+unchanged.
 
-### Fruit/container composition and tabletop placement
+### Stable fruit pool and tabletop placement
 
 `sorting_scene.json.randomization` is separate from strict state `parameters`.
 The JSON whitelist contains only the four tracked fruits. Each inspected source
@@ -670,9 +675,10 @@ has one dynamic rigid body at its default prim, but the visual hierarchies diffe
 | orange2.usd | `/orange_02` | `orange_02_inst/Orange_02/OrangeSkin` and `OrangeStem` | -0.0000598616 |
 
 All four are meter/Z-up, identity root transforms, with enabled collision meshes.
-The source default/body prim is referenced **directly** at `/World/Task/Object`,
-so that path inherits RigidBodyAPI and resolves the real body, not a visual
-wrapper above another body. Relative material/texture paths remain anchored to
+Each source default/body prim is referenced directly at its stable pool path,
+so all four paths inherit RigidBodyAPI and resolve real dynamic bodies.
+No fruit references, rigid bodies, activation flags, physics scenes, robot
+articulations, controllers or ROS graphs are changed during episode preparation. Relative material/texture paths remain anchored to
 the source asset. Source assets are never rewritten. USD-level material/texture dependencies resolve
 on the host; NVIDIA MDL imports (including lemon's `OmniPBR_ClearCoat_Opacity`)
 also require Isaac's standard MDL search paths and a runtime appearance check.
@@ -695,10 +701,11 @@ region expands around the previously valid pose; invalid samples are rejected.
 This is a conservative candidate region, not a reachability proof. Every
 footprint plus 25 mm edge margin must pass the same 3x3 support checks at the
 original bottom height (within 2 mm) and clear robot collider AABBs by 30 mm.
-Z, rotation, geometry, physics and goal-local OBB are preserved. A fresh bounds
-cache after authoring the container ensures fruit exclusion uses its new pose.
-Failure restores the previous runtime layer and cancels Play without starting
-a state publisher. This configuration requires the real flat desk payload.
+Z, rotation, geometry, physics and goal-local OBB are preserved. Fruit exclusion
+uses the planned translated container bounds. Planning completes before any
+pose writes; rejected placement leaves the previous episode intact. Property
+write failures restore prior property values, never remove physical prims,
+and cancel Play without starting a state publisher. This configuration requires the real flat desk payload.
 
 For each fruit candidate, the runtime rotates the selected fruit's full geometry AABB
 by yaw, centres its footprint on sampled XY, and checks a 3x3 set of support
@@ -717,24 +724,56 @@ are not assumed to be the lowest point. Fruit XY/asset/yaw and container XY
 offset are sampled; table, robot, gravity and materials are untouched. Reachability, contact
 settling/cooking and the final spawn rectangle require manual validation.
 
-An anonymous session sublayer owns the task-object composition/transforms,
-container episode transform/zero initial velocity and a defensive deactivation of any legacy orange. Each episode clears that
-owned layer before referencing the next fruit, avoiding stale children/ops or
-velocity values. The source stage is not saved. Normal Save does not persist
-session layers; avoid Flatten/Export including runtime layers for a template.
-The extension removes its sublayer on cleanup. If a `bfmEpisode` transform
-attribute survives in another layer, it is reused and assigned as the sole
-container transform op instead of being added again. Offsets always derive
-from the captured template transform.
+The versioned `fruit_pool.usda` contains all four referenced dynamic bodies and
+four static parking cradles near world XY=(100,100) m, above the ground plane
+and far from the task. Unselected fruit origins are derived from each cradle's
+actual floor height and the fruit geometry minimum Z. Cradle floors and walls
+remain in the scene throughout simulation; parked fruits remain dynamic with
+enabled collisions. They are never hidden, disabled or made kinematic.
+
+An anonymous session sublayer owns only pose and velocity overrides. Every reset
+moves all four existing bodies and the existing container, zeros their linear
+and angular velocities, then verifies composed poses and velocities before READY.
+The layer is never cleared, imported or detached during an episode transition.
+Cleanup removes only these overrides; the four physical bodies remain authored.
+Stronger writeback opinions that prevent a reset produce an explicit error.
+The source stage and source assets are never saved by the runtime extension.
+
+`SceneRandomizer.last_episode` is the authoritative descriptor. Its
+`current_object_path` property supplies the measured publisher's `object_prim_path`.
+The descriptor contains a unique episode ID, asset name/path, physical body path,
+position, yaw, xyzw orientation, parked positions, container pose and offset.
+READY means the stopped USD reset is verified. On PLAY, live PhysX must resolve
+all reset bodies and confirm the initial poses; parked bodies must settle below
+5 mm/s and 0.005 rad/s before any `/bfm/state` publication. Parking allows 20 cm of settling displacement inside the 80 cm cradles. Later
+escaped or moving parked bodies fail collection closed. The object COM and velocity remain live
+PhysX measurements, never values copied from the descriptor.
 
 `seed` defaults to null; set an integer in the same JSON to repeat a sampling
 sequence. The RNG is seeded once when attaching the stage, not on every Play.
 Random sampling may select the same fruit in consecutive episodes; XY/yaw are
 resampled. The log prints fruit asset, body-origin XYZ, yaw (radians), container XYZ and
 container offset once per run.
-The recorder copies the randomization configuration as provenance, but does not
-claim to know the actual selected per-episode asset/pose. `episode.json` layout
-and recorder behavior are otherwise unchanged.
+`/bfm/episode` is reliable, transient-local JSON diagnostics with the lifecycle
+phase and authoritative descriptor. Only `sim_recorder` subscribes to the separate
+`/bfm/recorder_control` channel. Recording is allowed only after a successful live
+measured read has announced `playing`. `episode.json.bfm.episode` snapshots that
+exact descriptor; `bfm.task_state.object_prim_path` names the selected physical
+body. `/bfm/episode` is included in BFM bags. Pause, STOP, failure or episode
+identity changes stop the bag. Send recording=false then true to start another
+bag; a retained true never starts recording a newly prepared episode.
+
+Do not press PLAY while waiting for recorder STOP acknowledgements. A crashed
+recorder cannot acknowledge; preparation remains blocked until the extension is
+reloaded after repairing/stopping that recorder. No timeout silently permits a
+reset while an old bag may still be recording. Non-BFM recording is unchanged.
+
+`/bfm/action` remains the existing 13-dimensional 10 Hz contract (seven mapped
+right-arm targets in radians followed by six logical hand targets in 0..100).
+The gateway, source/command topics, joint ordering and hand mappings are unchanged.
+It continues to hold current commands across STOP; recording boundaries separate
+bags, and measured publication is closed before scene reset. No command buffer
+or robot physics handle is recreated by the randomizer.
 
 Optional live diagnostics (no script is required to start collection):
 
@@ -744,7 +783,7 @@ print(bfm_collection.get_status())
 ```
 
 After Play, `resolved_body_counts` must contain exactly one EEF, object, and
-container body, including `/World/Task/Object: 1`. A missing/zero/multiple body
+container body, with the selected `episode.object_prim_path` resolving to one body. A missing/zero/multiple body
 or failed tensor read disables measured publication.
 
 Host checks, with OpenUSD available in the host Python:
@@ -767,8 +806,10 @@ Manual runtime validation:
    working PhysX composition. There must be no active `/World/orange1`.
 3. Before Play: exactly one allowed fruit and the randomized container must
    already be visible, with `[BFM] Episode prepared` and READY logs. Inspect
-   `/World/Task/Object` for dynamic RigidBodyAPI and active collision geometry.
-   Press Play; no new selection/composition log should appear. Confirm gravity,
+   the selected `episode.object_prim_path` for dynamic RigidBodyAPI and collision
+   geometry. All four pool bodies and parking cradles must already exist.
+   Press Play; no new selection/composition log should appear. Confirm parked
+   fruits settle in their cradles and no old bag spans the transition. Confirm gravity,
    desk contact, robot pushing/grasping and physically measured motion.
 4. Echo `/bfm/state` with the command below. Move the fruit and verify live COM
    `object_position`/`object_velocity`; optionally inspect resolution counts above.

@@ -1,0 +1,273 @@
+#usda 1.0
+# Stable fruit bodies and static parking cradles, loaded before PhysX.
+# Parking is far outside the task workspace and above the ground plane.
+# Episode resets override transforms/velocities only.
+(
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def "World"
+{
+    def "Task"
+    {
+        def Xform "Fruits"
+        {
+            def Xform "avocado" (
+                prepend references = @../addons/objects/fruits_veggies/avocado.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (100, 100, 1.9298255366226658, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+            }
+
+            def Xform "lemon1" (
+                prepend references = @../addons/objects/fruits_veggies/lemon1.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (102, 100, 1.9288761086715385, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+            }
+
+            def Xform "pomegranate" (
+                prepend references = @../addons/objects/fruits_veggies/pomegranate.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (104, 100, 1.9302100905112456, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+            }
+
+            def Xform "orange2" (
+                prepend references = @../addons/objects/fruits_veggies/orange2.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (106, 100, 1.9300598616243223, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+            }
+        }
+
+        def "Parking"
+        {
+            def "avocado"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (100, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (99.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (100.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (100, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (100, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+
+            def "lemon1"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (102, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (101.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (102.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (102, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (102, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+
+            def "pomegranate"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (104, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (103.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (104.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (104, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (104, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+
+            def "orange2"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (106, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (105.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (106.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (106, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (106, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+        }
+    }
+}
+
