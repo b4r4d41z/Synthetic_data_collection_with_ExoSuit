@@ -214,7 +214,10 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(command[:4], ["ros2", "bag", "record", "--output"])
         self.assertEqual(command[5:7], ["--storage", "mcap"])
         self.assertEqual(command[7:], self.recorder.DEFAULT_TOPICS)
-        self.assertEqual(self.popen.call_args.kwargs, {"start_new_session": True})
+        self.assertTrue(self.popen.call_args.kwargs["start_new_session"])
+        self.assertEqual(self.popen.call_args.kwargs["stderr"], subprocess.STDOUT)
+        self.assertEqual(Path(self.popen.call_args.kwargs["stdout"].name),
+                         node.output_root / "rosbag2.log")
         self.assertEqual(Path(command[4]).name, "bag")
         self.assertTrue(Path(command[4]).parent.name.startswith("record_"))
         self.assertTrue(node.output_root.is_dir())
@@ -653,7 +656,11 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertIn("/bfm/command/hand_target", hand.subscriptions)
         self.assertEqual(hand.subscriptions["/bfm/command/hand_target"].qos.reliability,
                          "reliable")
-        self.assertNotIn("/robot/command/hand_target", hand.subscriptions)
+        # The extra raw subscription is status-only, never a control callback.
+        self.assertEqual(hand.subscriptions["/robot/command/hand_target"].callback,
+                         hand.observe_hand)
+        self.assertNotEqual(hand.subscriptions["/robot/command/hand_target"].callback,
+                            hand.hand_callback)
         _, gateway = self.make_gateway()
         source = self.arm_source()
         raw_positions = list(source.position)
@@ -1144,43 +1151,6 @@ class RecordingPipelineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             module.IsaacTaskSampler(stage, config, invalid).read()
 
-    def test_launcher_adds_gateway_only_in_bfm_mode_and_passes_configuration(self):
-        temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(temporary.cleanup)
-        directory = Path(temporary.name)
-        fake_tmux = directory / "tmux"
-        fake_tmux.write_text(
-            f"#!{sys.executable}\nimport json, os, sys\n"
-            "with open(os.environ['TEST_TMUX_LOG'], 'a') as out:\n"
-            "    out.write(json.dumps(sys.argv[1:]) + '\\n')\nprint('%1')\n"
-        )
-        fake_tmux.chmod(0o755)
-        for enabled in ("0", "1"):
-            log = directory / f"tmux_{enabled}.jsonl"
-            # The fake tmux logs commands; it starts no controller or ROS process.
-            with patch.object(self.recorder.subprocess, "Popen", self.original_popen):
-                subprocess.run(["bash", str(ROOT / "start_isaac_control.sh")], check=True,
-                    stdout=subprocess.DEVNULL, env={**os.environ,
-                        "PATH": str(directory) + os.pathsep + os.environ["PATH"],
-                        "TEST_TMUX_LOG": str(log), "BFM_COLLECTION_MODE": enabled,
-                        "BFM_STATE_FRAME": "fixture", "BFM_OBJECT_PRIM_PATH": "/World/Object"})
-            calls = [json.loads(line) for line in log.read_text().splitlines()]
-            commands = [c[3] for c in calls if c[0] == "send-keys"]
-            self.assertEqual(len(commands), 4 if enabled == "1" else 3)
-            self.assertEqual(any("bfm_action_gateway_node" in c for c in commands), enabled == "1")
-            for command in commands:
-                self.assertIn(f"BFM_COLLECTION_MODE={enabled}", command)
-                self.assertIn("BFM_STATE_FRAME=fixture", command)
-                self.assertNotIn("colcon build", command)
-        legacy_log = directory / "legacy.jsonl"
-        with patch.object(self.recorder.subprocess, "Popen", self.original_popen):
-            result = subprocess.run(["bash", str(ROOT / "start_isaac_control.sh")],
-                capture_output=True, text=True, env={**os.environ,
-                    "PATH": str(directory) + os.pathsep + os.environ["PATH"],
-                    "TEST_TMUX_LOG": str(legacy_log), "BFM_GOAL_PRIM_PATH": "/Old/Goal"})
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("BFM_CONTAINER_PRIM_PATH", result.stderr)
-        self.assertFalse(legacy_log.exists())  # Fail before touching a running session.
 
 
 if __name__ == "__main__":

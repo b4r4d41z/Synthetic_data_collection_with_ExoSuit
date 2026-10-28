@@ -8,6 +8,8 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import JointState
 
+from .flow_status import FlowStatus
+
 from .bfm_contract import ARM_SOURCE_TOPIC, collection_enabled
 
 
@@ -77,10 +79,8 @@ class ArmControlNode(Node):
             output_qos,
         )
 
-        self.get_logger().info(f"Subscribing: {INPUT_TOPIC}")
-        self.get_logger().info(f"Publishing:  {OUTPUT_TOPIC}")
-        self.get_logger().info(f"Input is degrees: {INPUT_IS_DEGREES}")
-        self.get_logger().info("Left/right arm joint names are swapped before publishing")
+        self.flow = FlowStatus(self.get_logger(), 'ARM')
+        self.flow_timer = self.create_timer(0.2, self.flow.check)
 
     def convert_position(self, value):
         value = float(value)
@@ -91,6 +91,9 @@ class ArmControlNode(Node):
         return value
 
     def arm_callback(self, msg):
+        valid = (len(msg.name) == len(msg.position) == 14
+                 and set(msg.name) == ARM_JOINTS
+                 and all(math.isfinite(v) for v in msg.position))
         out = JointState()
         out.header.stamp = self.get_clock().now().to_msg()
         out.header.frame_id = msg.header.frame_id
@@ -111,10 +114,7 @@ class ArmControlNode(Node):
 
         self.pub.publish(out)
 
-        self.get_logger().info(
-            f"Published arm joints: {len(out.name)}",
-            throttle_duration_sec=1.0,
-        )
+        self.flow.receive(valid)
 
 
 def main(args=None):

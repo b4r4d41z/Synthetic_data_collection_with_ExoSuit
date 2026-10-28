@@ -10,6 +10,8 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from dynamic_biped.msg import RobotHandPosition
 from sensor_msgs.msg import JointState
 
+from .flow_status import FlowStatus
+
 from .bfm_contract import HELD_HAND_TOPIC, collection_enabled
 
 
@@ -103,11 +105,15 @@ class IsaacEffControlNode(Node):
             output_qos,
         )
 
-        self.get_logger().info("isaac_eff_control_node started")
-        self.get_logger().info(f"subscribing: {HAND_INPUT_TOPIC}")
-        self.get_logger().info("publishing:  /left_hand_joint_command")
-        self.get_logger().info("publishing:  /right_hand_joint_command")
-        self.get_logger().info("current scene: left and right hands")
+        self.flow = FlowStatus(self.get_logger(), 'HAND')
+        self.flow_timer = self.create_timer(0.2, self.flow.check)
+        if BFM_COLLECTION_MODE:
+            # Held targets keep arriving after bridge input stops. Observe raw
+            # input separately for status only; do not alter interpolation.
+            self.flow_subscription = self.create_subscription(
+                RobotHandPosition, '/robot/command/hand_target', self.observe_hand,
+                QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1,
+                           reliability=ReliabilityPolicy.BEST_EFFORT))
 
         self.target_left_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.current_left_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -192,7 +198,15 @@ class IsaacEffControlNode(Node):
             self.timer_callback,
         )
 
+    def observe_hand(self, msg):
+        values = list(msg.left_hand_position) + list(msg.right_hand_position)
+        valid = (len(msg.left_hand_position) == len(msg.right_hand_position) == 6
+                 and all(math.isfinite(v) for v in values))
+        self.flow.receive(valid)
+
     def hand_callback(self, msg):
+        if not BFM_COLLECTION_MODE:
+            self.observe_hand(msg)
         left_values = list(msg.left_hand_position)
         right_values = list(msg.right_hand_position)
 
@@ -318,12 +332,6 @@ class IsaacEffControlNode(Node):
         self.pub_left.publish(left_msg)
         self.pub_right.publish(right_msg)
 
-        self.get_logger().info(
-            f"target_left={self.target_left_values} current_left={self.current_left_values} "
-            f"target_right={self.target_right_values} current_right={self.current_right_values} "
-            f"published_left_joints={len(left_names)} published_right_joints={len(right_names)}",
-            throttle_duration_sec=0.5,
-        )
 
 
 def main(args=None):

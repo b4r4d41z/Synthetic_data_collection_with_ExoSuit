@@ -218,13 +218,13 @@ colcon build --symlink-install \
   --packages-select dynamic_biped isaac_eff_control
 source install/setup.bash
 ros2 bag record --help
-cd ..
-bash start_isaac_control.sh
 ```
 
-The launcher opens hand-controller, arm-controller, and recorder panes with the
-same ROS domain/discovery settings. BFM mode adds one gateway pane. It does not
-build or start a container.
+For normal operation use the [two-terminal launch](../../../README.md#normal-collection-launch).
+The control launcher attaches to three horizontal status panes (ARM / JOINTS,
+HAND / GRIPPERS, RECORDING). The gateway and rosbag logs are in `backend`.
+It neither builds nor starts a container. Both launchers set the fixed collection
+and discovery environment internally; no user mode selection is needed.
 Build both selected packages: `isaac_eff_control` depends on the local
 `dynamic_biped` interfaces, and building only the former can leave an unknown
 `dynamic_biped` package at runtime.
@@ -274,12 +274,6 @@ ros2 topic echo /data_collection/recording \
 Radxa X-button transitions should
 appear as `data: false`, `data: true`, `data: false`, and so on.
 
-`start_isaac_bridge.sh` is a historical host-installed-Isaac helper, retained
-locally and added to `.gitignore`; the current Docker deployment does not use
-it. Ignore rules do not untrack an already tracked script. To stop tracking it
-without deleting the local file, optionally run
-`git rm --cached start_isaac_bridge.sh` yourself.
-
 For an isolated recorder test, with the bridge stopped to avoid competing state
 publishers, run each command from a sourced ROS2 terminal in the same domain:
 
@@ -319,25 +313,13 @@ The camera/saved-graph and task-sampler checks run when OpenUSD (`pxr`) is
 available; otherwise those checks are skipped. PhysX views are mocked in the
 sampler test; no host-only test claims an Isaac runtime check.
 
-## Optional BFM demonstration collection
+## BFM demonstration collection
 
-The default `BFM_COLLECTION_MODE=0` retains the existing direct teleoperation
-pipeline, semantic topic names, side mapping, degree conversion, and 50 Hz
-Sharpa interpolation. Enable the additional mode after rebuilding both
-`dynamic_biped` and `isaac_eff_control` with the build command above:
-
-```bash
-cd /workspace/Synthetic_data_collection_with_ExoSuit
-BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
-```
-
-The bridge already publishes the semantic raw topics; no bridge, ROS1, USD,
-camera, or ActionGraph change is needed. Stop an active bag before replacing
-the tmux session. The launcher supplies the same mode to both controllers,
-the recorder, and the gateway, including with an already running tmux server.
-Set `BFM_COLLECTION_MODE=0` to return to direct control. Existing legacy topic
-overrides still work in normal mode; the gateway also honors `HAND_INPUT_TOPIC`
-for a configured raw hand source.
+Collection is the production launch path. Both controllers, the recorder and
+the gateway receive the same fixed internal environment, including when tmux
+already has a server. The bridge publishes the existing semantic raw topics;
+no bridge, camera or ActionGraph change is needed. Lower-level node environment
+APIs are retained for tests/debugging, outside the production scripts.
 
 ```text
 ROS1 -> existing ZMQ bridge -> raw ROS2 arm + hand targets
@@ -678,27 +660,15 @@ Enable Isaac's existing ROS2 bridge and working PhysX robot variant as before.
 The extension declares ROS2 bridge, USD, timeline, PhysX and tensor dependencies;
 it does not choose another robot variant or modify graphs.
 
-One-time GUI setup: in **Window > Extensions**, add
-`/workspace/Synthetic_data_collection_with_ExoSuit/exts` to the extension search
-paths, find **BFM Sorting Collection**, enable it, and turn on **Autoload**.
-Launch Isaac from an environment with the Jazzy setup and this workspace overlay
-sourced, using the same DDS domain/discovery settings as the external controllers.
-Confirm the extension remains enabled after restarting Isaac.
-
-Alternatively, the following launcher explicitly enables the extension on every
-launch, without requiring a saved GUI preference or Script Editor:
-
-```bash
-cd /workspace/Synthetic_data_collection_with_ExoSuit
-export ISAAC_SIM_PATH=/path/to/existing/isaac-sim
-bash launch_bfm_isaac.sh
-```
-
-It sources Jazzy and `exo2isaacsim/install/setup.bash`, then runs the existing
-`isaac-sim.sh --ext-folder REPO/exts --enable bfm_collection`. It does not build,
-create containers, or replace `start_isaac_control.sh`. For a custom Isaac launch
-command use those same Kit arguments after sourcing the overlay. Keep your
-existing ROS_STATIC_PEERS and other DDS settings consistent in both processes.
+The normal `bash launch_bfm_isaac.sh` command sources Jazzy and the built
+workspace internally, then runs `/isaac-sim/isaac-sim.sh` with
+`--ext-folder REPO/exts --enable bfm_collection`. `/isaac-sim` is the deployment
+installation; a missing executable or unbuilt workspace produces a short error.
+The repository's bridge Docker configuration defines DDS/semantic inputs, not
+an alternative Isaac installation. No GUI extension autoload setup is required.
+For low-level debugging with a custom Kit invocation, source the overlay and
+use the same extension arguments and DDS settings. See the
+[normal launch instructions](../../../README.md#normal-collection-launch).
 
 Open `models/stages/stage_sorting_v1.usd` **with simulation stopped**. The
 extension activates only for this exact repository stage, not robot-only or
@@ -706,7 +676,7 @@ other stages. Start the external stack in a separate terminal:
 
 ```bash
 cd /workspace/Synthetic_data_collection_with_ExoSuit
-BFM_COLLECTION_MODE=1 bash start_isaac_control.sh
+bash start_isaac_control.sh
 ```
 
 The stopped stage attachment validates the existing pool and prepares a read-only

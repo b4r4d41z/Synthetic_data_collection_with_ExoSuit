@@ -122,6 +122,8 @@ class SimRecorder(Node):
         self._outcome_state = None
         self._outcome_error = "No valid BFM state received during recording"
         self._pending_outcome = None
+        self._stop_failed = False
+        self._rec_status = None
 
         qos = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
@@ -147,10 +149,14 @@ class SimRecorder(Node):
             Bool, RECORDING_TOPIC, self.recording_callback, qos
         )
         self._monitor = self.create_timer(1.0, self.check_process)
-        self.get_logger().info(
-            f"Recording control: {RECORDING_TOPIC} (reliable, transient local); "
-            f"output root: {self.output_root}; topics: {self.topics}"
-        )
+        self.recording_status('WAITING')
+
+    def recording_status(self, state):
+        if state != self._rec_status:
+            self._rec_status = state
+            suffix = f'  {self._episode_path.name}' if self._episode_path else ''
+            log = self.get_logger().error if state == 'ERROR' else self.get_logger().info
+            log(f'[REC] {state}{suffix}')
 
     def episode_callback(self, msg):
         """Fail closed at a timeline boundary before acknowledging reset safety."""
@@ -179,6 +185,7 @@ class SimRecorder(Node):
         except (ValueError, KeyError, TypeError, AttributeError) as error:
             self._episode_status = None
             self.stop_recording()
+            self.recording_status("ERROR")
             self.get_logger().error(f"Invalid BFM episode control: {error}")
 
     def _playing_identity(self):
@@ -247,6 +254,7 @@ class SimRecorder(Node):
                                             self._pending_outcome, self._outcome_identity)
         except (OSError, ValueError, TypeError) as error:
             self.get_logger().error(f"Cannot save episode outcome; recording requires review: {error}")
+            self.recording_status("ERROR")
             return False  # Keep pending data; STOP ack/start are blocked until retry succeeds.
         if outcome["success"] is None:
             reason = outcome["success_evaluation"].get("reason", "Outcome unavailable")
@@ -320,6 +328,7 @@ class SimRecorder(Node):
         """Start a new bag without reusing an existing output directory."""
         if self._process is not None or self._pending_outcome is not None:
             self.get_logger().warning("Previous recorder/outcome still pending; refusing another")
+            self.recording_status("ERROR")
             return
         try:
             metadata = self.episode_metadata()
@@ -343,9 +352,13 @@ class SimRecorder(Node):
                 "ros2", "bag", "record", "--output", str(self._bag_path),
                 "--storage", "mcap", *self.topics,
             ]
-            # Keep stdout/stderr in the tmux pane. A separate session lets us
-            # interrupt the recorder and any children without signalling tmux.
-            self._process = subprocess.Popen(command, start_new_session=True)
+            # Detailed rosbag output belongs in the backend, not the dashboard.
+            # Popen duplicates the descriptor; closing our copy does not close it
+            # in rosbag. Keep the existing separate process group for stop/ack.
+            with (self.output_root / "rosbag2.log").open("ab") as bag_log:
+                self._process = subprocess.Popen(command, start_new_session=True,
+                                                 stdout=bag_log, stderr=subprocess.STDOUT)
+            self._stop_failed = False
             episode = metadata["bfm"].get("episode")
             self._outcome_identity = ((episode["episode_id"], episode["object_prim_path"])
                                       if metadata["bfm"]["enabled"] else None)
@@ -353,23 +366,22 @@ class SimRecorder(Node):
             self._outcome_state = None
             self._outcome_error = "No valid BFM state received during recording"
         except (OSError, ValueError) as error:
+            self._stop_failed = True
+            self.recording_status("ERROR")
             self.get_logger().error(
                 f"Cannot start MCAP episode: {error}. Toggle recording false/true to retry."
             )
             return
-        if metadata["bfm"]["enabled"]:
-            self.get_logger().info("[BFM READY] recording started")
-        self.get_logger().info(
-            f"Started MCAP ros2 bag pid={self._process.pid}: {self._bag_path}; "
-            f"task: {metadata['task_id']}; instruction: {metadata['instruction']}; "
-            f"metadata: {self._episode_path / 'episode.json'}; topics: {self.topics}"
-        )
+        self.recording_status('RECORDING')
 
     def stop_recording(self):
         """Interrupt rosbag2 to finalize metadata, with bounded escalation."""
         process = self._process
         if process is None:
-            return self._write_outcome()
+            result = self._write_outcome()
+            if result and self._rec_status not in ('WAITING', 'STOPPED'):
+                self.recording_status('ERROR' if self._stop_failed else 'STOPPED')
+            return result
         self._capture_outcome()
         for stop_signal, timeout in (
             (signal.SIGINT, self.stop_timeout_sec),
@@ -382,6 +394,8 @@ class SimRecorder(Node):
             if stop_signal == signal.SIGINT:
                 self.get_logger().info(f"Stopping bag with SIGINT: {self._bag_path}")
             else:
+                self._stop_failed = True
+                self.recording_status("ERROR")
                 self._outcome_requires_review(f"Bag shutdown required {stop_signal.name}")
                 self.get_logger().warning(
                     f"Escalating recorder shutdown to {stop_signal.name}; "
@@ -392,6 +406,7 @@ class SimRecorder(Node):
             except ProcessLookupError:
                 pass  # The child may have exited between poll() and killpg().
             except OSError as error:
+                self.recording_status("ERROR")
                 self.get_logger().error(f"Cannot signal recorder: {error}")
                 return False
             try:
@@ -403,22 +418,25 @@ class SimRecorder(Node):
                 )
         else:
             # Retain the handle so another true cannot spawn a second recorder.
+            self.recording_status("ERROR")
             self.get_logger().error("Recorder is still running after SIGKILL")
             return False
 
         if return_code not in (0, -signal.SIGINT, 128 + signal.SIGINT):
+            self._stop_failed = True
             self._outcome_requires_review(f"Bag stopped with error exit code {return_code}")
         self._process = None
-        self.get_logger().info(
-            f"Recorder stopped (exit code {return_code}); bag: {self._bag_path}"
-        )
-        return self._write_outcome()
+        result = self._write_outcome()
+        self.recording_status('STOPPED' if result and not self._stop_failed else 'ERROR')
+        return result
 
     def check_process(self):
         """Report early exits without silently restarting into many empty bags."""
         if self._process is not None:
             return_code = self._process.poll()
             if return_code is not None:
+                self._stop_failed = True
+                self.recording_status("ERROR")
                 self._outcome_requires_review(f"Bag exited unexpectedly (code {return_code})")
                 self._process = None
                 self._write_outcome()
