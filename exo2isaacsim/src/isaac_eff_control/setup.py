@@ -6,8 +6,19 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(),
-    package_data={package_name: ['camera_metadata.json', 'sorting_scene.json']},
+    package_data={
+        package_name: [
+            'camera_metadata.json',
+            'sorting_scene.json',
+        ]
+    },
     data_files=[
+        (
+            'share/' + package_name + '/model',
+            [
+                '../../../models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml'
+            ],
+        ),
         (
             'share/ament_index/resource_index/packages',
             ['resource/' + package_name],

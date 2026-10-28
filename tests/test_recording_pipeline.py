@@ -429,6 +429,10 @@ class RecordingPipelineTests(unittest.TestCase):
             attr = layer.GetAttributeAtPath(root + node + ".inputs:topicName")
             self.assertIsNotNone(attr, node)
             self.assertEqual(attr.default, topic)
+        for name in ("positionCommand", "jointNames"):
+            attr = layer.GetAttributeAtPath(root + "Control_ActionGraph/articulation_controller.inputs:" + name)
+            self.assertEqual([str(p) for p in attr.connectionPathList.GetAppliedItems()],
+                             [root + "Control_ActionGraph/ros2_subscribe_joint_state_02.outputs:" + name])
         clock = layer.GetAttributeAtPath(
             root + "Data_collection_ActionGraph/ros2_publish_clock.inputs:topicName")
         self.assertTrue(clock is None or clock.default in (None, "clock", "/clock"))
@@ -607,7 +611,7 @@ class RecordingPipelineTests(unittest.TestCase):
         message = Message()
         # Interleave sides and reverse order; array positions are not the contract.
         message.name = [f"zarm_{side}{i}_joint" for i in range(7, 0, -1) for side in "lr"]
-        message.position = [i / 10 for i in range(14)]
+        message.position = [-.1] * 14  # In range for every mapped arm joint.
         message.header.stamp.sec = 1234
         return message
 
@@ -748,7 +752,7 @@ class RecordingPipelineTests(unittest.TestCase):
         arm = self.arm_source()
         hand = self.hand_source()
         for value in (10, 20, 30, 40):
-            arm.position = [value / 100] * 14
+            arm.position = [-value / 100] * 14
             hand.right_hand_position = [value] * 6
             hand.left_hand_position = [100-value] * 6
             gateway.arm_callback(arm)
@@ -762,8 +766,8 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(first.right_hand_position, [0, 100, 42, 44, 61, 60])
         gateway.policy_tick()
         action = gateway.action_pub.publish.call_args.args[0]
-        self.assertEqual(action.right_arm_target, [.4] * 7)
-        self.assertEqual(action.left_arm_target, [.4] * 7)
+        self.assertEqual(action.right_arm_target, [-.4] * 7)
+        self.assertEqual(action.left_arm_target, [-.4, -.349066, -.4, -.4, -.4, -.4, -.4])
         self.assertEqual(action.left_hand_target, [60] * 6)
         self.assertEqual(action.right_hand_target, [40] * 6)
         self.assertEqual(gateway.action_pub.publish.call_count, 2)
@@ -789,15 +793,20 @@ class RecordingPipelineTests(unittest.TestCase):
     def test_gateway_rejects_invalid_arm_and_hand_sources(self):
         _, gateway = self.make_gateway()
         gateway.hand_callback(self.hand_source())
-        for kind in ("missing", "duplicate", "nan"):
+        for kind in ("missing", "duplicate", "nan", "inf", "negative_inf", "unknown", "dimension"):
             arm = self.arm_source()
             if kind == "missing":
                 arm.name.pop()
                 arm.position.pop()
             elif kind == "duplicate":
                 arm.name[0] = arm.name[1]
+            elif kind == "unknown":
+                arm.name[0] = "not_a_robot_joint"
+            elif kind == "dimension":
+                arm.position.pop()
             else:
-                arm.position[0] = float("nan")
+                arm.position[0] = {"nan": float("nan"), "inf": float("inf"),
+                                   "negative_inf": -float("inf")}[kind]
             gateway.arm_callback(arm)
             gateway.policy_tick()
         gateway.arm_callback(self.arm_source())
@@ -805,6 +814,170 @@ class RecordingPipelineTests(unittest.TestCase):
             gateway.hand_callback(self.hand_source(values))
             gateway.policy_tick()
         gateway.action_pub.publish.assert_not_called()
+
+    def test_each_tick_saturates_by_name_and_preserves_raw_hand_and_order(self):
+        import xml.etree.ElementTree as ET
+        from isaac_eff_control.bfm_contract import ARM_MODEL_PATH
+        limits = {j.get("name"): tuple(map(float, j.get("range").split()))
+                  for j in ET.parse(ROOT / ARM_MODEL_PATH).findall("./worldbody//joint")
+                  if j.get("name", "").startswith("zarm_")}
+        _, gateway = self.make_gateway()
+        hand = self.hand_source()
+        gateway.hand_callback(hand)
+        for case in ("inside", "below", "above", "mixed"):
+            with self.subTest(case=case):
+                arm = self.arm_source()  # Deliberately shuffled canonical joint names.
+                requested, expected = [], []
+                for i, name in enumerate(arm.name):
+                    low, high = limits[name]
+                    if case == "inside":
+                        value, bounded = (low+high)/2, (low+high)/2
+                    elif case == "below" or (case == "mixed" and i % 2):
+                        value, bounded = low-10., low
+                    else:
+                        value, bounded = high+10., high
+                    requested.append(value)
+                    expected.append(bounded)
+                arm.position = list(requested)
+                gateway.arm_callback(arm)
+                for _ in range(2):  # Held requests must not be clipped in the buffer.
+                    gateway.policy_tick()
+                    held = gateway.arm_pub.publish.call_args.args[0]
+                    action = gateway.action_pub.publish.call_args.args[0]
+                    self.assertEqual(held.name, arm.name)
+                    self.assertEqual(held.position, expected)
+                    self.assertEqual(arm.position, requested)
+                    self.assertEqual(gateway.arm.position, requested)
+                    by_name = dict(zip(held.name, held.position))
+                    for side in ("left", "right"):
+                        names = getattr(action, side+"_arm_joint_names")
+                        self.assertEqual(names, [f"zarm_{side[0]}{j}_joint" for j in range(1,8)])
+                        self.assertEqual(getattr(action, side+"_arm_target"), [by_name[n] for n in names])
+                        self.assertEqual(getattr(action, side+"_hand_target"),
+                                         getattr(hand, side+"_hand_position"))
+                    for name, value in by_name.items():
+                        self.assertTrue(limits[name][0] <= value <= limits[name][1])
+        self.assertEqual(limits["zarm_l2_joint"], (-.349066, 2.0944))
+        self.assertEqual(limits["zarm_r2_joint"], (-2.0944, .349066))
+
+    def test_pre_clamp_source_survives_existing_arm_mapping_and_gateway(self):
+        with patch.dict(os.environ, {"BFM_COLLECTION_MODE": "1", "ARM_INPUT_IS_DEGREES": "1"}):
+            module = load_module("test_pre_clamp_source",
+                "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/arm_control_node.py")
+        node = module.ArmControlNode()
+        request = self.arm_source()
+        request.position = [90.] * 14
+        node.arm_callback(request)
+        source = node.pub.publish.call_args.args[0]
+        _, gateway = self.make_gateway()
+        gateway.arm_callback(source)
+        gateway.hand_callback(self.hand_source())
+        gateway.policy_tick()
+        held = gateway.arm_pub.publish.call_args.args[0]
+        values = dict(zip(held.name, held.position))
+        self.assertEqual(source.position, [math.pi/2] * 14)
+        self.assertEqual(request.position, [90.] * 14)
+        self.assertEqual(values["zarm_l2_joint"], math.pi/2)
+        self.assertEqual(values["zarm_r2_joint"], .349066)
+        self.assertEqual(values["zarm_l4_joint"], 0.)
+        self.assertEqual(values["zarm_r4_joint"], 0.)
+
+    def test_bounded_metadata_uses_the_actual_robot_model(self):
+        import xml.etree.ElementTree as ET
+        from isaac_eff_control.bfm_contract import ARM_MODEL_PATH, collection_metadata, state_defaults
+        content = (ROOT / ARM_MODEL_PATH).read_bytes()
+        expected = {j.get("name"): list(map(float, j.get("range").split()))
+                    for j in ET.fromstring(content).findall("./worldbody//joint")
+                    if j.get("name", "").startswith("zarm_")}
+        metadata = collection_metadata(True, state_defaults())
+        self.assertEqual(metadata["contract_version"], 3)
+        self.assertEqual(metadata["action_dim"], 26)
+        processing = metadata["arm_target_processing"]
+        self.assertIs(processing["clamping_enabled"], True)
+        self.assertEqual(processing["unit"], "rad")
+        self.assertEqual(processing["transformation"], "per_joint_saturation")
+        self.assertEqual(processing["joint_limits"], expected)
+        self.assertEqual(processing["bounds_source"], ARM_MODEL_PATH)
+        digest = hashlib.sha256(content).hexdigest()
+        self.assertEqual(processing["bounds_source_sha256"], digest)
+        self.assertEqual(processing["model_revision"], "sha256:"+digest)
+        self.assertEqual(processing["source_topic"], "/bfm/source/arm_joint_target_rad")
+        self.assertIn("pre-clamp", processing["source_semantics"])
+        self.assertEqual(processing["controller_semantics"], "bounded absolute joint-position target")
+        self.assertEqual(processing["canonical_action_topic"], "/bfm/action")
+        for side in ("left", "right"):
+            self.assertEqual(metadata["action_semantics"][side+"_arm"]["type"],
+                             "bounded_absolute_joint_position_target")
+        _, gateway = self.make_gateway()
+        self.assertEqual(gateway.arm_limits, expected)
+        # Also check the recorder's actual episode JSON after the readiness barrier.
+        node = self.recorder.SimRecorder()
+        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase="playing", episode=dict(
+            episode_id="bounded-test", object_prim_path="/World/Task/Fruits/lemon1")))))
+        node.recording_callback(Bool(True))
+        saved = json.loads((node._episode_path / "episode.json").read_text())["bfm"]
+        self.assertEqual(saved["contract_version"], 3)
+        self.assertEqual(saved["arm_target_processing"], processing)
+
+    @unittest.skipUnless(importlib.util.find_spec("pxr"), "Requires OpenUSD")
+    def test_source_arm_limits_match_the_current_composed_physx_model(self):
+        from pxr import Usd, UsdPhysics
+        from isaac_eff_control.bfm_contract import arm_target_processing
+        limits = arm_target_processing()["joint_limits"]
+        stage = Usd.Stage.Open(str(ROOT / "models/stages/stage_sorting_v1.usd"))
+        stage.SetEditTarget(stage.GetSessionLayer())
+        stage.GetPrimAtPath("/World/s40_sharpa_two_cameras").GetVariantSet("Physics").SetVariantSelection("physx")
+        found = set()
+        for prim in stage.Traverse():
+            if prim.GetName() in limits and prim.IsA(UsdPhysics.RevoluteJoint):
+                joint = UsdPhysics.RevoluteJoint(prim)
+                actual = [math.radians(joint.GetLowerLimitAttr().Get()),
+                          math.radians(joint.GetUpperLimitAttr().Get())]
+                for value, authored in zip(limits[prim.GetName()], actual):
+                    self.assertAlmostEqual(value, authored, delta=2e-7)  # Float-degree USD export.
+                found.add(prim.GetName())
+        self.assertEqual(found, set(limits))
+
+    def test_arm_model_missing_or_invalid_ranges_fail_closed(self):
+        import isaac_eff_control.bfm_contract as contract
+        content = (ROOT / contract.ARM_MODEL_PATH).read_text()
+        with tempfile.TemporaryDirectory() as directory:
+            model = Path(directory) / "model.xml"
+            cases = [content.replace('angle="radian"', 'angle="degree"'),
+                     content.replace('name="zarm_l1_joint"', 'name="missing"'),
+                     content.replace('name="zarm_r1_joint"', 'name="zarm_l1_joint"'),
+                     content.replace('range="-2.61799 0.523599"', 'range="nan 0.523599"')]
+            for invalid in cases:
+                model.write_text(invalid)
+                contract._arm_model_snapshot.cache_clear()
+                try:
+                    with patch.object(contract, "_arm_model_file", return_value=model):
+                        with self.assertRaises(ValueError):
+                            self.make_gateway()
+                finally:
+                    contract._arm_model_snapshot.cache_clear()
+
+    def test_installed_model_lookup_uses_package_share_resource(self):
+        import isaac_eff_control.bfm_contract as contract
+        with tempfile.TemporaryDirectory() as directory:
+            share = Path(directory)
+            model = share / "model" / Path(contract.ARM_MODEL_PATH).name
+            model.parent.mkdir()
+            content = (ROOT / contract.ARM_MODEL_PATH).read_bytes()
+            model.write_bytes(content)
+            ament = ModuleType("ament_index_python")
+            packages = ModuleType("ament_index_python.packages")
+            packages.get_package_share_directory = Mock(return_value=str(share))
+            contract._arm_model_snapshot.cache_clear()
+            try:
+                with patch.dict(sys.modules, {"ament_index_python": ament,
+                                               "ament_index_python.packages": packages}), \
+                        patch.object(Path, "is_file", return_value=False):
+                    self.assertEqual(contract._arm_model_file(), model)
+                    self.assertEqual(contract.arm_target_processing()["bounds_source_sha256"],
+                                     hashlib.sha256(content).hexdigest())
+            finally:
+                contract._arm_model_snapshot.cache_clear()
 
     def test_bfm_recorder_blocks_until_measured_play_and_finalizes_before_stop_ack(self):
         self.overrides["bfm_collection_mode"] = True

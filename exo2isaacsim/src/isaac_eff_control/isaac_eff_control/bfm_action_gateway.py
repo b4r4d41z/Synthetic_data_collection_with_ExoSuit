@@ -16,7 +16,7 @@ from sensor_msgs.msg import JointState
 
 from .bfm_contract import (
     ACTION_TOPIC, ARM_JOINTS, ARM_SOURCE_TOPIC, HELD_ARM_TOPIC, HELD_HAND_TOPIC,
-    POLICY_DT, RAW_HAND_TOPIC, LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, collection_enabled,
+    POLICY_DT, RAW_HAND_TOPIC, LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, collection_enabled, arm_target_processing,
 )
 
 
@@ -30,6 +30,7 @@ class BfmActionGateway(Node):
         if not self.enabled:
             self.get_logger().info("BFM gateway disabled; normal direct control is unchanged")
             return
+        self.arm_limits = arm_target_processing()["joint_limits"]
         reliable = QoSProfile(
             history=HistoryPolicy.KEEP_LAST, depth=1,
             reliability=ReliabilityPolicy.RELIABLE,
@@ -48,7 +49,7 @@ class BfmActionGateway(Node):
         )
         self.timer = self.create_timer(POLICY_DT, self.policy_tick)
         self.get_logger().info(
-            "BFM 10 Hz gateway: mapped arm + raw hand -> held commands + /bfm/action"
+            "BFM 10 Hz gateway: bounded arm + raw hand -> held commands + /bfm/action"
         )
 
     def arm_callback(self, msg):
@@ -87,6 +88,10 @@ class BfmActionGateway(Node):
             )
             return
         arm, hand = deepcopy(self.arm), deepcopy(self.hand)
+        # Only the validated tick snapshot is saturated. Keep the buffered raw
+        # request and source message intact, including their native headers.
+        arm.position = [min(max(value, self.arm_limits[name][0]), self.arm_limits[name][1])
+                        for name, value in zip(arm.name, arm.position)]
         positions = dict(zip(arm.name, arm.position))
         action = BfmAction()
         action.header.stamp = self.get_clock().now().to_msg()

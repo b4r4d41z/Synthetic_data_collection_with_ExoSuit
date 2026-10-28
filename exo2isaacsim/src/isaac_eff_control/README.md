@@ -624,7 +624,29 @@ previous `BfmState` are legacy and are not schema-compatible with these new
 interfaces. Keep their recorded type definitions/old build for reading them;
 do not treat old decisions as a complete bimanual demonstration. Rebuild and
 restart all message users (including Isaac) together. Metadata now reports
-`bfm.contract_version=2` and an explicit `action_group_order`.
+`bfm.contract_version=3` and an explicit `action_group_order`.
+
+Contract 3 bounds both arms at `BfmActionGateway.policy_tick`, after validation
+of all 14 unique joint names and finite positions. The existing mapped radians
+source `/bfm/source/arm_joint_target_rad` stays pre-clamp. Per-joint saturation
+uses robot joint names, independent of incoming order. `/robot_arm_joint_command`
+and `/bfm/action` contain the same bounded arm targets from the same tick snapshot.
+The 26D ordering, logical hands, hand interpolation, topics and measured state
+are unchanged. Normal non-BFM direct control is unchanged.
+
+The authoritative limits are read from the existing radian robot model
+`models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml`. The package installs
+that same XML verbatim under `share/isaac_eff_control/model`; no independent
+numeric limits table is maintained. Missing, incomplete or invalid model ranges
+fail closed. `arm_target_processing` metadata records both topic roles, clamp
+semantics, all 14 limits, units, source path and SHA-256 model revision.
+Rebuild the ROS package and restart gateway/recorder together after model changes;
+each process freezes one model revision. Custom live USD joint-limit overrides
+must be reconciled with the source model before collecting data.
+
+Existing contract-2 recordings retain requested, pre-clamp action semantics.
+Do not relabel or rewrite old MCAP files as contract 3. This update keeps the
+26D ROS message schema unchanged and requires no message-field migration.
 
 Isaac's Python needs compatible Jazzy `rclpy` and these built interfaces.
 Restart Isaac after rebuilding a loaded message type. The state node still uses

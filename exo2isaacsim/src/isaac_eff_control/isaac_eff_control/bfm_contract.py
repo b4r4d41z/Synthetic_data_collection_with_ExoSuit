@@ -1,11 +1,13 @@
 """Shared BFM collection semantics, independent of ROS/Isaac imports."""
 
+from functools import lru_cache
 import hashlib
 from collections.abc import Sequence
 import json
 import math
 import os
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 
 POLICY_HZ = 10.0
@@ -26,6 +28,61 @@ HELD_HAND_TOPIC = "/bfm/command/hand_target"
 ACTION_TOPIC = "/bfm/action"
 STATE_TOPIC = "/bfm/state"
 RAW_HAND_TOPIC = "/robot/command/hand_target"
+
+
+ARM_MODEL_PATH = "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml"
+
+
+def _arm_model_file():
+    """Use the source model or its verbatim ROS package installation."""
+    for root in Path(__file__).resolve().parents:
+        model = root / ARM_MODEL_PATH
+        if model.is_file():
+            return model
+    from ament_index_python.packages import get_package_share_directory
+    return Path(get_package_share_directory("isaac_eff_control")) / "model" / Path(ARM_MODEL_PATH).name
+
+
+@lru_cache(maxsize=1)
+def _arm_model_snapshot():
+    """One immutable model revision per process, shared by policy and metadata."""
+    content = _arm_model_file().read_bytes()
+    model = ET.fromstring(content)
+    compiler = model.find("compiler")
+    if compiler is None or compiler.get("angle") != "radian":
+        raise ValueError("Arm model must explicitly declare radian joint ranges")
+    limits = {}
+    for joint in model.findall("./worldbody//joint"):
+        name = joint.get("name")
+        if name not in ARM_JOINTS:
+            continue
+        bounds = tuple(float(v) for v in joint.get("range", "").split())
+        if (name in limits or len(bounds) != 2 or not all(map(math.isfinite, bounds))
+                or bounds[0] >= bounds[1] or joint.get("limited") == "false"
+                or joint.get("type", "hinge") != "hinge"):
+            raise ValueError(f"Invalid or duplicate arm joint limits: {name}")
+        limits[name] = bounds
+    if set(limits) != ARM_JOINTS:
+        raise ValueError("Arm model must define all 14 arm joint ranges")
+    ordered = tuple((name, limits[name]) for name in (*LEFT_ARM_JOINTS, *RIGHT_ARM_JOINTS))
+    return ordered, hashlib.sha256(content).hexdigest()
+
+
+def arm_target_processing():
+    limits, digest = _arm_model_snapshot()
+    return {
+        "clamping_enabled": True, "transformation": "per_joint_saturation", "unit": "rad",
+        "source_topic": ARM_SOURCE_TOPIC,
+        "source_semantics": "requested absolute joint-position target, pre-clamp",
+        "controller_topic": HELD_ARM_TOPIC,
+        "controller_semantics": "bounded absolute joint-position target",
+        "canonical_action_topic": ACTION_TOPIC,
+        "canonical_arm_semantics": "same bounded targets as controller command",
+        "joint_limits": {name: list(bounds) for name, bounds in limits},
+        "bounds_source": ARM_MODEL_PATH, "bounds_source_sha256": digest,
+        "model_revision": "sha256:" + digest,
+        "boundary": "BfmActionGateway.policy_tick after input validation",
+    }
 
 
 def collection_enabled():
@@ -115,13 +172,14 @@ def collection_metadata(enabled, state, configuration=None):
         "enabled": enabled,
         "policy_hz": POLICY_HZ,
         "policy_dt": POLICY_DT,
-        "contract_version": 2,
+        "contract_version": 3,
         "action_dim": 26,
+        "arm_target_processing": arm_target_processing(),
         "action_group_order": list(ACTION_GROUP_ORDER),
         "action_topic": ACTION_TOPIC,
         "action_semantics": {
             **{group: ({
-                "dim": 7, "type": "absolute_joint_position_target", "unit": "rad",
+                "dim": 7, "type": "bounded_absolute_joint_position_target", "unit": "rad",
                 "joint_names": list(LEFT_ARM_JOINTS if group == "left_arm" else RIGHT_ARM_JOINTS),
             } if group.endswith("arm") else {
                 "dim": 6, "type": "logical_hand_target", "unit": "controller_0_100",
