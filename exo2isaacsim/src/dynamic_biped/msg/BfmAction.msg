@@ -3,10 +3,13 @@
 # rosbag2/MCAP recorded-message timestamps, not a universal header clock.
 std_msgs/Header header
 
-# Canonical order: zarm_r1_joint, ..., zarm_r7_joint (after existing side mapping).
+# Canonical flattening: left_arm[7], left_hand[6], right_arm[7], right_hand[6] (26D).
+# Absolute mapped arm joint-position targets, radians, in l1..l7 / r1..r7 order.
+string[7] left_arm_joint_names
+float64[7] left_arm_target
+# Six logical Sharpa controller targets, 0..100; not physical finger joint angles.
+float64[6] left_hand_target
+
 string[7] right_arm_joint_names
-# Absolute joint-position targets, radians.
 float64[7] right_arm_target
-# Unchanged RobotHandPosition.right_hand_position[0..5], controller units 0..100.
-# These are six logical Sharpa targets, not joint angles or a binary gripper.
 float64[6] right_hand_target

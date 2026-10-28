@@ -33,6 +33,24 @@ class Message:
         )
 
 
+class FakeArticulation:
+    count = 1
+
+    def __init__(self):
+        # Deliberately interleave/reverse names and include a finger DOF.
+        names = [f"zarm_{side}{i}_joint" for i in range(7,0,-1) for side in "rl"] + ["finger_joint"]
+        self.shared_metatype = SimpleNamespace(dof_names=names)
+        self.max_dofs = len(names)
+        self.positions = [i/10. for i in range(self.max_dofs)]
+        self.velocities = [-i/20. for i in range(self.max_dofs)]
+
+    def get_dof_positions(self):
+        return [self.positions]
+
+    def get_dof_velocities(self):
+        return [self.velocities]
+
+
 def load_module(name, path):
     if "isaac_eff_control/isaac_eff_control/" in path:
         name = f"isaac_eff_control.{name}"
@@ -172,9 +190,13 @@ class RecordingPipelineTests(unittest.TestCase):
             "/sensors/camera/right_wrist/image_raw",
             "/clock",
             "/robot_arm_joint_command",
+            "/left_hand_joint_command",
             "/right_hand_joint_command",
             "/bfm/action",
             "/bfm/state",
+            "/bfm/source/arm_joint_target_rad",
+            "/bfm/command/hand_target",
+            "/bfm/episode",
         ]
         node = self.recorder.SimRecorder()
         self.assertEqual(node.topics, expected)
@@ -643,6 +665,9 @@ class RecordingPipelineTests(unittest.TestCase):
                     for i in range(1, 8)]
         self.assertEqual(action.right_arm_target, expected)
         self.assertEqual(action.right_arm_target, [by_name[n] for n in action.right_arm_joint_names])
+        self.assertEqual(action.left_arm_target,
+                         [math.radians(dict(zip(source.name,source.position))[f"zarm_r{i}_joint"])
+                          for i in range(1,8)])
         self.assertEqual(source.position, raw_positions)  # Raw degrees were not rewritten.
 
     def test_bfm_gateway_honors_configured_raw_hand_input(self):
@@ -663,7 +688,33 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway.policy_tick()
         gateway.action_pub.publish.assert_called_once()
 
-    def test_gateway_canonical_order_and_executed_13d_targets_match_exactly(self):
+    def test_action_message_and_metadata_define_one_explicit_26d_order(self):
+        fields = [line.split() for line in (ROOT / "exo2isaacsim/src/dynamic_biped/msg/BfmAction.msg").read_text().splitlines()
+                  if line and not line.startswith("#")]
+        self.assertEqual(fields, [["std_msgs/Header", "header"],
+            ["string[7]", "left_arm_joint_names"], ["float64[7]", "left_arm_target"],
+            ["float64[6]", "left_hand_target"], ["string[7]", "right_arm_joint_names"],
+            ["float64[7]", "right_arm_target"], ["float64[6]", "right_hand_target"]])
+        from isaac_eff_control.bfm_contract import LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, ARM_JOINTS, collection_metadata, state_defaults
+        self.assertEqual(LEFT_ARM_JOINTS, tuple(f"zarm_l{i}_joint" for i in range(1,8)))
+        self.assertEqual(RIGHT_ARM_JOINTS, tuple(f"zarm_r{i}_joint" for i in range(1,8)))
+        self.assertEqual(ARM_JOINTS, frozenset((*LEFT_ARM_JOINTS,*RIGHT_ARM_JOINTS)))
+        metadata = collection_metadata(True,state_defaults())
+        order = ["left_arm","left_hand","right_arm","right_hand"]
+        self.assertEqual(metadata["action_group_order"],order)
+        self.assertEqual(list(metadata["action_semantics"]),order)
+        self.assertEqual(metadata["action_dim"],26)
+        for side,joints in (("left",LEFT_ARM_JOINTS),("right",RIGHT_ARM_JOINTS)):
+            arm,hand = (metadata["action_semantics"][side+suffix] for suffix in ("_arm","_hand"))
+            self.assertEqual((arm["dim"],arm["unit"],arm["joint_names"]),(7,"rad",list(joints)))
+            self.assertEqual((hand["dim"],hand["range"]),(6,[0,100]))
+            self.assertEqual(hand["value_order"],[f"{side}_hand_position[{i}]" for i in range(6)])
+        replay = metadata["recorded_signal_roles"]["executed_command_replay"]
+        self.assertEqual(replay,["/robot_arm_joint_command","/left_hand_joint_command","/right_hand_joint_command"])
+        self.assertNotIn("/robot/state/joint_states",replay)
+        self.assertEqual(len(self.recorder.DEFAULT_TOPICS),len(set(self.recorder.DEFAULT_TOPICS)))
+
+    def test_gateway_canonical_order_and_executed_26d_targets_match_exactly(self):
         _, gateway = self.make_gateway()
         arm, hand = self.arm_source(), self.hand_source()
         gateway.arm_callback(arm)
@@ -673,12 +724,16 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(action.right_arm_joint_names, [f"zarm_r{i}_joint" for i in range(1, 8)])
         positions = dict(zip(arm.name, arm.position))
         self.assertEqual(action.right_arm_target, [positions[n] for n in action.right_arm_joint_names])
-        self.assertEqual(len(action.right_arm_target) + len(action.right_hand_target), 13)
+        self.assertEqual(action.left_arm_joint_names, [f"zarm_l{i}_joint" for i in range(1,8)])
+        self.assertEqual(action.left_arm_target, [positions[n] for n in action.left_arm_joint_names])
+        self.assertEqual(action.left_hand_target, hand.left_hand_position)
+        self.assertEqual(sum(len(getattr(action, key)) for key in (
+            "left_arm_target", "left_hand_target", "right_arm_target", "right_hand_target")), 26)
         self.assertEqual(action.right_hand_target, [0, 100, 42, 44, 61, 60])
         executed_hand = gateway.hand_pub.publish.call_args.args[0]
         executed_arm = gateway.arm_pub.publish.call_args.args[0]
         self.assertEqual(executed_hand.right_hand_position, action.right_hand_target)
-        self.assertEqual(executed_hand.left_hand_position, hand.left_hand_position)
+        self.assertEqual(executed_hand.left_hand_position, action.left_hand_target)
         self.assertEqual(executed_arm.position, arm.position)
         self.assertEqual(executed_arm.header.stamp.sec, 1234)
         self.assertEqual(executed_hand.header.stamp.sec, 1792639761)
@@ -695,17 +750,21 @@ class RecordingPipelineTests(unittest.TestCase):
         for value in (10, 20, 30, 40):
             arm.position = [value / 100] * 14
             hand.right_hand_position = [value] * 6
+            hand.left_hand_position = [100-value] * 6
             gateway.arm_callback(arm)
             gateway.hand_callback(hand)
         # Mutating source objects after callbacks cannot mutate buffered values.
         arm.position[0] = 999.
         hand.right_hand_position[0] = 99
+        hand.left_hand_position[0] = 99
         for publisher in (gateway.action_pub, gateway.arm_pub, gateway.hand_pub):
             publisher.publish.assert_called_once()
         self.assertEqual(first.right_hand_position, [0, 100, 42, 44, 61, 60])
         gateway.policy_tick()
         action = gateway.action_pub.publish.call_args.args[0]
         self.assertEqual(action.right_arm_target, [.4] * 7)
+        self.assertEqual(action.left_arm_target, [.4] * 7)
+        self.assertEqual(action.left_hand_target, [60] * 6)
         self.assertEqual(action.right_hand_target, [40] * 6)
         self.assertEqual(gateway.action_pub.publish.call_count, 2)
 
@@ -808,7 +867,7 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(metadata["camera_configuration"], snapshot["provenance"])
         bfm = metadata["bfm"]
         self.assertTrue(bfm["enabled"])
-        self.assertEqual((bfm["policy_hz"], bfm["policy_dt"], bfm["action_dim"]), (10, .1, 13))
+        self.assertEqual((bfm["policy_hz"], bfm["policy_dt"], bfm["action_dim"]), (10, .1, 26))
         self.assertEqual(bfm["action_semantics"]["right_arm"]["unit"], "rad")
         self.assertEqual(bfm["action_semantics"]["right_hand"]["range"], [0, 100])
         self.assertEqual(bfm["action_semantics"]["right_hand"]["value_order"],
@@ -825,7 +884,10 @@ class RecordingPipelineTests(unittest.TestCase):
         module = load_module("test_task_state",
             "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_task_state.py")
         measured = {
-            "right_eef_position": [1., 2., 3.], "object_position": [4., 5., 6.],
+            "left_eef_position": [-1.,2.,3.], "right_eef_position": [1., 2., 3.],
+            "left_arm_position": [.1]*7, "right_arm_position": [.2]*7,
+            "left_arm_velocity": [.3]*7, "right_arm_velocity": [.4]*7,
+            "object_position": [4., 5., 6.],
             "object_velocity": [.1, .2, .3], "goal_center": [7., 8., 9.],
             "goal_half_extents": [.1, .2, .3], "goal_orientation": [0., 0., 0., 1.],
             "goal_linear_velocity": [0., 0., 0.], "goal_angular_velocity": [0., 0., 0.],
@@ -873,10 +935,13 @@ class RecordingPipelineTests(unittest.TestCase):
         reference = UsdGeom.Xform.Define(stage, "/World/Reference")
         reference.AddTranslateOp().Set((10., 0., 0.))
         reference.AddRotateZOp().Set(90.)
-        for name in ("Eef", "Object", "Container"):
+        for name in ("LeftEef", "Eef", "Object", "Container"):
             prim = UsdGeom.Xform.Define(stage, "/World/" + name).GetPrim()
             UsdPhysics.RigidBodyAPI.Apply(prim)
+        robot = UsdGeom.Xform.Define(stage, "/World/Robot").GetPrim()
+        UsdPhysics.ArticulationRootAPI.Apply(robot)
         config = dict(state_frame="fixture", reference_prim_path="/World/Reference",
+                      left_eef_prim_path="/World/LeftEef", articulation_prim_path="/World/Robot",
                       eef_prim_path="/World/Eef", object_prim_path="/World/Object",
                       container_prim_path="/World/Container",
                       goal_local_center=[0., 0., 0.], goal_half_extents=[.1, .05, .02],
@@ -888,7 +953,9 @@ class RecordingPipelineTests(unittest.TestCase):
         container = SimpleNamespace(count=1, get_transforms=lambda: [[10., 50., 0., 0., 0., 0., 1.]],
                               get_velocities=lambda: [[0., 0., 0., 0., 0., 0.]],
                               get_coms=lambda: [[0., 0., 0., 0., 0., 0., 1.]])
-        simulation = Mock(create_rigid_body_view=Mock(side_effect=[eef, obj, container]))
+        left_eef = SimpleNamespace(count=1, get_transforms=lambda: [[-10.,100.,0.,0.,0.,0.,1.]])
+        simulation = Mock(create_rigid_body_view=Mock(side_effect=[left_eef, eef, obj, container]),
+                          create_articulation_view=Mock(return_value=FakeArticulation()))
         values = module.IsaacTaskSampler(stage, config, simulation).read()
         for name, expected in zip(["right_eef_position", "object_position", "object_velocity",
                                    "goal_center"], [[1, 0, 0], [2, 0, 0], [1, 0, 0], [.5, 0, 0]]):

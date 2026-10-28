@@ -12,13 +12,16 @@ from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from dynamic_biped.msg import BfmState
 
 from .bfm_contract import (
-    STATE_ENV, STATE_TOPIC, collection_enabled, scene_config_default,
+    LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, STATE_ENV, STATE_TOPIC, collection_enabled, scene_config_default,
     state_defaults, validate_state_parameters,
 )
 
 
 STATE_FIELD_SIZES = {
-    "right_eef_position": 3, "object_position": 3, "object_velocity": 3,
+    "left_eef_position": 3, "right_eef_position": 3,
+    "left_arm_position": 7, "right_arm_position": 7,
+    "left_arm_velocity": 7, "right_arm_velocity": 7,
+    "object_position": 3, "object_velocity": 3,
     "goal_center": 3, "goal_half_extents": 3, "goal_orientation": 4,
     "goal_linear_velocity": 3, "goal_angular_velocity": 3,
 }
@@ -44,7 +47,7 @@ class IsaacTaskSampler:
         if not math.isfinite(self.scale) or self.scale <= 0:
             raise ValueError("Stage metersPerUnit must be finite and positive")
         self.prims = {}
-        for key in ("eef_prim_path", "object_prim_path", "container_prim_path",
+        for key in ("left_eef_prim_path", "eef_prim_path", "object_prim_path", "container_prim_path",
                     "reference_prim_path"):
             path = config[key]
             if not path or not Sdf.Path.IsValidPathString(path):
@@ -59,13 +62,24 @@ class IsaacTaskSampler:
                     or (path != "/" and not UsdGeom.Xformable(prim))):
                 raise ValueError(f"Missing/inactive/non-transformable {key}: {path}")
             self.prims[key] = prim
-        for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
+        for key in ("left_eef_prim_path", "eef_prim_path", "object_prim_path", "container_prim_path"):
             if not self.prims[key].HasAPI(UsdPhysics.RigidBodyAPI):
                 raise ValueError(
                     f"{key} must select a PhysX rigid body in the active physics variant"
                 )
             if UsdPhysics.RigidBodyAPI(self.prims[key]).GetRigidBodyEnabledAttr().Get() is False:
                 raise ValueError(f"{key} selects a disabled rigid body")
+
+        if config["left_eef_prim_path"] == config["eef_prim_path"]:
+            raise ValueError("Left and right EEF roles must select distinct physical bodies")
+        path = config["articulation_prim_path"]
+        if (not path or not Sdf.Path.IsValidPathString(path)
+                or not Sdf.Path(path).IsAbsolutePath() or not Sdf.Path(path).IsPrimPath()):
+            raise ValueError(f"Configure a valid absolute articulation_prim_path: {path!r}")
+        articulation = stage.GetPrimAtPath(path)
+        # In this scene ArticulationRootAPI is on a fixed joint, not an Xform.
+        if not articulation or not articulation.IsActive() or not articulation.HasAPI(UsdPhysics.ArticulationRootAPI):
+            raise ValueError(f"Missing active ArticulationRootAPI: {path}")
 
         def require_static(prim):
             while prim and not prim.IsPseudoRoot():
@@ -94,6 +108,8 @@ class IsaacTaskSampler:
         self.views = {}
         self.body_views = {}  # Borrow selected object/container views from the reset component.
         self.resolved_body_counts = {}
+        self.articulation_view = None
+        self.arm_dof_indices = {}
 
     def read(self):
         from pxr import Gf
@@ -102,7 +118,7 @@ class IsaacTaskSampler:
             raise RuntimeError("Task sampling requires a ready SimulationManager physics view")
         if not self.views:
             views = {}
-            for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
+            for key in ("left_eef_prim_path", "eef_prim_path", "object_prim_path", "container_prim_path"):
                 path = self.config[key]
                 view = (self.body_views[path] if path in self.body_views else
                         self.simulation_view.create_rigid_body_view(path))
@@ -111,6 +127,22 @@ class IsaacTaskSampler:
                 views[key] = view
             self.views = views
             self.resolved_body_counts = {self.config[key]: view.count for key, view in views.items()}
+
+        if self.articulation_view is None:
+            # Read-only tensor view of the existing articulation. No Articulation
+            # wrapper/controller is initialized and no robot state is written.
+            view = self.simulation_view.create_articulation_view(self.config["articulation_prim_path"])
+            if view.count != 1:
+                raise ValueError("PhysX must resolve exactly one robot articulation")
+            names = list(view.shared_metatype.dof_names)
+            if len(names) != view.max_dofs or len(set(names)) != len(names):
+                raise ValueError("PhysX articulation DOF names must be unique and match tensor width")
+            for side, joints in (("left", LEFT_ARM_JOINTS), ("right", RIGHT_ARM_JOINTS)):
+                missing = [name for name in joints if name not in names]
+                if missing:
+                    raise ValueError(f"PhysX articulation lacks {side} arm DOFs: {missing}")
+                self.arm_dof_indices[side] = [names.index(name) for name in joints]
+            self.articulation_view = view
 
         def vector(values, size, label):
             values = [float(v) for v in values]
@@ -165,7 +197,14 @@ class IsaacTaskSampler:
             # below have no translation and use SI units directly.
             return self.world_to_reference.Transform(point_m / self.scale) * self.scale
 
+        left_eef, _ = pose("left_eef_prim_path")
         eef, _ = pose("eef_prim_path")
+        # DOF getters return actual revolute joint angles/rates in rad/rad/s.
+        # They are independent of action targets and of stage length units.
+        arm_positions = tensor_row(self.articulation_view.get_dof_positions(),
+                                   self.articulation_view.max_dofs, "joint positions")
+        arm_velocities = tensor_row(self.articulation_view.get_dof_velocities(),
+                                    self.articulation_view.max_dofs, "joint velocities")
         obj_origin, _, obj_velocity, _, obj_com_offset = body_state("object_prim_path")
         obj = obj_origin + obj_com_offset
         goal, goal_velocity, goal_omega, container_rotation = point_state(
@@ -173,6 +212,10 @@ class IsaacTaskSampler:
         goal_rotation = (self.reference_orientation * container_rotation *
                          quaternion(self.config["goal_local_orientation"])).GetNormalized()
         values = {
+            "left_eef_position": list(reference_point(left_eef)),
+            **{f"{side}_arm_{field}": [data[i] for i in indices]
+               for side, indices in self.arm_dof_indices.items()
+               for field, data in (("position", arm_positions), ("velocity", arm_velocities))},
             "right_eef_position": list(reference_point(eef)),
             "object_position": list(reference_point(obj)),
             "object_velocity": list(self.world_to_reference.TransformDir(obj_velocity)),
@@ -266,7 +309,8 @@ class BfmTaskStatePublisher(Node):
 def start_task_state_publisher(*, episode=None, **parameters):
     """Install a live Kit callback and return a handle with idempotent stop().
 
-    Keywords are ROS parameters: bfm_collection_mode, eef_prim_path,
+    Keywords are ROS parameters: bfm_collection_mode, left_eef_prim_path,
+    eef_prim_path (right), articulation_prim_path,
     object_prim_path, container_prim_path, reference_prim_path, state_frame,
     scene_config_path and local SI goal geometry. Goal quaternions use xyzw.
     Optional episode is the read-only plan applied to existing actors via live

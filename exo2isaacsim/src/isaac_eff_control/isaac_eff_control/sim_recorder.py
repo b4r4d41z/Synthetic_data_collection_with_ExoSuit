@@ -42,9 +42,13 @@ DEFAULT_TOPICS = [
     "/sensors/camera/right_wrist/image_raw",
     "/clock",
     "/robot_arm_joint_command",
+    "/left_hand_joint_command",
     "/right_hand_joint_command",
     "/bfm/action",
     "/bfm/state",
+    "/bfm/source/arm_joint_target_rad",
+    "/bfm/command/hand_target",
+    EPISODE_TOPIC,
 ]
 
 EPISODE_PARAMETERS = {

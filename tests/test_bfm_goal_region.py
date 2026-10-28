@@ -14,7 +14,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-from test_recording_pipeline import ROOT, load_module, ros_stubs
+from test_recording_pipeline import ROOT, load_module, ros_stubs, FakeArticulation
 
 
 class GoalTestBase(unittest.TestCase):
@@ -40,7 +40,10 @@ class GoalConfigTests(GoalTestBase):
         source = (ROOT / "exo2isaacsim/src/dynamic_biped/msg/BfmState.msg").read_text()
         fields = [line.split() for line in source.splitlines() if line and not line.startswith("#")]
         self.assertEqual(fields, [["std_msgs/Header", "header"],
-            ["float64[3]", "right_eef_position"], ["float64[3]", "object_position"],
+            ["float64[3]", "left_eef_position"], ["float64[3]", "right_eef_position"],
+            ["float64[7]", "left_arm_position"], ["float64[7]", "right_arm_position"],
+            ["float64[7]", "left_arm_velocity"], ["float64[7]", "right_arm_velocity"],
+            ["float64[3]", "object_position"],
             ["float64[3]", "object_velocity"], ["float64[3]", "goal_center"],
             ["float64[3]", "goal_half_extents"], ["float64[4]", "goal_orientation"],
             ["float64[3]", "goal_linear_velocity"], ["float64[3]", "goal_angular_velocity"]])
@@ -54,6 +57,8 @@ class GoalConfigTests(GoalTestBase):
         self.assertEqual(config["object_prim_path"], "/World/Task/Fruits/avocado")
         self.assertEqual(config["container_prim_path"], "/World/container_b04")
         self.assertTrue(config["eef_prim_path"].endswith("/right_hand_C_MC"))
+        self.assertTrue(config["left_eef_prim_path"].endswith("/left_hand_C_MC"))
+        self.assertEqual(config["articulation_prim_path"],"/World/s40_sharpa_two_cameras/fix_base_joint")
         self.assertEqual(config["reference_prim_path"], "/")
         self.assertEqual(config["state_frame"], "world")
         with patch.dict(os.environ, {"BFM_CONTAINER_PRIM_PATH": "/Other/Container",
@@ -115,7 +120,7 @@ class GoalConfigTests(GoalTestBase):
         self.assertTrue(state["quaternion_convention"].startswith("xyzw"))
         self.assertFalse(state["runtime_verified"])
         self.assertTrue(state["configured"])
-        self.assertEqual(metadata["bfm"]["action_dim"], 13)
+        self.assertEqual(metadata["bfm"]["action_dim"], 26)
         self.assertEqual(metadata["bfm"]["policy_hz"], 10)
         self.assertEqual(metadata["time"], {"synchronization_source": "rosbag_record_timestamp",
                                             "header_stamp": "source_native"})
@@ -148,16 +153,21 @@ class MovingGoalTests(GoalTestBase):
         self.stage = Usd.Stage.CreateInMemory()
         UsdGeom.SetStageMetersPerUnit(self.stage, 1.)
         UsdGeom.Xform.Define(self.stage, "/World")
-        for name in ("Eef", "Object", "Container"):
+        for name in ("LeftEef", "Eef", "Object", "Container"):
             prim = UsdGeom.Xform.Define(self.stage, "/World/"+name).GetPrim()
             UsdPhysics.RigidBodyAPI.Apply(prim)
+        robot = UsdGeom.Xform.Define(self.stage,"/World/Robot").GetPrim()
+        UsdPhysics.ArticulationRootAPI.Apply(robot)
         self.config = {**self.contract.state_defaults(),
+            "left_eef_prim_path": "/World/LeftEef", "articulation_prim_path": "/World/Robot",
             "eef_prim_path": "/World/Eef", "object_prim_path": "/World/Object",
             "container_prim_path": "/World/Container",
             "goal_local_center": [.5, 0., 0.], "goal_half_extents": [.2, .1, .05],
             "goal_local_orientation": [0., 0., 0., 1.]}
-        self.bodies = {"/World/"+name: FakeBody() for name in ("Eef", "Object", "Container")}
-        self.view = SimpleNamespace(create_rigid_body_view=lambda path: self.bodies[path])
+        self.bodies = {"/World/"+name: FakeBody() for name in ("LeftEef", "Eef", "Object", "Container")}
+        self.articulation = FakeArticulation()
+        self.view = SimpleNamespace(create_rigid_body_view=lambda path: self.bodies[path],
+                                    create_articulation_view=lambda path: self.articulation)
 
     def sampler(self):
         return self.module.IsaacTaskSampler(self.stage, self.config, self.view)
@@ -171,11 +181,72 @@ class MovingGoalTests(GoalTestBase):
         sampler = self.sampler()
         sampler.body_views = {path: self.bodies[path] for path in ("/World/Object", "/World/Container")}
         create = Mock(side_effect=lambda path: self.bodies[path])
-        sampler.simulation_view = SimpleNamespace(create_rigid_body_view=create)
+        sampler.simulation_view = SimpleNamespace(create_rigid_body_view=create,
+                                                create_articulation_view=lambda path: self.articulation)
         self.bodies["/World/Object"].pose[:3] = [3.,4.,5.]
         result = sampler.read()
-        create.assert_called_once_with("/World/Eef")
+        self.assertEqual([c.args[0] for c in create.call_args_list], ["/World/LeftEef", "/World/Eef"])
         self.assertVector(result["object_position"], [3.,4.,5.])
+
+    def test_bimanual_eef_and_arm_state_is_live_and_name_ordered_not_commanded(self):
+        self.bodies["/World/LeftEef"].pose[:3] = [-2.,-3.,4.]
+        self.bodies["/World/Eef"].pose[:3] = [10.,20.,30.]
+        sampler = self.sampler()
+        measured = sampler.read()
+        self.assertVector(measured["left_eef_position"],[-2.,-3.,4.])
+        self.assertVector(measured["right_eef_position"],[10.,20.,30.])
+        names = self.articulation.shared_metatype.dof_names
+        for side in ("left","right"):
+            indices = [names.index(f"zarm_{side[0]}{i}_joint") for i in range(1,8)]
+            self.assertVector(measured[f"{side}_arm_position"],[self.articulation.positions[i] for i in indices])
+            self.assertVector(measured[f"{side}_arm_velocity"],[self.articulation.velocities[i] for i in indices])
+        self.articulation.positions[:] = [2.5]*self.articulation.max_dofs
+        self.articulation.velocities[:] = [-.4]*self.articulation.max_dofs
+        self.bodies["/World/LeftEef"].pose[0] = -7.
+        updated = sampler.read()
+        self.assertVector(updated["left_eef_position"],[-7.,-3.,4.])
+        self.assertVector(updated["left_arm_position"],[2.5]*7)
+        self.assertVector(updated["right_arm_velocity"],[-.4]*7)
+        # Neither stage length units nor reference rotations scale joint angles.
+        from pxr import UsdGeom
+        UsdGeom.SetStageMetersPerUnit(self.stage,.01)
+        self.assertVector(self.sampler().read()["left_arm_position"],[2.5]*7)
+
+    def test_missing_duplicate_or_nonfinite_arm_measurements_fail_closed(self):
+        for failure in ("zero_count","two_count","missing_joint","duplicate_names","nan_position","nan_velocity"):
+            self.articulation = FakeArticulation()
+            if failure=="zero_count":self.articulation.count=0
+            if failure=="two_count":self.articulation.count=2
+            if failure=="missing_joint":self.articulation.shared_metatype.dof_names[0]="other_joint"
+            if failure=="duplicate_names":self.articulation.shared_metatype.dof_names[0]=self.articulation.shared_metatype.dof_names[1]
+            if failure=="nan_position":self.articulation.positions[0]=float("nan")
+            if failure=="nan_velocity":self.articulation.velocities[0]=float("nan")
+            with self.subTest(failure=failure),self.assertRaises(ValueError):
+                self.sampler().read()
+
+    def test_stop_discards_articulation_view_and_rebinds_changed_dof_order(self):
+        publisher = self.module.BfmTaskStatePublisher(self.stage,sampler_factory=lambda *_:self.sampler())
+        publisher.publish_at(.02)
+        previous = publisher.sampler.articulation_view
+        publisher.reset()
+        self.assertIsNone(publisher.sampler)
+        self.articulation = FakeArticulation()
+        self.articulation.shared_metatype.dof_names.reverse()
+        self.articulation.positions[:] = [3.2]*self.articulation.max_dofs
+        publisher.publish_at(.01)
+        self.assertIsNot(publisher.sampler.articulation_view,previous)
+        self.assertVector(publisher.publisher.publish.call_args.args[0].left_arm_position,[3.2]*7)
+
+    def test_bimanual_arm_readback_host_transfers_before_backend_indexing(self):
+        class BackendArray:
+            def __init__(self,data):self.data=data
+            def __getitem__(self,_):raise AssertionError("No raw backend indexing")
+            def numpy(self):return self.data
+        self.articulation.get_dof_positions = lambda:BackendArray([self.articulation.positions])
+        self.articulation.get_dof_velocities = lambda:BackendArray([self.articulation.velocities])
+        measured = self.sampler().read()
+        self.assertEqual(len(measured["left_arm_position"]),7)
+        self.assertNotEqual(measured["left_arm_position"],measured["right_arm_position"])
 
     def test_each_episode_selected_pool_body_supplies_live_com_and_velocity(self):
         from pxr import UsdGeom, UsdPhysics
@@ -273,6 +344,7 @@ class MovingGoalTests(GoalTestBase):
                            goal_local_orientation=[math.sqrt(.5), 0., 0., math.sqrt(.5)])
         h = math.sqrt(.5)
         self.bodies["/World/Eef"].pose[:3] = [10., 100., 0.]
+        self.bodies["/World/LeftEef"].pose[:3] = [10., 300., 0.]
         self.bodies["/World/Object"].pose[:3] = [10., 200., 0.]
         self.bodies["/World/Object"].velocity[:3] = [0., 100., 0.]
         container = self.bodies["/World/Container"]
@@ -280,7 +352,7 @@ class MovingGoalTests(GoalTestBase):
         container.velocity = [200., 0., 0., 0., 0., 2.]
         result = self.sampler().read()
         for key, expected in {
-            "right_eef_position": [1., 0., 0.], "object_position": [2., 0., 0.],
+            "left_eef_position": [3., 0., 0.], "right_eef_position": [1., 0., 0.], "object_position": [2., 0., 0.],
             "object_velocity": [1., 0., 0.], "goal_center": [1.5, 0., 0.],
             "goal_linear_velocity": [0., -1., 0.], "goal_angular_velocity": [0., 0., 2.],
             "goal_orientation": [h, 0., 0., h]}.items():
@@ -355,9 +427,10 @@ class MovingGoalTests(GoalTestBase):
                 "Physics").SetVariantSelection(provenance["required_robot_physics_variant"])
         self.assertFalse(stage.GetPrimAtPath("/World/orange1"))
         self.assertTrue(stage.GetPrimAtPath(params["object_prim_path"]))  # pre-authored pool
-        for key in ("eef_prim_path", "object_prim_path", "container_prim_path"):
+        for key in ("left_eef_prim_path", "eef_prim_path", "object_prim_path", "container_prim_path"):
             prim = stage.GetPrimAtPath(params[key])
             self.assertTrue(prim and prim.IsActive() and prim.HasAPI(UsdPhysics.RigidBodyAPI), key)
+        self.assertTrue(stage.GetPrimAtPath(params["articulation_prim_path"]).HasAPI(UsdPhysics.ArticulationRootAPI))
         self.module.IsaacTaskSampler(stage, params)  # Validation only, no live views claimed.
         for file_key, hash_key in (("container_asset", "container_asset_sha256"),):
             self.assertEqual(hashlib.sha256((ROOT/provenance[file_key]).read_bytes()).hexdigest(),

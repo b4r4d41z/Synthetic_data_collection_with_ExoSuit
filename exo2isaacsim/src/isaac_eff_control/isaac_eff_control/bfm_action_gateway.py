@@ -16,7 +16,7 @@ from sensor_msgs.msg import JointState
 
 from .bfm_contract import (
     ACTION_TOPIC, ARM_JOINTS, ARM_SOURCE_TOPIC, HELD_ARM_TOPIC, HELD_HAND_TOPIC,
-    POLICY_DT, RAW_HAND_TOPIC, RIGHT_ARM_JOINTS, collection_enabled,
+    POLICY_DT, RAW_HAND_TOPIC, LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, collection_enabled,
 )
 
 
@@ -90,6 +90,9 @@ class BfmActionGateway(Node):
         positions = dict(zip(arm.name, arm.position))
         action = BfmAction()
         action.header.stamp = self.get_clock().now().to_msg()
+        action.left_arm_joint_names = list(LEFT_ARM_JOINTS)
+        action.left_arm_target = [positions[name] for name in LEFT_ARM_JOINTS]
+        action.left_hand_target = [float(value) for value in hand.left_hand_position]
         action.right_arm_joint_names = list(RIGHT_ARM_JOINTS)
         action.right_arm_target = [positions[name] for name in RIGHT_ARM_JOINTS]
         action.right_hand_target = [float(value) for value in hand.right_hand_position]

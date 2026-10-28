@@ -10,11 +10,16 @@ from pathlib import Path
 
 POLICY_HZ = 10.0
 POLICY_DT = 1.0 / POLICY_HZ
+LEFT_ARM_JOINTS = (
+    "zarm_l1_joint", "zarm_l2_joint", "zarm_l3_joint", "zarm_l4_joint",
+    "zarm_l5_joint", "zarm_l6_joint", "zarm_l7_joint",
+)
 RIGHT_ARM_JOINTS = (
     "zarm_r1_joint", "zarm_r2_joint", "zarm_r3_joint", "zarm_r4_joint",
     "zarm_r5_joint", "zarm_r6_joint", "zarm_r7_joint",
 )
-ARM_JOINTS = frozenset((*RIGHT_ARM_JOINTS, *(f"zarm_l{i}_joint" for i in range(1, 8))))
+ARM_JOINTS = frozenset((*LEFT_ARM_JOINTS, *RIGHT_ARM_JOINTS))
+ACTION_GROUP_ORDER = ("left_arm", "left_hand", "right_arm", "right_hand")
 ARM_SOURCE_TOPIC = "/bfm/source/arm_joint_target_rad"
 HELD_ARM_TOPIC = "/robot_arm_joint_command"
 HELD_HAND_TOPIC = "/bfm/command/hand_target"
@@ -30,7 +35,9 @@ def collection_enabled():
 STATE_ENV = {
     "state_frame": "BFM_STATE_FRAME",
     "reference_prim_path": "BFM_REFERENCE_PRIM_PATH",
-    "eef_prim_path": "BFM_EEF_PRIM_PATH",
+    "eef_prim_path": "BFM_EEF_PRIM_PATH",  # Existing right EEF parameter.
+    "left_eef_prim_path": "BFM_LEFT_EEF_PRIM_PATH",
+    "articulation_prim_path": "BFM_ARTICULATION_PRIM_PATH",
     "object_prim_path": "BFM_OBJECT_PRIM_PATH",
     "container_prim_path": "BFM_CONTAINER_PRIM_PATH",
     "goal_local_center": "BFM_GOAL_LOCAL_CENTER",
@@ -108,23 +115,29 @@ def collection_metadata(enabled, state, configuration=None):
         "enabled": enabled,
         "policy_hz": POLICY_HZ,
         "policy_dt": POLICY_DT,
-        "action_dim": 13,
+        "contract_version": 2,
+        "action_dim": 26,
+        "action_group_order": list(ACTION_GROUP_ORDER),
         "action_topic": ACTION_TOPIC,
         "action_semantics": {
-            "right_arm": {
-                "dim": 7,
-                "type": "absolute_joint_position_target",
-                "unit": "rad",
-                "joint_names": list(RIGHT_ARM_JOINTS),
-            },
-            "right_hand": {
-                "dim": 6,
-                "type": "logical_hand_target",
-                "unit": "controller_0_100",
+            **{group: ({
+                "dim": 7, "type": "absolute_joint_position_target", "unit": "rad",
+                "joint_names": list(LEFT_ARM_JOINTS if group == "left_arm" else RIGHT_ARM_JOINTS),
+            } if group.endswith("arm") else {
+                "dim": 6, "type": "logical_hand_target", "unit": "controller_0_100",
                 "range": [0, 100],
-                "value_order": [f"right_hand_position[{i}]" for i in range(6)],
+                "value_order": [f"{group}_position[{i}]" for i in range(6)],
                 "controller": "eff_control_node (existing Sharpa mapping)",
-            },
+            }) for group in ACTION_GROUP_ORDER},
+        },
+        "recorded_signal_roles": {
+            "raw_inputs": ["/robot/command/arm_joint_target", RAW_HAND_TOPIC],
+            "policy_inputs": [ARM_SOURCE_TOPIC, RAW_HAND_TOPIC],
+            "held_commands": [HELD_ARM_TOPIC, HELD_HAND_TOPIC],
+            "executed_command_replay": [HELD_ARM_TOPIC, "/left_hand_joint_command", "/right_hand_joint_command"],
+            "measured_robot_state": "/robot/state/joint_states",
+            "canonical_action": ACTION_TOPIC,
+            "canonical_state": STATE_TOPIC,
         },
         "task_state": {
             "topic": STATE_TOPIC,
@@ -139,9 +152,21 @@ def collection_metadata(enabled, state, configuration=None):
             "goal_half_extents_axes": "goal-local X/Y/Z",
             "object_position_reference": "live PhysX center of mass",
             "goal_representation": "oriented_bounding_box",
+            "arm_proprioception": {
+                "source": "live PhysX articulation DOF positions/velocities",
+                "position_unit": "rad", "velocity_unit": "rad/s",
+                "left_joint_names": list(LEFT_ARM_JOINTS),
+                "right_joint_names": list(RIGHT_ARM_JOINTS),
+            },
+            "hand_proprioception": {
+                "source": "/robot/state/joint_states",
+                "semantics": "measured physical finger joint positions/velocities by joint name",
+                "logical_hand_targets": "commands only, recorded in /bfm/action",
+            },
             **{key: value for key, value in state.items() if key != "state_frame"},
             "configured": all(state[key] for key in (
-                "eef_prim_path", "object_prim_path", "container_prim_path"
+                "eef_prim_path", "left_eef_prim_path", "articulation_prim_path",
+                "object_prim_path", "container_prim_path"
             )),
             "scene_configuration": configuration,
             "runtime_verified": False,

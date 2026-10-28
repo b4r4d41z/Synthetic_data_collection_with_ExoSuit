@@ -82,12 +82,16 @@ BFM decisions/task state, recording state, and Isaac Sim observations:
 /sensors/camera/right_wrist/image_raw
 /clock
 /robot_arm_joint_command
+/left_hand_joint_command
 /right_hand_joint_command
 /bfm/action
 /bfm/state
+/bfm/source/arm_joint_target_rad
+/bfm/command/hand_target
+/bfm/episode
 ```
 
-All twelve topics are recorded independently at their native rates using the
+All sixteen topics are recorded independently at their native rates using the
 explicit MCAP storage backend (`ros2 bag record --storage mcap`). The complete
 robot JointState (`name`, `position`, `velocity`, and `effort`) is retained.
 Public arm targets retain ExoSuit-side degrees; only the existing arm controller
@@ -336,7 +340,7 @@ ROS1 -> existing ZMQ bridge -> raw ROS2 arm + hand targets
 
 Source callbacks only update buffers. Every 100 ms a timer snapshots the
 latest valid full arm and full hand targets, forwards them, and publishes the
-same right-side values as `/bfm/action`. Between policy ticks the high-level
+same bimanual snapshot as `/bfm/action`. Between policy ticks the high-level
 targets stay held; the low-level hand trajectory continues. In BFM mode the
 arm mapper always publishes to the intermediate topic and the hand controller
 always consumes the held topic, preventing a direct-source bypass even if
@@ -361,21 +365,36 @@ their native/faster rates. Nothing here resamples or aligns those streams.
 | --- | --- | --- |
 | Raw arm/provenance | `/robot/command/arm_joint_target` | JointState, ExoSuit degrees by default |
 | Raw hand/provenance | `/robot/command/hand_target` | RobotHandPosition, six 0..100 channels per hand |
-| Canonical action | `/bfm/action` | dynamic_biped/BfmAction, 13D |
+| Canonical action | `/bfm/action` | dynamic_biped/BfmAction, 26D |
 | Measured robot state | `/robot/state/joint_states` | Full simulator JointState, including measured Sharpa joints |
 | Measured task state | `/bfm/state` | dynamic_biped/BfmState, configured frame |
 | Executed arm/debug | `/robot_arm_joint_command` | Full mapped radians, held at 10 Hz in BFM mode |
-| Low-level hand/debug | `/right_hand_joint_command` | Interpolated physical joint targets, not the canonical action |
+| Mapped policy input | `/bfm/source/arm_joint_target_rad` | All 14 mapped joints before sample-and-hold |
+| Held logical hands | `/bfm/command/hand_target` | Both six-channel targets held at 10 Hz |
+| Executed hand replay | `/left_hand_joint_command`, `/right_hand_joint_command` | Both interpolated physical joint targets at 50 Hz |
+| Episode identity | `/bfm/episode` | Selected object and lifecycle status |
 
-`BfmAction` has `std_msgs/Header header`, `string[7] right_arm_joint_names`,
-`float64[7] right_arm_target`, and `float64[6] right_hand_target`. Arm values
-are absolute joint-position targets, extracted by name **after existing side
-mapping** in the explicit order `zarm_r1_joint` through `zarm_r7_joint`.
-Hand values preserve `right_hand_position[0..5]` in controller units `0..100`.
-The existing controller maps channel 0 to thumb MCP/IP, 1 to thumb CMC FE/AA,
-and 2..5 to index/middle/ring/pinky. Metadata uses the precise array-index
-order. No hand deg2rad, binary gripper, or [-1,1] normalization is introduced.
-Left arm/hand values are held too, but are not part of the canonical 13D action.
+`BfmAction` has one header and explicit left/right arm names/targets and logical
+hand targets. Its canonical flattening order is **left_arm[7], left_hand[6],
+right_arm[7], right_hand[6]**, totaling 26 values. Each arm uses absolute mapped
+joint-position targets in radians, ordered `zarm_l1_joint` through `zarm_l7_joint`
+and `zarm_r1_joint` through `zarm_r7_joint`. Existing side swapping and degree to
+radian conversion happen before this serialization and remain unchanged.
+Hand values preserve `left_hand_position[0..5]` and `right_hand_position[0..5]`
+in controller units 0..100. The controller maps channel 0 to thumb MCP/IP,
+1 to thumb CMC FE/AA, and 2..5 to index/middle/ring/pinky. These six values are
+commands, not measured finger angles. No hand deg2rad or gripper normalization
+is introduced. One existing 10 Hz timer snapshots both buffered messages and
+publishes all four action groups from the exact data forwarded to held commands.
+Separate ROS messages are still not a DDS transaction or execution acknowledgement.
+
+For command replay, retain all 14 `/robot_arm_joint_command` targets and both
+`/left_hand_joint_command` / `/right_hand_joint_command` streams. Those hand
+streams contain the interpolated physical joint commands sent to Isaac.
+`/robot/state/joint_states` is a measured observation, **not** a replay command
+source. Raw inputs, mapped pre-hold arms, held logical hands, canonical actions,
+executed commands and measured state have distinct semantics, so their recorded
+topics are not redundant aliases. No replay tool is added by this change.
 
 New action headers use the gateway ROS clock (wall time by default, simulation
 time if `use_sim_time` is explicitly enabled). Forwarded command headers are
@@ -394,6 +413,8 @@ scene-level child transforms. Exact runtime paths are:
 
 ```text
 robot root: /World/s40_sharpa_two_cameras
+articulation: /World/s40_sharpa_two_cameras/fix_base_joint
+left EEF:   /World/s40_sharpa_two_cameras/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC
 right EEF:  /World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC
 object:     episode.object_prim_path (one of /World/Task/Fruits/{avocado,lemon1,pomegranate,orange2})
 container:  /World/container_b04
@@ -403,7 +424,7 @@ reference:  /                         (state_frame = world)
 The stage loads `models/stages/fruit_pool.usda` before simulation. Each fruit
 default prim is referenced once at its stable physical path. The selected fruit
 and the existing container have RigidBodyAPI in the composed stage.
-The EEF is the physical right palm, not its visual mesh. It has
+Both EEFs are physical palm bodies, not visual meshes. They have
 RigidBodyAPI in the robot's existing `Physics=physx` variant, inspected in an
 anonymous session layer without saving a USD. A plain OpenUSD load does not
 select that variant automatically. The runtime sampler requires actual rigid
@@ -414,15 +435,17 @@ Root/world is stationary, Z-up, with metersPerUnit=1 in this scene.
 The template no longer contains the obsolete `/World/orange1` prim or payload.
 All other template prims, meshes, colliders, drives, and ActionGraphs are preserved.
 No prim paths
-are discovered by fuzzy names at runtime. All three exact physics views must
-resolve to **one** live body each; runtime errors/zero or multiple matches
+are discovered by fuzzy names at runtime. Four exact rigid-body views (both
+palms, fruit, container) must resolve to **one** live body each; runtime errors/zero or multiple matches
 stop publication. USD schema checks here do not prove live PhysX resolution.
 The check and the resolved counts are logged on the first successful sample.
 
 ```text
 current fruit PhysX state ----+
                               |
-right palm PhysX state -------+--> /bfm/state (native simulation updates)
+both palms PhysX state ------+--> /bfm/state (native simulation updates)
+                              |
+arm DOF positions/velocities -+
                               |
 container PhysX pose/twist     |
       +                       |
@@ -470,7 +493,8 @@ inside Isaac.
 The selected fruit's `object_position` measures its live PhysX centre of mass,
 obtained from body pose and `get_coms()`; `object_velocity` is measured COM
 linear velocity. No fixed object pose or local centre is configured. Orientation
-is used internally to transform the live COM offset. The state schema is unchanged.
+is used internally to transform the live COM offset. These object/goal semantics
+are unchanged by the bimanual extension.
 
 ### State schema, motion, frames, and configuration
 
@@ -478,7 +502,12 @@ is used internally to transform the live COM offset. The state schema is unchang
 
 ```text
 std_msgs/Header header
+float64[3] left_eef_position
 float64[3] right_eef_position
+float64[7] left_arm_position
+float64[7] right_arm_position
+float64[7] left_arm_velocity
+float64[7] right_arm_velocity
 float64[3] object_position
 float64[3] object_velocity
 float64[3] goal_center
@@ -496,7 +525,7 @@ simulation time, while **MCAP record timestamp remains authoritative for
 cross-topic synchronization**. Raw input timestamps and action semantics are
 unchanged. The old `goal_position` field is removed; rebuild message users.
 
-For each native update the sampler reads EEF, fruit, and container poses and
+For each native update the sampler reads both EEFs, fruit, and container poses and
 fruit/container twists from PhysX tensors. For a body-local goal offset c:
 
 ```text
@@ -515,6 +544,28 @@ reference translation affects positions only. Angular velocity is never
 scaled as a linear length. Half extents are already physical meters even if
 another stage uses centimeters.
 
+Both arm position and velocity arrays are measured directly using
+`get_dof_positions()` / `get_dof_velocities()` on a read-only tensor view of the
+existing robot articulation, borrowed from the same SimulationManager view.
+These APIs and `shared_metatype.dof_names` were checked in the official
+[Isaac Sim v6.1.0 Articulation source](https://github.com/isaac-sim/IsaacSim/blob/7c206f75bdadd9e05fc457f19863ca4c3f0cb693/source/deprecated/isaacsim.core.prims/python/impl/articulation.py).
+The view does not initialize a controller or create/reset the articulation.
+Its exact prim path was inspected from the scene's `Physics=physx` variant:
+`ArticulationRootAPI` is authored on `fix_base_joint`. Both physical palm paths
+were independently inspected in that same composition.
+
+The sampler indexes actual DOFs by metadata names into canonical l1..l7/r1..r7
+order. Revolute positions are rad and velocities rad/s; reference-frame rotation
+and `metersPerUnit` do not rescale joint angles. Missing/duplicate names, zero or
+multiple articulation/body matches and nonfinite measurements stop publication;
+there is no action-target or zero fallback. STOP releases sampler views together
+with existing state cleanup. No new physics manager or callback is introduced.
+
+Measured physical finger joints remain available in the recorded full
+`/robot/state/joint_states` message by joint name. They are not compressed into a
+misleading 6D measured logical-hand vector or duplicated into `BfmState`.
+Logical hand targets stay in `BfmAction`; metadata states this distinction.
+
 The reference must be right-handed and unit-scale, with no animated/rigid-body
 ancestors. Moving reference frames are unsupported. Live dynamic poses are
 never read from authored USD transforms or commands, so Fabric disabling USD
@@ -529,7 +580,9 @@ in-process publisher:
 | `BFM_SCENE_CONFIG` | `scene_config_path` | packaged `sorting_scene.json` |
 | `BFM_STATE_FRAME` | `state_frame` | `world` |
 | `BFM_REFERENCE_PRIM_PATH` | `reference_prim_path` | `/` |
-| `BFM_EEF_PRIM_PATH` | `eef_prim_path` | exact right-palm path above |
+| `BFM_EEF_PRIM_PATH` | `eef_prim_path` | exact right-palm path above (existing name retained) |
+| `BFM_LEFT_EEF_PRIM_PATH` | `left_eef_prim_path` | exact left-palm path above |
+| `BFM_ARTICULATION_PRIM_PATH` | `articulation_prim_path` | `/World/s40_sharpa_two_cameras/fix_base_joint` |
 | `BFM_OBJECT_PRIM_PATH` | `object_prim_path` | `/World/Task/Fruits/avocado` |
 | `BFM_CONTAINER_PRIM_PATH` | `container_prim_path` | `/World/container_b04` |
 | `BFM_GOAL_LOCAL_CENTER` | `goal_local_center` | local OBB centre above |
@@ -560,10 +613,18 @@ existing Isaac/ROS2 environment (both message and controller packages):
 ```bash
 cd /workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim
 source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install --packages-select dynamic_biped isaac_eff_control
+colcon build --symlink-install
 source install/setup.bash
+ros2 interface show dynamic_biped/msg/BfmAction
 ros2 interface show dynamic_biped/msg/BfmState
 ```
+
+Both ROS messages changed. Old bags with the previous 13D `BfmAction` and the
+previous `BfmState` are legacy and are not schema-compatible with these new
+interfaces. Keep their recorded type definitions/old build for reading them;
+do not treat old decisions as a complete bimanual demonstration. Rebuild and
+restart all message users (including Isaac) together. Metadata now reports
+`bfm.contract_version=2` and an explicit `action_group_order`.
 
 Isaac's Python needs compatible Jazzy `rclpy` and these built interfaces.
 Restart Isaac after rebuilding a loaded message type. The state node still uses
@@ -632,7 +693,7 @@ inertia, then uses `set_transforms(data, indices)` and `set_velocities(data, ind
 All five actors pass preflight before any setter is called. It never creates a
 physics world, changes manager settings, rebuilds articulations or touches robot
 controllers/graphs. The sampler reuses its selected fruit/container body views;
-the existing EEF measurement is read separately from the same shared manager view.
+both EEF measurements and arm DOFs are read separately from that same manager view.
 
 Readback from the same live actors immediately after setters must match positions
 within 0.1 mm, normalized xyzw quaternion absolute dot within 1e-6, and linear /
@@ -782,9 +843,9 @@ recorder cannot acknowledge; preparation remains blocked until the extension is
 reloaded after repairing/stopping that recorder. No timeout silently permits a
 reset while an old bag may still be recording. Non-BFM recording is unchanged.
 
-`/bfm/action` remains the existing 13-dimensional 10 Hz contract (seven mapped
-right-arm targets in radians followed by six logical hand targets in 0..100).
-The gateway, source/command topics, joint ordering and hand mappings are unchanged.
+`/bfm/action` is now 26-dimensional at the existing 10 Hz rate: left arm, left
+logical hand, right arm, right logical hand. Source/command topics, existing
+mapped joint values and low-level hand mappings are unchanged.
 It continues to hold current commands across STOP; recording boundaries separate
 bags, and measured publication is closed before scene reset. No command buffer
 or robot physics handle is recreated by the randomizer.
@@ -796,7 +857,7 @@ import bfm_collection
 print(bfm_collection.get_status())
 ```
 
-After Play, `resolved_body_counts` must contain exactly one EEF, object, and
+After Play, `resolved_body_counts` must contain one left EEF, one right EEF, object, and
 container body, with the selected `episode.object_prim_path` resolving to one body. A missing/zero/multiple body
 or failed tensor read disables measured publication.
 
@@ -832,8 +893,10 @@ Manual runtime validation (rebuild the existing ROS workspace after applying):
 6. Confirm the existing container is physically interactive as intended, its
    measured goal follows its motion, and parked fruits remain in their cradles
    without interfering with the task or cameras.
-7. Check `/bfm/action`: unchanged 13-dimensional, 10 Hz command contract, with
-   the same arm joint order, hand mapping, units and topics. No robot handle,
+7. Check `/bfm/action`: 26 dimensions in left_arm, left_hand, right_arm,
+   right_hand order at 10 Hz. Compare all values with the 14 mapped held arm
+   commands and both held logical hands. Confirm both low-level hand command
+   topics are recorded and low-level mapping/units/topics are unchanged. No robot handle,
    articulation, controller or ROS graph is recreated by collection.
 8. STOP. Confirm robot reset still works, the old bag finalizes, and exactly one
    **next plan** is announced while stopped. Its physical application waits for PLAY.
@@ -894,15 +957,15 @@ not establish that the observed physical asymmetry is fixed.
 
 Existing task/instruction, camera snapshot/provenance, timestamp policy, MCAP
 backend, episode directory layout, and clean-stop behavior are preserved.
-Every episode adds `bfm.enabled`, `policy_hz=10`, `policy_dt=0.1`, `action_dim=13`,
+Every episode adds `bfm.enabled`, `policy_hz=10`, `policy_dt=0.1`, `action_dim=26`,
 explicit action names/order/units, and task-state paths/frame/units, xyzw
 convention, moving-OBB local geometry, selected scene-config hash/provenance,
 and the explicit object COM convention. Normal-mode episodes have `bfm.enabled=false`.
 Task-state configuration is provenance,
 not proof of runtime validity: `configured` indicates supplied paths and
 `runtime_verified` remains false. No synthetic observations are generated when
-configuration or sampling is invalid. The twelve-topic default retains all
-eight original topics; absent optional BFM topics contribute no messages. `topics` remains
+configuration or sampling is invalid. The sixteen-topic default retains the
+original topics; absent optional BFM topics contribute no messages. `topics` remains
 configurable. Nothing filters measured JointState or modifies camera streams.
 
 Verify on the actual Isaac/ROS2 environment:
@@ -912,18 +975,22 @@ ros2 topic hz /bfm/action
 ros2 topic echo /bfm/action
 ros2 topic echo /robot_arm_joint_command
 ros2 topic echo /bfm/command/hand_target
+ros2 topic hz /left_hand_joint_command
 ros2 topic hz /right_hand_joint_command
 ros2 topic echo /bfm/state --qos-reliability best_effort
 ros2 topic info /robot_arm_joint_command --verbose
 ```
 
 Expect approximately 10 Hz canonical decisions with matching executed
-right-side targets, 50 Hz low-level hand output, and native-rate task state
+left/right targets, both 50 Hz low-level hand outputs, and native-rate task state
 while Play advances. Confirm the gateway is the sole arm command publisher
 and the hand controller consumes only the held hand topic. Move the object
 and check measured position/velocity. Translate the container: goal centre
 must follow. Rotate it: goal centre (because offset) and orientation must follow,
 with appropriate linear/angular velocity; half extents must stay fixed.
-Move the robot hand and verify EEF position. Start/stop via the existing recording
+Move each robot arm independently and verify its EEF and measured arm positions/
+velocities change on the correct side, independently of commanded targets.
+Confirm the full measured finger state remains on `/robot/state/joint_states`.
+Start/stop via the existing recording
 Bool and inspect `ros2 bag info record_NAME/bag` and `episode.json`. Real
 Isaac PhysX/DDS/MCAP execution requires these checks; mocks cannot certify it.

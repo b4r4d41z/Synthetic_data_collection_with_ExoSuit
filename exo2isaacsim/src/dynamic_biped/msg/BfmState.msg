@@ -2,7 +2,15 @@
 # Positions and half extents: m. Linear velocity: m/s. Angular velocity: rad/s.
 # header.stamp is simulation time; synchronization uses MCAP record timestamps.
 std_msgs/Header header
+float64[3] left_eef_position
 float64[3] right_eef_position
+# Measured articulation DOFs in l1..l7 / r1..r7 order; rad and rad/s.
+# No action targets are used as measurements. Measured finger joints remain
+# in /robot/state/joint_states; logical 6D hand commands belong to BfmAction.
+float64[7] left_arm_position
+float64[7] right_arm_position
+float64[7] left_arm_velocity
+float64[7] right_arm_velocity
 # Object position and velocity are measured at its live PhysX center of mass.
 float64[3] object_position
 float64[3] object_velocity
