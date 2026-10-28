@@ -61,7 +61,7 @@
     "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
     "minimum_support_radius_m": 0.03426520788759943,
     "fruit_pool_asset": "models/stages/fruit_pool.usda",
-    "fruit_pool_sha256": "31826aadfc5f1810d0f6d713377670c214e8404007a7ac7e04ace9dd3f2359b8"
+    "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289"
   },
   "randomization": {
     "object_assets": [

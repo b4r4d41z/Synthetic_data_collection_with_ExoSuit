@@ -13,6 +13,20 @@ def "World"
     {
         def Xform "Fruits"
         {
+            # Meter/Z-up sorting stages are enforced by SceneRandomizer.
+            # 2 mm contact generation margin, zero rest gap, only fruit colliders.
+            # These opinions load before PhysX; episode resets never edit them.
+            def Material "FruitContact" (
+                prepend apiSchemas = ["PhysicsMaterialAPI", "PhysxMaterialAPI"]
+            )
+            {
+                float physics:staticFriction = 0.6
+                float physics:dynamicFriction = 0.5
+                float physics:restitution = 0
+                uniform token physxMaterial:frictionCombineMode = "average"
+                uniform token physxMaterial:restitutionCombineMode = "average"
+            }
+
             def Xform "avocado" (
                 prepend references = @../addons/objects/fruits_veggies/avocado.usd@
             )
@@ -21,6 +35,18 @@ def "World"
                 vector3f physics:velocity = (0, 0, 0)
                 matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (100, 100, 1.9298255366226658, 1) )
                 uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "avocado01_inst"
+                {
+                    over "Avocado_01" (
+                        prepend apiSchemas = ["PhysxCollisionAPI"]
+                    )
+                    {
+                        float physxCollision:contactOffset = 0.002
+                        float physxCollision:restOffset = 0
+                        rel material:binding:physics = </World/Task/Fruits/FruitContact>
+                    }
+                }
             }
 
             def Xform "lemon1" (
@@ -31,6 +57,18 @@ def "World"
                 vector3f physics:velocity = (0, 0, 0)
                 matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (102, 100, 1.9288761086715385, 1) )
                 uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "lemon_01_inst"
+                {
+                    over "Lemon_01" (
+                        prepend apiSchemas = ["PhysxCollisionAPI"]
+                    )
+                    {
+                        float physxCollision:contactOffset = 0.002
+                        float physxCollision:restOffset = 0
+                        rel material:binding:physics = </World/Task/Fruits/FruitContact>
+                    }
+                }
             }
 
             def Xform "pomegranate" (
@@ -41,6 +79,18 @@ def "World"
                 vector3f physics:velocity = (0, 0, 0)
                 matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (104, 100, 1.9302100905112456, 1) )
                 uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "pomegranate01_inst"
+                {
+                    over "pomegranate_01" (
+                        prepend apiSchemas = ["PhysxCollisionAPI"]
+                    )
+                    {
+                        float physxCollision:contactOffset = 0.002
+                        float physxCollision:restOffset = 0
+                        rel material:binding:physics = </World/Task/Fruits/FruitContact>
+                    }
+                }
             }
 
             def Xform "orange2" (
@@ -51,6 +101,29 @@ def "World"
                 vector3f physics:velocity = (0, 0, 0)
                 matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (106, 100, 1.9300598616243223, 1) )
                 uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "orange_02_inst"
+                {
+                    over "Orange_02"
+                    {
+                        over "OrangeSkin" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                            rel material:binding:physics = </World/Task/Fruits/FruitContact>
+                        }
+                        over "OrangeStem" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                            rel material:binding:physics = </World/Task/Fruits/FruitContact>
+                        }
+                    }
+                }
             }
         }
 

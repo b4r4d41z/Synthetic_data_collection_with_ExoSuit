@@ -160,9 +160,27 @@ conditioning, not a per-frame ROS topic or an encoded embedding.
 Override the task defaults for each actual demonstration. The string fields
 are ROS2 parameters, read at the start of each episode; changes during a bag do
 not rewrite that episode's metadata. `source` also accepts identifiers such as
-`real` for later use. Annotate `success` in the sidecar after recording; it starts
-as `null`. Folder timestamps and `created_at` are wall-clock identifiers, not
-cross-topic synchronization inputs.
+`real` for later use. `success` starts as `null`. Completed BFM recordings label
+whether the final object's live COM is inside the goal-local OBB from `/bfm/state`.
+This is a position criterion, not full fruit containment, settling, reward or done.
+The recorder uses inverse normalized xyzw rotation and the existing goal extents.
+
+Only states received during this recording and active recorder-control identity
+are eligible. BfmState itself has no episode/object identity fields: association
+uses the existing STOP acknowledgement / prepared / PLAY barrier and descriptor.
+`bfm_state_max_age_sec` (default 0.5 s) measures local monotonic receive age, never
+subtracting source-native simulation headers from wall time. Missing, invalid,
+stale or mismatched state yields `success: null`, a review reason and a warning;
+a new invalid packet cannot silently reuse an earlier valid result.
+
+At stop/shutdown, the outcome snapshot is frozen before SIGINT/wait, then rosbag
+is finalized, then the sidecar is updated with a flushed/fsynced sibling file and
+atomic replace. All other metadata is preserved. `success_evaluation` records a
+compact geometry/identity audit. Forced/error exits remain unknown. A failed
+sidecar write blocks STOP acknowledgement/new recording until a stop retry saves
+it. Non-BFM recordings remain unlabelled. Old recordings are never relabelled.
+Folder timestamps and `created_at` are wall-clock identifiers, not cross-topic
+synchronization inputs.
 
 The packaged [camera_metadata.json](isaac_eff_control/camera_metadata.json)
 describes all three cameras from the saved repository USD, including its manual
@@ -838,6 +856,18 @@ existing metadata and adds `body_poses`: world SI body-origin position plus xyzw
 orientation for each of the five actors. Selection, parking poses, and container
 pose are checked for consistency before binding physics. The existing static
 pool/cradles, four source assets and container geometry remain unchanged.
+The pool layer now binds an explicit fruit-only material to the five enabled
+mesh colliders of the four fruits: static friction 0.6, dynamic friction 0.5,
+restitution 0, average combine modes, contact offset 0.002 m and rest offset 0.
+The sorting stage is required to use meters, so these distances are authored as
+0.002/1 stage units. Other stage scales are rejected by SceneRandomizer.
+Only exact pre-authored collider paths have overrides; there is no runtime
+mutation helper accepting robot, articulation, wildcard or extra actor paths.
+Robot/container/parking materials and global physics settings are unchanged.
+These properties load before PhysX and are never edited during episode reset.
+Check all fruits in Isaac for natural push/release and stable multi-finger grasps
+without tunneling; host tests verify composition/reset invariants, not contact quality.
+
 All fruit mesh colliders already use `convexDecomposition`; no source asset or
 collision representation needed rewriting. Actor resolution and mass/inertia
 checks are necessary runtime checks, not a claim that USD schemas prove contacts.

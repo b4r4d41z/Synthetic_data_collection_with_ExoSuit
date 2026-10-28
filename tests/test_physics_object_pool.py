@@ -165,3 +165,84 @@ class PhysicsObjectPoolTests(unittest.TestCase):
         pool=module.PhysicsObjectPool(stage,ep,log=Mock())
         pool.bind(view);pool.apply_episode();pool.verify_episode()
         self.assertTrue(pool.parking_settled())
+
+
+class FruitContactCompositionTests(unittest.TestCase):
+    def test_only_preloaded_fruit_colliders_receive_meter_scale_contact_profile(self):
+        from pxr import UsdShade
+        import hashlib
+        import json
+        import math
+        asset = ROOT / 'models/stages/fruit_pool.usda'
+        stage = Usd.Stage.Open(str(asset))
+        self.assertEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.)
+        expected = {f'/World/Task/Fruits/{n}': count for n, count in
+                    (('avocado', 1), ('lemon1', 1), ('pomegranate', 1), ('orange2', 2))}
+        bodies = {str(p.GetPath()) for p in stage.Traverse() if p.HasAPI(UsdPhysics.RigidBodyAPI)}
+        self.assertEqual(bodies, set(expected))
+        material = stage.GetPrimAtPath('/World/Task/Fruits/FruitContact')
+        api = UsdPhysics.MaterialAPI(material)
+        self.assertAlmostEqual(api.GetStaticFrictionAttr().Get(), .6)
+        self.assertAlmostEqual(api.GetDynamicFrictionAttr().Get(), .5)
+        self.assertEqual(api.GetRestitutionAttr().Get(), 0.)
+        for body, count in expected.items():
+            shapes = [p for p in Usd.PrimRange(stage.GetPrimAtPath(body))
+                      if p.HasAPI(UsdPhysics.CollisionAPI)]
+            self.assertEqual(len(shapes), count)
+            for shape in shapes:
+                self.assertTrue(UsdPhysics.CollisionAPI(shape).GetCollisionEnabledAttr().Get())
+                contact = shape.GetAttribute('physxCollision:contactOffset').Get()
+                rest = shape.GetAttribute('physxCollision:restOffset').Get()
+                self.assertTrue(math.isfinite(contact) and math.isfinite(rest))
+                self.assertAlmostEqual(contact * UsdGeom.GetStageMetersPerUnit(stage), .002)
+                self.assertEqual(rest, 0.)
+                self.assertGreater(contact, rest)
+                self.assertEqual(UsdPhysics.MeshCollisionAPI(shape).GetApproximationAttr().Get(),
+                                 'convexDecomposition')
+                bound, _ = UsdShade.MaterialBindingAPI(shape).ComputeBoundMaterial('physics')
+                self.assertEqual(bound.GetPath(), material.GetPath())
+        for p in stage.Traverse():
+            if str(p.GetPath()).startswith('/World/Task/Parking'):
+                self.assertFalse(UsdShade.MaterialBindingAPI(p).ComputeBoundMaterial('physics')[0])
+        config = json.loads((ROOT / 'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/sorting_scene.json').read_text())
+        self.assertEqual(config['provenance']['fruit_pool_sha256'], hashlib.sha256(asset.read_bytes()).hexdigest())
+
+    def test_authored_contact_opinions_are_an_exact_whitelist_not_a_runtime_mutator(self):
+        layer = Sdf.Layer.FindOrOpen(str(ROOT / 'models/stages/fruit_pool.usda'))
+        targets = []
+        def inspect(path):
+            attribute = layer.GetAttributeAtPath(path)
+            relation = layer.GetRelationshipAtPath(path)
+            if attribute and str(attribute.name).startswith('physxCollision:'):
+                targets.append(str(attribute.path.GetPrimPath()))
+            if relation and relation.name == 'material:binding:physics':
+                targets.append(str(relation.path.GetPrimPath()))
+        layer.Traverse('/', inspect)
+        expected = {
+            '/World/Task/Fruits/avocado/avocado01_inst/Avocado_01',
+            '/World/Task/Fruits/lemon1/lemon_01_inst/Lemon_01',
+            '/World/Task/Fruits/pomegranate/pomegranate01_inst/pomegranate_01',
+            '/World/Task/Fruits/orange2/orange_02_inst/Orange_02/OrangeSkin',
+            '/World/Task/Fruits/orange2/orange_02_inst/Orange_02/OrangeStem',
+        }
+        self.assertEqual(set(targets), expected)
+        self.assertEqual(len(targets), 3*len(expected))
+        self.assertFalse(any('*' in p or '?' in p or 'robot' in p or 'sharpa' in p for p in targets))
+        # There is no callable path accepting robot/articulation/wildcard inputs.
+        # Existing pool preflight separately rejects articulation ancestors.
+        stage = Usd.Stage.Open(layer)
+        self.assertFalse(any(p.HasAPI(UsdPhysics.ArticulationRootAPI) or p.IsA(UsdPhysics.Scene)
+                             for p in stage.Traverse()))
+        # Static leaf bindings cannot spread to an injected articulation or an
+        # unexpected body, even if it is placed under the fruit namespace.
+        from pxr import UsdShade
+        stage.SetEditTarget(stage.GetSessionLayer())
+        for path in ('/World/Robot', '/World/Task/Fruits/unexpected'):
+            body = UsdGeom.Xform.Define(stage, path).GetPrim()
+            UsdPhysics.RigidBodyAPI.Apply(body)
+            UsdPhysics.ArticulationRootAPI.Apply(body)
+            shape = UsdGeom.Cube.Define(stage, path + '/Collider').GetPrim()
+            UsdPhysics.CollisionAPI.Apply(shape)
+            self.assertFalse(UsdShade.MaterialBindingAPI(shape).ComputeBoundMaterial('physics')[0])
+            attribute = shape.GetAttribute('physxCollision:contactOffset')
+            self.assertFalse(attribute and attribute.HasAuthoredValueOpinion())

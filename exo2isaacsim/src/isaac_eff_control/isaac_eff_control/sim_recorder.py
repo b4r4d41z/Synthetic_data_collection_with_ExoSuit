@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+from time import monotonic
 from uuid import uuid4
 
 import rclpy
@@ -24,10 +25,11 @@ from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPo
 from std_msgs.msg import Bool
 
 from .bfm_episode import ACK_TOPIC, CONTROL_TOPIC, EPISODE_TOPIC
+from .episode_outcome import atomic_outcome_update, final_position_outcome
 
 from .bfm_contract import (
     collection_enabled, collection_metadata, scene_config_default,
-    scene_configuration, state_defaults,
+    scene_configuration, state_defaults, STATE_TOPIC,
 )
 
 
@@ -78,6 +80,10 @@ class SimRecorder(Node):
         self.stop_timeout_sec = float(
             self.declare_parameter("stop_timeout_sec", 15.0).value
         )
+        self.bfm_state_max_age_sec = float(self.declare_parameter(
+            "bfm_state_max_age_sec", 0.5).value)
+        if not math.isfinite(self.bfm_state_max_age_sec) or self.bfm_state_max_age_sec <= 0:
+            raise ValueError("bfm_state_max_age_sec must be finite and positive")
         for name, default in EPISODE_PARAMETERS.items():
             self.declare_parameter(name, default)
         self.declare_parameter(
@@ -111,6 +117,11 @@ class SimRecorder(Node):
         self._process = None
         self._episode_path = None
         self._bag_path = None
+        self._outcome_identity = None
+        self._outcome_frame = None
+        self._outcome_state = None
+        self._outcome_error = "No valid BFM state received during recording"
+        self._pending_outcome = None
 
         qos = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
@@ -119,11 +130,17 @@ class SimRecorder(Node):
             depth=1,
         )
         if self.get_parameter("bfm_collection_mode").value:
+            from dynamic_biped.msg import BfmState
             from std_msgs.msg import String
             self._episode_string = String
             self._ack_pub = self.create_publisher(String, ACK_TOPIC, 10)
             self._episode_subscription = self.create_subscription(
                 String, CONTROL_TOPIC, self.episode_callback, qos)
+            # Volatile KEEP_LAST(1): do not use a retained pre-recording state.
+            self._state_subscription = self.create_subscription(
+                BfmState, STATE_TOPIC, self.state_callback,
+                QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1,
+                           reliability=ReliabilityPolicy.BEST_EFFORT))
             if EPISODE_TOPIC not in self.topics:
                 self.topics.append(EPISODE_TOPIC)
         self._subscription = self.create_subscription(
@@ -163,6 +180,81 @@ class SimRecorder(Node):
             self._episode_status = None
             self.stop_recording()
             self.get_logger().error(f"Invalid BFM episode control: {error}")
+
+    def _playing_identity(self):
+        status = self._episode_status or {}
+        episode = status.get("episode") or {}
+        if status.get("phase") != "playing":
+            return None
+        return episode.get("episode_id"), episode.get("object_prim_path")
+
+    def state_callback(self, msg):
+        """Accept only post-start state for this active recording/control identity."""
+        if self._process is None or self._outcome_identity is None or self._pending_outcome is not None:
+            return
+        try:
+            if self._playing_identity() != self._outcome_identity:
+                raise ValueError("BFM state episode/object identity mismatch")
+            # BfmState has no identity fields; the existing STOP-ack/prepared/PLAY
+            # barrier and recorder control descriptor establish its producer.
+            if msg.header.frame_id != self._outcome_frame:
+                raise ValueError("BFM state frame differs from recorded goal frame")
+            result, geometry = final_position_outcome(msg)
+            self._outcome_state = (result, geometry, monotonic(), self._outcome_identity)
+            self._outcome_error = None
+        except (ValueError, TypeError, AttributeError, OverflowError) as error:
+            # A newer invalid packet invalidates the previous cached value.
+            self._outcome_state = None
+            self._outcome_error = str(error)
+            self.get_logger().warning(f"BFM outcome state invalid: {error}", throttle_duration_sec=2.)
+
+    def _capture_outcome(self):
+        """Freeze before rosbag wait/escalation; retries keep this same snapshot."""
+        if self._outcome_identity is None or self._pending_outcome is not None:
+            return
+        audit = {"method": "final_object_position_in_goal_obb",
+                 "episode_id": self._outcome_identity[0], "object_prim_path": self._outcome_identity[1],
+                 "evaluated_at": datetime.now().astimezone().isoformat()}
+        success, error = None, self._outcome_error
+        if self._playing_identity() != self._outcome_identity:
+            error = "Episode/object identity differs from recording"
+        elif self._outcome_state is not None:
+            result, geometry, received, identity = self._outcome_state
+            age = monotonic() - received
+            if identity != self._outcome_identity:
+                error = "Cached state episode/object identity mismatch"
+            elif not 0 <= age <= self.bfm_state_max_age_sec:
+                error = "Final BFM state is stale"
+            else:
+                success, error = result, None
+                audit.update(geometry, state_age_sec=age)
+        audit.update(review_required=error is not None)
+        if error:
+            audit["reason"] = error
+        self._pending_outcome = {"success": success, "success_evaluation": audit}
+
+    def _outcome_requires_review(self, reason):
+        self._capture_outcome()
+        if self._pending_outcome is not None:
+            self._pending_outcome["success"] = None
+            self._pending_outcome["success_evaluation"].update(review_required=True, reason=reason)
+
+    def _write_outcome(self):
+        if self._pending_outcome is None:
+            return True
+        try:
+            outcome = atomic_outcome_update(self._episode_path / "episode.json",
+                                            self._pending_outcome, self._outcome_identity)
+        except (OSError, ValueError, TypeError) as error:
+            self.get_logger().error(f"Cannot save episode outcome; recording requires review: {error}")
+            return False  # Keep pending data; STOP ack/start are blocked until retry succeeds.
+        if outcome["success"] is None:
+            reason = outcome["success_evaluation"].get("reason", "Outcome unavailable")
+            self.get_logger().warning(f"Episode outcome unknown; recording requires review: {reason}")
+        self._pending_outcome = None
+        self._outcome_identity = None
+        self._outcome_state = None
+        return True
 
     def recording_callback(self, msg):
         """Treat the Bool as desired state, not a repeated start/stop event."""
@@ -226,8 +318,8 @@ class SimRecorder(Node):
 
     def start_recording(self):
         """Start a new bag without reusing an existing output directory."""
-        if self._process is not None:
-            self.get_logger().warning("Previous recorder still exists; refusing another")
+        if self._process is not None or self._pending_outcome is not None:
+            self.get_logger().warning("Previous recorder/outcome still pending; refusing another")
             return
         try:
             metadata = self.episode_metadata()
@@ -254,6 +346,12 @@ class SimRecorder(Node):
             # Keep stdout/stderr in the tmux pane. A separate session lets us
             # interrupt the recorder and any children without signalling tmux.
             self._process = subprocess.Popen(command, start_new_session=True)
+            episode = metadata["bfm"].get("episode")
+            self._outcome_identity = ((episode["episode_id"], episode["object_prim_path"])
+                                      if metadata["bfm"]["enabled"] else None)
+            self._outcome_frame = metadata["bfm"]["task_state"]["frame"]
+            self._outcome_state = None
+            self._outcome_error = "No valid BFM state received during recording"
         except (OSError, ValueError) as error:
             self.get_logger().error(
                 f"Cannot start MCAP episode: {error}. Toggle recording false/true to retry."
@@ -271,7 +369,8 @@ class SimRecorder(Node):
         """Interrupt rosbag2 to finalize metadata, with bounded escalation."""
         process = self._process
         if process is None:
-            return True
+            return self._write_outcome()
+        self._capture_outcome()
         for stop_signal, timeout in (
             (signal.SIGINT, self.stop_timeout_sec),
             (signal.SIGTERM, 5.0),
@@ -283,6 +382,7 @@ class SimRecorder(Node):
             if stop_signal == signal.SIGINT:
                 self.get_logger().info(f"Stopping bag with SIGINT: {self._bag_path}")
             else:
+                self._outcome_requires_review(f"Bag shutdown required {stop_signal.name}")
                 self.get_logger().warning(
                     f"Escalating recorder shutdown to {stop_signal.name}; "
                     "the bag may not be finalized"
@@ -306,18 +406,22 @@ class SimRecorder(Node):
             self.get_logger().error("Recorder is still running after SIGKILL")
             return False
 
+        if return_code not in (0, -signal.SIGINT, 128 + signal.SIGINT):
+            self._outcome_requires_review(f"Bag stopped with error exit code {return_code}")
         self._process = None
         self.get_logger().info(
             f"Recorder stopped (exit code {return_code}); bag: {self._bag_path}"
         )
-        return True
+        return self._write_outcome()
 
     def check_process(self):
         """Report early exits without silently restarting into many empty bags."""
         if self._process is not None:
             return_code = self._process.poll()
             if return_code is not None:
+                self._outcome_requires_review(f"Bag exited unexpectedly (code {return_code})")
                 self._process = None
+                self._write_outcome()
                 self.get_logger().error(
                     f"ros2 bag exited unexpectedly (code {return_code}); "
                     f"output: {self._bag_path}. Toggle recording false/true to retry."
