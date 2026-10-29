@@ -1,0 +1,386 @@
+workspace/Synthetic_data_collection_with_ExoSuit/records/record_20261028_141621_145555_a3fffe33/bag
+
+Files:             bag_0.mcap
+Bag size:          1.1 GiB
+Storage id:        mcap
+ROS Distro:        jazzy
+Duration:          21.752693820s
+Start:             Oct 28 2026 14:16:21.590109192 (1793196981.590109192)
+End:               Oct 28 2026 14:16:43.342803012 (1793197003.342803012)
+Messages:          6655
+Topic information: Topic: /bfm/action | Type: dynamic_biped/msg/BfmAction | Count: 218 | Serialization Format: cdr
+                   Topic: /bfm/command/hand_target | Type: dynamic_biped/msg/RobotHandPosition | Count: 218 | Serialization Format: cdr
+                   Topic: /bfm/episode | Type: std_msgs/msg/String | Count: 1 | Serialization Format: cdr
+                   Topic: /bfm/source/arm_joint_target_rad | Type: sensor_msgs/msg/JointState | Count: 218 | Serialization Format: cdr
+                   Topic: /bfm/state | Type: dynamic_biped/msg/BfmState | Count: 372 | SerializationFormat: cdr
+                   Topic: /clock | Type: rosgraph_msgs/msg/Clock | Count: 422 | Serialization Format: cdr
+                   Topic: /data_collection/recording | Type: std_msgs/msg/Bool | Count: 2 | Serialization Format: cdr
+                   Topic: /left_hand_joint_command | Type: sensor_msgs/msg/JointState | Count: 1088 | Serialization Format: cdr
+                   Topic: /right_hand_joint_command | Type: sensor_msgs/msg/JointState | Count: 1088| Serialization Format: cdr
+                   Topic: /robot/command/arm_joint_target | Type: sensor_msgs/msg/JointState | Count: 190 | Serialization Format: cdr
+                   Topic: /robot/command/hand_target | Type: dynamic_biped/msg/RobotHandPosition | Count: 938 | Serialization Format: cdr
+                   Topic: /robot/state/joint_states | Type: sensor_msgs/msg/JointState | Count: 422 | Serialization Format: cdr
+                   Topic: /robot_arm_joint_command | Type: sensor_msgs/msg/JointState | Count: 218 |Serialization Format: cdr
+                   Topic: /sensors/camera/head/image_raw | Type: sensor_msgs/msg/Image | Count: 420 | Serialization Format: cdr
+                   Topic: /sensors/camera/left_wrist/image_raw | Type: sensor_msgs/msg/Image | Count: 420 | Serialization Format: cdr
+                   Topic: /sensors/camera/right_wrist/image_raw | Type: sensor_msgs/msg/Image | Count: 420 | Serialization Format: cdr
+Service:           0
+Service information: 
+● root@lab:/workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim# python3 - <<'PY'
+import rosbag2_py
+from rclpy.serialization import deserialize_message
+from rosidl_runtime_py.utilities import get_message
+
+BAG = "/workspace/Synthetic_data_collection_with_ExoSuit/records/record_20261028_141621_145555_a3fffe33/bag"
+TARGET_ACTIONS = {30, 100, 180}
+
+TOPICS = [
+    "/bfm/source/arm_joint_target_rad",
+    "/robot_arm_joint_command",
+    "/bfm/action",
+    "/bfm/command/hand_target",
+    "/bfm/state",
+    "/robot/state/joint_states",
+    "/sensors/camera/head/image_raw",
+    "/sensors/camera/left_wrist/image_raw",
+    "/sensors/camera/right_wrist/image_raw",
+]
+
+reader = rosbag2_py.SequentialReader()
+reader.open(
+    rosbag2_py.StorageOptions(uri=BAG, storage_id="mcap"),
+    rosbag2_py.ConverterOptions("", ""),
+PY      print(f"\nACTION #{index}: NOT FOUND"))g.data)}")g.height}")oal_center])ty])y])
+
+
+################################################################################
+ACTION #30
+record_time_ns = 1793196984528188871
+################################################################################
+
+================ /bfm/source/arm_joint_target_rad ================
+record_time_ns    : 1793196984433336925
+age_vs_action_ms  : 94.852
+  zarm_l1_joint    +0.470932
+  zarm_l2_joint    +0.013806
+  zarm_l3_joint    +0.814544
+  zarm_l4_joint    -1.668971
+  zarm_l5_joint    +0.237767
+  zarm_l6_joint    -0.266913
+  zarm_l7_joint    +0.124252
+  zarm_r1_joint    +0.365087
+  zarm_r2_joint    -0.026078
+  zarm_r3_joint    -0.903515
+  zarm_r4_joint    -1.564660
+  zarm_r5_joint    -0.016874
+  zarm_r6_joint    -0.228563
+  zarm_r7_joint    -0.079767
+
+================ /robot_arm_joint_command ================
+record_time_ns    : 1793196984528139093
+age_vs_action_ms  : 0.050
+  zarm_l1_joint    +0.470932
+  zarm_l2_joint    +0.013806
+  zarm_l3_joint    +0.814544
+  zarm_l4_joint    -1.570800
+  zarm_l5_joint    +0.237767
+  zarm_l6_joint    -0.266913
+  zarm_l7_joint    +0.124252
+  zarm_r1_joint    +0.365087
+  zarm_r2_joint    -0.026078
+  zarm_r3_joint    -0.903515
+  zarm_r4_joint    -1.564660
+  zarm_r5_joint    -0.016874
+  zarm_r6_joint    -0.228563
+  zarm_r7_joint    -0.079767
+
+================ /bfm/action ================
+record_time_ns    : 1793196984528188871
+age_vs_action_ms  : 0.000
+left_arm : [0.470932, 0.013806, 0.814544, -1.5708, 0.237767, -0.266913, 0.124252]
+left_hand: [0.0, 100.0, 0.0, 0.0, 0.0, 0.0]
+right_arm: [0.365087, -0.026078, -0.903515, -1.56466, -0.016874, -0.228563, -0.079767]
+right_hand: [0.0, 100.0, 0.0, 0.0, 0.0, 0.0]
+
+================ /bfm/command/hand_target ================
+record_time_ns    : 1793196984528159920
+age_vs_action_ms  : 0.029
+left_hand : [0, 100, 0, 0, 0, 0]
+right_hand: [0, 100, 0, 0, 0, 0]
+
+================ /bfm/state ================
+record_time_ns    : 1793196984486741303
+age_vs_action_ms  : 41.448
+left_eef_position : [0.663405, 4.698041, 0.964869]
+right_eef_position: [0.664701, 3.723237, 0.953142]
+left_arm_position : [0.501357, 0.012169, 0.901569, -1.417717, 0.20621, -0.258505, 0.067204]
+right_arm_position: [0.393686, -0.025269, -0.973149, -1.278847, -0.063006, -0.30509, -0.056318]
+left_arm_velocity : [-0.183067, 0.065669, -0.294679, -1.622568, 0.254488, -0.16071, 0.319322]
+right_arm_velocity: [-0.177003, -0.053183, 0.031289, -2.00609, -0.098071, 0.332724, -0.068005]
+object_position   : [1.054399, 4.051409, 0.801697]
+object_velocity   : [0.0, 0.0, 0.0]
+goal_center       : [1.040893, 4.485648, 0.808869]
+
+================ /robot/state/joint_states ================
+record_time_ns    : 1793196984517178562
+age_vs_action_ms  : 11.010
+  zarm_l1_joint    +0.495300
+  zarm_r1_joint    +0.388600
+  zarm_l2_joint    +0.012300
+  zarm_r2_joint    -0.024900
+  zarm_l3_joint    +0.889700
+  zarm_r3_joint    -0.966200
+  zarm_l4_joint    -1.450700
+  zarm_r4_joint    -1.326000
+  zarm_l5_joint    +0.210000
+  zarm_r5_joint    -0.061300
+  zarm_l6_joint    -0.259900
+  zarm_r6_joint    -0.297000
+  zarm_l7_joint    +0.073600
+  zarm_r7_joint    -0.058000
+
+================ /sensors/camera/head/image_raw ================
+record_time_ns    : 1793196984501662241
+age_vs_action_ms  : 26.527
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+================ /sensors/camera/left_wrist/image_raw ================
+record_time_ns    : 1793196984490359984
+age_vs_action_ms  : 37.829
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+================ /sensors/camera/right_wrist/image_raw ================
+record_time_ns    : 1793196984499081605
+age_vs_action_ms  : 29.107
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+
+################################################################################
+ACTION #100
+record_time_ns = 1793196991528095913
+################################################################################
+
+================ /bfm/source/arm_joint_target_rad ================
+record_time_ns    : 1793196991526900533
+age_vs_action_ms  : 1.195
+  zarm_l1_joint    -0.269981
+  zarm_l2_joint    +0.131922
+  zarm_l3_joint    -0.480136
+  zarm_l4_joint    -1.033903
+  zarm_l5_joint    +0.197884
+  zarm_l6_joint    -0.230097
+  zarm_l7_joint    +0.124252
+  zarm_r1_joint    -0.570641
+  zarm_r2_joint    +0.019942
+  zarm_r3_joint    +0.346680
+  zarm_r4_joint    -0.223961
+  zarm_r5_joint    +0.636602
+  zarm_r6_joint    -0.144194
+  zarm_r7_joint    -0.372757
+
+================ /robot_arm_joint_command ================
+record_time_ns    : 1793196991528047559
+age_vs_action_ms  : 0.048
+  zarm_l1_joint    -0.269981
+  zarm_l2_joint    +0.131922
+  zarm_l3_joint    -0.480136
+  zarm_l4_joint    -1.033903
+  zarm_l5_joint    +0.197884
+  zarm_l6_joint    -0.230097
+  zarm_l7_joint    +0.124252
+  zarm_r1_joint    -0.570641
+  zarm_r2_joint    +0.019942
+  zarm_r3_joint    +0.346680
+  zarm_r4_joint    -0.223961
+  zarm_r5_joint    +0.636602
+  zarm_r6_joint    -0.144194
+  zarm_r7_joint    -0.372757
+
+================ /bfm/action ================
+record_time_ns    : 1793196991528095913
+age_vs_action_ms  : 0.000
+left_arm : [-0.269981, 0.131922, -0.480136, -1.033903, 0.197884, -0.230097, 0.124252]
+left_hand: [0.0, 100.0, 0.0, 0.0, 0.0, 0.0]
+right_arm: [-0.570641, 0.019942, 0.34668, -0.223961, 0.636602, -0.144194, -0.372757]
+right_hand: [0.0, 100.0, 0.0, 0.0, 0.0, 0.0]
+
+================ /bfm/command/hand_target ================
+record_time_ns    : 1793196991528069269
+age_vs_action_ms  : 0.027
+left_hand : [0, 100, 0, 0, 0, 0]
+right_hand: [0, 100, 0, 0, 0, 0]
+
+================ /bfm/state ================
+record_time_ns    : 1793196991481337948
+age_vs_action_ms  : 46.758
+left_eef_position : [0.902137, 4.411732, 0.970676]
+right_eef_position: [0.917996, 3.980145, 0.898568]
+left_arm_position : [-0.272933, 0.132219, -0.482656, -1.023098, 0.190784, -0.232608, 0.13198]
+right_arm_position: [-0.597292, 0.019264, 0.342746, -0.230011, 0.677074, -0.124669, -0.425001]
+left_arm_velocity : [-0.041376, -0.004552, 0.011442, -0.069552, 0.040556, 0.003851, -0.020501]
+right_arm_velocity: [-0.006118, 0.012553, 0.028667, 0.155602, -0.111153, -0.106482, 0.217635]
+object_position   : [1.054417, 4.051402, 0.801693]
+object_velocity   : [0.0, 0.0, 0.0]
+goal_center       : [1.040893, 4.485648, 0.808869]
+
+================ /robot/state/joint_states ================
+record_time_ns    : 1793196991513887554
+age_vs_action_ms  : 14.208
+  zarm_l1_joint    -0.272900
+  zarm_r1_joint    -0.594600
+  zarm_l2_joint    +0.132200
+  zarm_r2_joint    +0.019300
+  zarm_l3_joint    -0.482200
+  zarm_r3_joint    +0.343600
+  zarm_l4_joint    -1.024500
+  zarm_r4_joint    -0.227100
+  zarm_l5_joint    +0.191500
+  zarm_r5_joint    +0.674900
+  zarm_l6_joint    -0.232200
+  zarm_r6_joint    -0.126700
+  zarm_l7_joint    +0.131400
+  zarm_r7_joint    -0.419900
+
+================ /sensors/camera/head/image_raw ================
+record_time_ns    : 1793196991496276829
+age_vs_action_ms  : 31.819
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+================ /sensors/camera/left_wrist/image_raw ================
+record_time_ns    : 1793196991495110802
+age_vs_action_ms  : 32.985
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+================ /sensors/camera/right_wrist/image_raw ================
+record_time_ns    : 1793196991493934946
+age_vs_action_ms  : 34.161
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+
+################################################################################
+ACTION #180
+record_time_ns = 1793196999527968761
+################################################################################
+
+================ /bfm/source/arm_joint_target_rad ================
+record_time_ns    : 1793196999526994608
+age_vs_action_ms  : 0.974
+  zarm_l1_joint    -0.131922
+  zarm_l2_joint    +0.133456
+  zarm_l3_joint    -0.385029
+  zarm_l4_joint    -1.095262
+  zarm_l5_joint    +0.228563
+  zarm_l6_joint    -0.223961
+  zarm_l7_joint    +0.104311
+  zarm_r1_joint    -0.427981
+  zarm_r2_joint    +0.184078
+  zarm_r3_joint    +1.086058
+  zarm_r4_joint    -0.378893
+  zarm_r5_joint    +0.052155
+  zarm_r6_joint    -0.273049
+  zarm_r7_joint    -0.478602
+
+================ /robot_arm_joint_command ================
+record_time_ns    : 1793196999527947180
+age_vs_action_ms  : 0.022
+  zarm_l1_joint    -0.131922
+  zarm_l2_joint    +0.133456
+  zarm_l3_joint    -0.385029
+  zarm_l4_joint    -1.095262
+  zarm_l5_joint    +0.228563
+  zarm_l6_joint    -0.223961
+  zarm_l7_joint    +0.104311
+  zarm_r1_joint    -0.427981
+  zarm_r2_joint    +0.184078
+  zarm_r3_joint    +1.086058
+  zarm_r4_joint    -0.378893
+  zarm_r5_joint    +0.052155
+  zarm_r6_joint    -0.273049
+  zarm_r7_joint    -0.478602
+
+================ /bfm/action ================
+record_time_ns    : 1793196999527968761
+age_vs_action_ms  : 0.000
+left_arm : [-0.131922, 0.133456, -0.385029, -1.095262, 0.228563, -0.223961, 0.104311]
+left_hand: [0.0, 100.0, 0.0, 0.0, 0.0, 0.0]
+right_arm: [-0.427981, 0.184078, 1.086058, -0.378893, 0.052155, -0.273049, -0.478602]
+right_hand: [69.0, 99.0, 42.0, 44.0, 61.0, 60.0]
+
+================ /bfm/command/hand_target ================
+record_time_ns    : 1793196999527955898
+age_vs_action_ms  : 0.013
+left_hand : [0, 100, 0, 0, 0, 0]
+right_hand: [69, 99, 42, 44, 61, 60]
+
+================ /bfm/state ================
+record_time_ns    : 1793196999507327663
+age_vs_action_ms  : 20.641
+left_eef_position : [0.881146, 4.427899, 0.952038]
+right_eef_position: [0.842327, 4.125013, 0.890457]
+left_arm_position : [-0.133368, 0.133703, -0.386704, -1.095119, 0.230451, -0.223016, 0.104247]
+right_arm_position: [-0.426966, 0.182728, 1.099686, -0.378261, 0.051649, -0.254714, -0.477746]
+left_arm_velocity : [-0.001518, -0.002198, 0.02069, -0.047963, -7.7e-05, -0.006839, -0.008092]
+right_arm_velocity: [-0.025803, 0.028412, -0.062146, -0.009115, -0.000104, -0.055344, -0.016049]
+object_position   : [0.724866, 4.303225, 0.752474]
+object_velocity   : [-0.14642, -0.08714, -0.621517]
+goal_center       : [1.044828, 4.496879, 0.80887]
+
+================ /robot/state/joint_states ================
+record_time_ns    : 1793196999493738721
+age_vs_action_ms  : 34.230
+  zarm_l1_joint    -0.133400
+  zarm_r1_joint    -0.427000
+  zarm_l2_joint    +0.133700
+  zarm_r2_joint    +0.182700
+  zarm_l3_joint    -0.386700
+  zarm_r3_joint    +1.099700
+  zarm_l4_joint    -1.095100
+  zarm_r4_joint    -0.378300
+  zarm_l5_joint    +0.230500
+  zarm_r5_joint    +0.051600
+  zarm_l6_joint    -0.223000
+  zarm_r6_joint    -0.254700
+  zarm_l7_joint    +0.104200
+  zarm_r7_joint    -0.477700
+
+================ /sensors/camera/head/image_raw ================
+record_time_ns    : 1793196999522223722
+age_vs_action_ms  : 5.745
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+================ /sensors/camera/left_wrist/image_raw ================
+record_time_ns    : 1793196999521048262
+age_vs_action_ms  : 6.920
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600
+
+================ /sensors/camera/right_wrist/image_raw ================
+record_time_ns    : 1793196999519840496
+age_vs_action_ms  : 8.128
+size              : 640 x 480
+encoding          : rgb8
+step              : 1920
+image_bytes       : 921600

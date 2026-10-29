@@ -1,0 +1,654 @@
+{
+  "schema_version": 1,
+  "source": "sim",
+  "task_id": "sorting_food",
+  "instruction": "Sort the food items into their corresponding containers.",
+  "robot": "kuavo_s40_sharpa",
+  "scene": "s40_sharpa_two_cameras.usd",
+  "success": false,
+  "created_at": "2026-10-28T15:04:27.892625+00:00",
+  "time": {
+    "synchronization_source": "rosbag_record_timestamp",
+    "header_stamp": "source_native"
+  },
+  "recording": {
+    "storage_id": "mcap",
+    "bag_directory": "bag",
+    "topics": [
+      "/robot/command/hand_target",
+      "/robot/command/arm_joint_target",
+      "/data_collection/recording",
+      "/robot/state/joint_states",
+      "/sensors/camera/head/image_raw",
+      "/sensors/camera/left_wrist/image_raw",
+      "/sensors/camera/right_wrist/image_raw",
+      "/clock",
+      "/robot_arm_joint_command",
+      "/left_hand_joint_command",
+      "/right_hand_joint_command",
+      "/bfm/action",
+      "/bfm/state",
+      "/bfm/source/arm_joint_target_rad",
+      "/bfm/command/hand_target",
+      "/bfm/episode"
+    ]
+  },
+  "camera_configuration": {
+    "kind": "saved_repository_usd_snapshot",
+    "repository": "b4r4d41z/Synthetic_data_collection_with_ExoSuit",
+    "repository_commit": "d263821ea10b2e8865c31d13ee97c24bb15254d6",
+    "scene_path": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.usd",
+    "scene_sha256": "c67a615cb3fb22a2c0d722f7b93f69ecf75c3c0af54e79f631b428dd551b72e9",
+    "model_path": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml",
+    "model_sha256": "4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
+    "runtime_verified": false,
+    "notes": "Saved virtual camera configuration, including USD adjustments. Not measured physical calibration or a live-stage capture. Supply camera_metadata_path for a different scene or calibration."
+  },
+  "cameras": {
+    "head": {
+      "topic": "/sensors/camera/head/image_raw",
+      "frame": null,
+      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link/head_camera",
+      "resolution": [
+        640,
+        480
+      ],
+      "intrinsics": {
+        "status": "saved_simulation_optics_not_physical_calibration",
+        "projection": "perspective",
+        "focal_length_mm": 23.999999463558197,
+        "horizontal_aperture_mm": 26.509669423103333,
+        "vertical_aperture_mm": 19.88225132226944,
+        "horizontal_aperture_offset_mm": 0.0,
+        "vertical_aperture_offset_mm": 0.0,
+        "ideal_focal_length_pixels": [
+          579.4112107369742,
+          579.4112324495552
+        ],
+        "camera_matrix": null,
+        "distortion_model": null,
+        "distortion_coefficients": null
+      },
+      "extrinsics": {
+        "status": "rigid_mount_from_saved_usd",
+        "reference_link": "zhead_2_link",
+        "reference_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link",
+        "translation_m": [
+          0.0919101,
+          0.0175,
+          0.0617839
+        ],
+        "quaternion_wxyz": [
+          0.6272114327398242,
+          0.3265054649949238,
+          -0.3265054649949238,
+          -0.6272114326902487
+        ],
+        "convention": "Camera-to-link: p_link = R(quaternion_wxyz) * p_usd_camera + translation_m. USD camera axes: +X right, +Y up, -Z viewing direction. No ROS optical-frame alignment is implied."
+      }
+    },
+    "left_wrist": {
+      "topic": "/sensors/camera/left_wrist/image_raw",
+      "frame": null,
+      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount/left_hand_camera_head/left_hand_camera",
+      "resolution": [
+        640,
+        480
+      ],
+      "intrinsics": {
+        "status": "saved_simulation_optics_not_physical_calibration",
+        "projection": "perspective",
+        "focal_length_mm": 23.999999463558197,
+        "horizontal_aperture_mm": 36.95041835308075,
+        "vertical_aperture_mm": 27.712813019752502,
+        "horizontal_aperture_offset_mm": 0.0,
+        "vertical_aperture_offset_mm": 0.0,
+        "ideal_focal_length_pixels": [
+          415.6921718694588,
+          415.69218304532905
+        ],
+        "camera_matrix": null,
+        "distortion_model": null,
+        "distortion_coefficients": null
+      },
+      "extrinsics": {
+        "status": "rigid_mount_from_saved_usd",
+        "reference_link": "zarm_l7_link",
+        "reference_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link",
+        "translation_m": [
+          0.10545446628735054,
+          -0.012729999891536553,
+          -0.105345534099216
+        ],
+        "quaternion_wxyz": [
+          -0.6470267454448849,
+          0.2474255515931178,
+          -0.25759934420897596,
+          0.6736316240802143
+        ],
+        "convention": "Camera-to-link: p_link = R(quaternion_wxyz) * p_usd_camera + translation_m. USD camera axes: +X right, +Y up, -Z viewing direction. No ROS optical-frame alignment is implied."
+      }
+    },
+    "right_wrist": {
+      "topic": "/sensors/camera/right_wrist/image_raw",
+      "frame": null,
+      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera",
+      "resolution": [
+        640,
+        480
+      ],
+      "intrinsics": {
+        "status": "saved_simulation_optics_not_physical_calibration",
+        "projection": "perspective",
+        "focal_length_mm": 23.999999463558197,
+        "horizontal_aperture_mm": 36.95041835308075,
+        "vertical_aperture_mm": 27.712813019752502,
+        "horizontal_aperture_offset_mm": 0.0,
+        "vertical_aperture_offset_mm": 0.0,
+        "ideal_focal_length_pixels": [
+          415.6921718694588,
+          415.69218304532905
+        ],
+        "camera_matrix": null,
+        "distortion_model": null,
+        "distortion_coefficients": null
+      },
+      "extrinsics": {
+        "status": "rigid_mount_from_saved_usd",
+        "reference_link": "zarm_r7_link",
+        "reference_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link",
+        "translation_m": [
+          0.10545446628735054,
+          0.012729999891536553,
+          -0.105345534099216
+        ],
+        "quaternion_wxyz": [
+          0.653281509876251,
+          -0.27059803221605283,
+          0.27059803221605283,
+          -0.6532814697933854
+        ],
+        "convention": "Camera-to-link: p_link = R(quaternion_wxyz) * p_usd_camera + translation_m. USD camera axes: +X right, +Y up, -Z viewing direction. No ROS optical-frame alignment is implied."
+      }
+    }
+  },
+  "bfm": {
+    "enabled": true,
+    "policy_hz": 10.0,
+    "policy_dt": 0.1,
+    "contract_version": 3,
+    "action_dim": 26,
+    "arm_target_processing": {
+      "clamping_enabled": true,
+      "transformation": "per_joint_saturation",
+      "unit": "rad",
+      "source_topic": "/bfm/source/arm_joint_target_rad",
+      "source_semantics": "requested absolute joint-position target, pre-clamp",
+      "controller_topic": "/robot_arm_joint_command",
+      "controller_semantics": "bounded absolute joint-position target",
+      "canonical_action_topic": "/bfm/action",
+      "canonical_arm_semantics": "same bounded targets as controller command",
+      "joint_limits": {
+        "zarm_l1_joint": [
+          -2.61799,
+          0.523599
+        ],
+        "zarm_l2_joint": [
+          -0.349066,
+          2.0944
+        ],
+        "zarm_l3_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_l4_joint": [
+          -1.5708,
+          0.0
+        ],
+        "zarm_l5_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_l6_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_l7_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r1_joint": [
+          -2.61799,
+          0.523599
+        ],
+        "zarm_r2_joint": [
+          -2.0944,
+          0.349066
+        ],
+        "zarm_r3_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r4_joint": [
+          -1.5708,
+          0.0
+        ],
+        "zarm_r5_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r6_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r7_joint": [
+          -1.5708,
+          1.5708
+        ]
+      },
+      "bounds_source": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml",
+      "bounds_source_sha256": "4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
+      "model_revision": "sha256:4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
+      "boundary": "BfmActionGateway.policy_tick after input validation"
+    },
+    "action_group_order": [
+      "left_arm",
+      "left_hand",
+      "right_arm",
+      "right_hand"
+    ],
+    "action_topic": "/bfm/action",
+    "action_semantics": {
+      "left_arm": {
+        "dim": 7,
+        "type": "bounded_absolute_joint_position_target",
+        "unit": "rad",
+        "joint_names": [
+          "zarm_l1_joint",
+          "zarm_l2_joint",
+          "zarm_l3_joint",
+          "zarm_l4_joint",
+          "zarm_l5_joint",
+          "zarm_l6_joint",
+          "zarm_l7_joint"
+        ]
+      },
+      "left_hand": {
+        "dim": 6,
+        "type": "logical_hand_target",
+        "unit": "controller_0_100",
+        "range": [
+          0,
+          100
+        ],
+        "value_order": [
+          "left_hand_position[0]",
+          "left_hand_position[1]",
+          "left_hand_position[2]",
+          "left_hand_position[3]",
+          "left_hand_position[4]",
+          "left_hand_position[5]"
+        ],
+        "controller": "eff_control_node (existing Sharpa mapping)"
+      },
+      "right_arm": {
+        "dim": 7,
+        "type": "bounded_absolute_joint_position_target",
+        "unit": "rad",
+        "joint_names": [
+          "zarm_r1_joint",
+          "zarm_r2_joint",
+          "zarm_r3_joint",
+          "zarm_r4_joint",
+          "zarm_r5_joint",
+          "zarm_r6_joint",
+          "zarm_r7_joint"
+        ]
+      },
+      "right_hand": {
+        "dim": 6,
+        "type": "logical_hand_target",
+        "unit": "controller_0_100",
+        "range": [
+          0,
+          100
+        ],
+        "value_order": [
+          "right_hand_position[0]",
+          "right_hand_position[1]",
+          "right_hand_position[2]",
+          "right_hand_position[3]",
+          "right_hand_position[4]",
+          "right_hand_position[5]"
+        ],
+        "controller": "eff_control_node (existing Sharpa mapping)"
+      }
+    },
+    "recorded_signal_roles": {
+      "raw_inputs": [
+        "/robot/command/arm_joint_target",
+        "/robot/command/hand_target"
+      ],
+      "policy_inputs": [
+        "/bfm/source/arm_joint_target_rad",
+        "/robot/command/hand_target"
+      ],
+      "held_commands": [
+        "/robot_arm_joint_command",
+        "/bfm/command/hand_target"
+      ],
+      "executed_command_replay": [
+        "/robot_arm_joint_command",
+        "/left_hand_joint_command",
+        "/right_hand_joint_command"
+      ],
+      "measured_robot_state": "/robot/state/joint_states",
+      "canonical_action": "/bfm/action",
+      "canonical_state": "/bfm/state"
+    },
+    "task_state": {
+      "topic": "/bfm/state",
+      "frame": "world",
+      "position_unit": "m",
+      "velocity_unit": "m/s",
+      "linear_velocity_unit": "m/s",
+      "angular_velocity_unit": "rad/s",
+      "half_extents_unit": "m",
+      "quaternion_convention": "xyzw; goal-local axes relative to frame",
+      "goal_local_orientation_convention": "xyzw; goal-local axes relative to container body",
+      "goal_half_extents_axes": "goal-local X/Y/Z",
+      "object_position_reference": "live PhysX center of mass",
+      "goal_representation": "oriented_bounding_box",
+      "arm_proprioception": {
+        "source": "live PhysX articulation DOF positions/velocities",
+        "position_unit": "rad",
+        "velocity_unit": "rad/s",
+        "left_joint_names": [
+          "zarm_l1_joint",
+          "zarm_l2_joint",
+          "zarm_l3_joint",
+          "zarm_l4_joint",
+          "zarm_l5_joint",
+          "zarm_l6_joint",
+          "zarm_l7_joint"
+        ],
+        "right_joint_names": [
+          "zarm_r1_joint",
+          "zarm_r2_joint",
+          "zarm_r3_joint",
+          "zarm_r4_joint",
+          "zarm_r5_joint",
+          "zarm_r6_joint",
+          "zarm_r7_joint"
+        ]
+      },
+      "hand_proprioception": {
+        "source": "/robot/state/joint_states",
+        "semantics": "measured physical finger joint positions/velocities by joint name",
+        "logical_hand_targets": "commands only, recorded in /bfm/action"
+      },
+      "reference_prim_path": "/",
+      "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
+      "object_prim_path": "/World/Task/Fruits/orange2",
+      "container_prim_path": "/World/container_b04",
+      "goal_local_center": [
+        -0.08494214117424082,
+        0.0,
+        0.05886988293797252
+      ],
+      "goal_half_extents": [
+        0.118,
+        0.068,
+        0.017130117062027467
+      ],
+      "goal_local_orientation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "left_eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC",
+      "articulation_prim_path": "/World/s40_sharpa_two_cameras/fix_base_joint",
+      "configured": true,
+      "scene_configuration": {
+        "file": "/workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim/build/isaac_eff_control/isaac_eff_control/sorting_scene.json",
+        "sha256": "0f15223c6f53f9fa3cab5e16386fa1472b3ef3bd49e4b84ed73136a3863b7b3e",
+        "scene": "models/stages/stage_sorting_v1.usd",
+        "provenance": {
+          "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
+          "scene_sha256": "3772e5b394d5438bcb7fc372df69033e67b5e4789d1f6b8bcd76e40c4baa3d4e",
+          "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
+          "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
+          "robot_root": "/World/s40_sharpa_two_cameras",
+          "required_robot_physics_variant": "physx",
+          "container_mesh": "/World/container_b04/Container_B04_01",
+          "container_mesh_to_body_translation_m": [
+            -0.08494214117424082,
+            0.0,
+            0.0
+          ],
+          "interior_floor_mesh_z_m": 0.010474557988345623,
+          "rim_mesh_z_m": 0.1199781745672226,
+          "conservative_interior_mesh_min_m": [
+            -0.16,
+            -0.11,
+            0.011
+          ],
+          "conservative_interior_mesh_max_m": [
+            0.16,
+            0.11,
+            0.118
+          ],
+          "clearance_radius_m": 0.039,
+          "safety_margin_m": 0.003,
+          "quaternion_convention": "xyzw; local goal axes relative to container body",
+          "method": "Original fixed goal OBB retained: measured container interior, historical 39 mm clearance plus 3 mm margin and support-based floor bound. No fruit-specific goal recalibration in the randomized runtime.",
+          "object_position_semantics": "Live PhysX center of mass and linear velocity of the episode-selected fruit pool rigid body (episode.object_prim_path).",
+          "runtime_verified": false,
+          "floor_contact_tolerance_m": 0.003,
+          "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
+          "minimum_support_radius_m": 0.03426520788759943,
+          "fruit_pool_asset": "models/stages/fruit_pool.usda",
+          "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289"
+        },
+        "randomization": {
+          "object_assets": [
+            "models/addons/objects/fruits_veggies/avocado.usd",
+            "models/addons/objects/fruits_veggies/lemon1.usd",
+            "models/addons/objects/fruits_veggies/pomegranate.usd",
+            "models/addons/objects/fruits_veggies/orange2.usd"
+          ],
+          "object_spawn_region": {
+            "x_min": 0.95,
+            "x_max": 1.1,
+            "y_min": 3.99,
+            "y_max": 4.12
+          },
+          "container_offset_region": {
+            "x_min": -0.06,
+            "x_max": 0.06,
+            "y_min": -0.06,
+            "y_max": 0.06
+          },
+          "table_prim_path": "/World/SM_SecretaryDeskA",
+          "yaw_min": -3.141592653589793,
+          "yaw_max": 3.141592653589793,
+          "seed": null,
+          "max_attempts": 100,
+          "clearance_m": 0.005,
+          "edge_margin_m": 0.025,
+          "obstacle_margin_m": 0.03,
+          "surface_tolerance_m": 0.002,
+          "placement_provenance": {
+            "baseline_commit": "e2350a71fa6ef9f14adc83e6cf349e27e076b783",
+            "reference_object_xy_m": [
+              1.023983120918274,
+              4.038509845733643
+            ],
+            "container_origin_xy_m": [
+              1.0898085832595825,
+              4.441446304321289
+            ],
+            "method": "Small 15 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
+            "container_method": "Translation only: +/-60 mm around template origin (1.08980858, 4.44144630, 0.74999952) m. This is a requested 120 x 120 mm candidate offset region around the known valid pose, not a certified safe region; all support and collision checks remain mandatory. Preserve template rotation and Z. Reject unless footprint plus 25 mm margin is supported at the original height and clears robot colliders by 30 mm. Place fruit against the new container bounds. External table support still requires Isaac runtime validation.",
+            "table_geometry_host_verified": false,
+            "isaac_runtime_verified": false
+          }
+        },
+        "runtime_verified": false
+      },
+      "runtime_verified": false
+    },
+    "episode": {
+      "episode_id": "689479e7a2a3456baf6d6c1870841781",
+      "asset": "orange2.usd",
+      "asset_path": "models/addons/objects/fruits_veggies/orange2.usd",
+      "object_prim_path": "/World/Task/Fruits/orange2",
+      "position": [
+        0.9971286780607678,
+        4.0254454511211994,
+        0.7550594996547851
+      ],
+      "yaw": 3.0889338569321136,
+      "orientation_xyzw": [
+        0.0,
+        0.0,
+        0.9996534014154346,
+        0.026326356347814567
+      ],
+      "body_poses": {
+        "/World/Task/Fruits/avocado": [
+          100.0,
+          100.0,
+          1.9298255373677238,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "/World/Task/Fruits/lemon1": [
+          102.0,
+          100.0,
+          1.9288761094165965,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "/World/Task/Fruits/pomegranate": [
+          104.0,
+          100.0,
+          1.9302100912563036,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "/World/Task/Fruits/orange2": [
+          0.9971286780607678,
+          4.0254454511211994,
+          0.7550594996547851,
+          0.0,
+          0.0,
+          0.9996534014154346,
+          0.026326356347814567
+        ],
+        "/World/container_b04": [
+          1.1353615133325978,
+          4.425325857535942,
+          0.7499995231628418,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "parking_positions": {
+        "/World/Task/Fruits/avocado": [
+          100.0,
+          100.0,
+          1.9298255373677238
+        ],
+        "/World/Task/Fruits/lemon1": [
+          102.0,
+          100.0,
+          1.9288761094165965
+        ],
+        "/World/Task/Fruits/pomegranate": [
+          104.0,
+          100.0,
+          1.9302100912563036
+        ]
+      },
+      "container_prim_path": "/World/container_b04",
+      "container_position": [
+        1.1353615133325978,
+        4.425325857535942,
+        0.7499995231628418
+      ],
+      "container_offset": [
+        0.045552930073015224,
+        -0.016120446785347263,
+        0.0
+      ],
+      "container_transform": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.1353615133325978,
+          4.425325857535942,
+          0.7499995231628418,
+          1.0
+        ]
+      ]
+    }
+  },
+  "success_evaluation": {
+    "method": "final_object_position_in_goal_obb",
+    "episode_id": "689479e7a2a3456baf6d6c1870841781",
+    "object_prim_path": "/World/Task/Fruits/orange2",
+    "evaluated_at": "2026-10-28T15:05:01.992737+00:00",
+    "object_position": [
+      1.0146120143839434,
+      4.514554205225894,
+      0.7938533134273856
+    ],
+    "goal_center": [
+      1.0701118085406025,
+      4.606423194272491,
+      0.8088643514314761
+    ],
+    "goal_half_extents": [
+      0.118,
+      0.068,
+      0.017130117062027467
+    ],
+    "goal_orientation": [
+      -2.4277248229634762e-05,
+      -2.1811089344762085e-06,
+      0.005988143097061061,
+      0.9999820706133221
+    ],
+    "state_age_sec": 0.010733282004366629,
+    "review_required": false
+  }
+}

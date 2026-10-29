@@ -5,8 +5,8 @@
   "instruction": "Sort the food items into their corresponding containers.",
   "robot": "kuavo_s40_sharpa",
   "scene": "s40_sharpa_two_cameras.usd",
-  "success": null,
-  "created_at": "2026-10-28T03:08:56.824891+00:00",
+  "success": false,
+  "created_at": "2026-10-28T14:16:21.145279+00:00",
   "time": {
     "synchronization_source": "rosbag_record_timestamp",
     "header_stamp": "source_native"
@@ -179,8 +179,81 @@
     "enabled": true,
     "policy_hz": 10.0,
     "policy_dt": 0.1,
-    "contract_version": 2,
+    "contract_version": 3,
     "action_dim": 26,
+    "arm_target_processing": {
+      "clamping_enabled": true,
+      "transformation": "per_joint_saturation",
+      "unit": "rad",
+      "source_topic": "/bfm/source/arm_joint_target_rad",
+      "source_semantics": "requested absolute joint-position target, pre-clamp",
+      "controller_topic": "/robot_arm_joint_command",
+      "controller_semantics": "bounded absolute joint-position target",
+      "canonical_action_topic": "/bfm/action",
+      "canonical_arm_semantics": "same bounded targets as controller command",
+      "joint_limits": {
+        "zarm_l1_joint": [
+          -2.61799,
+          0.523599
+        ],
+        "zarm_l2_joint": [
+          -0.349066,
+          2.0944
+        ],
+        "zarm_l3_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_l4_joint": [
+          -1.5708,
+          0.0
+        ],
+        "zarm_l5_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_l6_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_l7_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r1_joint": [
+          -2.61799,
+          0.523599
+        ],
+        "zarm_r2_joint": [
+          -2.0944,
+          0.349066
+        ],
+        "zarm_r3_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r4_joint": [
+          -1.5708,
+          0.0
+        ],
+        "zarm_r5_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r6_joint": [
+          -1.5708,
+          1.5708
+        ],
+        "zarm_r7_joint": [
+          -1.5708,
+          1.5708
+        ]
+      },
+      "bounds_source": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml",
+      "bounds_source_sha256": "4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
+      "model_revision": "sha256:4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
+      "boundary": "BfmActionGateway.policy_tick after input validation"
+    },
     "action_group_order": [
       "left_arm",
       "left_hand",
@@ -191,7 +264,7 @@
     "action_semantics": {
       "left_arm": {
         "dim": 7,
-        "type": "absolute_joint_position_target",
+        "type": "bounded_absolute_joint_position_target",
         "unit": "rad",
         "joint_names": [
           "zarm_l1_joint",
@@ -223,7 +296,7 @@
       },
       "right_arm": {
         "dim": 7,
-        "type": "absolute_joint_position_target",
+        "type": "bounded_absolute_joint_position_target",
         "unit": "rad",
         "joint_names": [
           "zarm_r1_joint",
@@ -342,7 +415,7 @@
       "configured": true,
       "scene_configuration": {
         "file": "/workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim/build/isaac_eff_control/isaac_eff_control/sorting_scene.json",
-        "sha256": "13df3c57daa72598bec27af957b4e280e2be025c9995b768d2e9fbe3032ccf7b",
+        "sha256": "0f15223c6f53f9fa3cab5e16386fa1472b3ef3bd49e4b84ed73136a3863b7b3e",
         "scene": "models/stages/stage_sorting_v1.usd",
         "provenance": {
           "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
@@ -379,7 +452,7 @@
           "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
           "minimum_support_radius_m": 0.03426520788759943,
           "fruit_pool_asset": "models/stages/fruit_pool.usda",
-          "fruit_pool_sha256": "31826aadfc5f1810d0f6d713377670c214e8404007a7ac7e04ace9dd3f2359b8"
+          "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289"
         },
         "randomization": {
           "object_assets": [
@@ -430,21 +503,21 @@
       "runtime_verified": false
     },
     "episode": {
-      "episode_id": "796428b22e824e489eddc42c3cd480cd",
+      "episode_id": "f83d859ae16b449aa4293d5c05c35dcc",
       "asset": "pomegranate.usd",
       "asset_path": "models/addons/objects/fruits_veggies/pomegranate.usd",
       "object_prim_path": "/World/Task/Fruits/pomegranate",
       "position": [
-        1.0776149143658016,
-        4.060187484546511,
-        0.7552097209562568
+        1.0582893418918722,
+        4.0557476054794135,
+        0.7552097253876471
       ],
-      "yaw": 1.1074644061457457,
+      "yaw": -0.6425750583450971,
       "orientation_xyzw": [
-        0.0,
-        0.0,
-        0.525865375845099,
-        0.8505678141613947
+        -0.0,
+        -0.0,
+        -0.3157884678374524,
+        0.9488296177822836
       ],
       "body_poses": {
         "/World/Task/Fruits/avocado": [
@@ -466,13 +539,13 @@
           1.0
         ],
         "/World/Task/Fruits/pomegranate": [
-          1.0776149143658016,
-          4.060187484546511,
-          0.7552097209562568,
-          0.0,
-          0.0,
-          0.525865375845099,
-          0.8505678141613947
+          1.0582893418918722,
+          4.0557476054794135,
+          0.7552097253876471,
+          -0.0,
+          -0.0,
+          -0.3157884678374524,
+          0.9488296177822836
         ],
         "/World/Task/Fruits/orange2": [
           106.0,
@@ -484,8 +557,8 @@
           1.0
         ],
         "/World/container_b04": [
-          1.110334858917662,
-          4.395184622026127,
+          1.1286660543870273,
+          4.488093801107531,
           0.7499995231628418,
           0.0,
           0.0,
@@ -512,13 +585,13 @@
       },
       "container_prim_path": "/World/container_b04",
       "container_position": [
-        1.110334858917662,
-        4.395184622026127,
+        1.1286660543870273,
+        4.488093801107531,
         0.7499995231628418
       ],
       "container_offset": [
-        0.02052627565807956,
-        -0.046261682295162,
+        0.038857471127444795,
+        0.046647496786241915,
         0.0
       ],
       "container_transform": [
@@ -541,12 +614,41 @@
           0.0
         ],
         [
-          1.110334858917662,
-          4.395184622026127,
+          1.1286660543870273,
+          4.488093801107531,
           0.7499995231628418,
           1.0
         ]
       ]
     }
+  },
+  "success_evaluation": {
+    "method": "final_object_position_in_goal_obb",
+    "episode_id": "f83d859ae16b449aa4293d5c05c35dcc",
+    "object_prim_path": "/World/Task/Fruits/pomegranate",
+    "evaluated_at": "2026-10-28T14:16:43.342974+00:00",
+    "object_position": [
+      0.726888210981143,
+      4.306295565478921,
+      0.06493046980117918
+    ],
+    "goal_center": [
+      1.0448280894391966,
+      4.496878761271398,
+      0.8088693699732773
+    ],
+    "goal_half_extents": [
+      0.118,
+      0.068,
+      0.017130117062027467
+    ],
+    "goal_orientation": [
+      -5.191177700554608e-07,
+      5.038143841765946e-07,
+      -0.028060210203700833,
+      0.9996062347758745
+    ],
+    "state_age_sec": 0.04003164999448927,
+    "review_required": false
   }
 }
