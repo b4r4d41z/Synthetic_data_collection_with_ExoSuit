@@ -1,6 +1,6 @@
 """10 Hz sample-and-hold after arm mapping and before hand interpolation.
 
-Only timer ticks forward commands in BFM mode; source callbacks only buffer.
+Only simulation-clock ticks forward commands in BFM mode; source callbacks only buffer.
 Run with the default single-threaded executor so a tick is one snapshot.
 """
 
@@ -13,10 +13,13 @@ from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from dynamic_biped.msg import BfmAction, RobotHandPosition
 from sensor_msgs.msg import JointState
+from rosgraph_msgs.msg import Clock
+
+from .sim_policy_clock import SimPolicyClock
 
 from .bfm_contract import (
     ACTION_TOPIC, ARM_JOINTS, ARM_SOURCE_TOPIC, HELD_ARM_TOPIC, HELD_HAND_TOPIC,
-    POLICY_DT, RAW_HAND_TOPIC, LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, collection_enabled, arm_target_processing,
+    RAW_HAND_TOPIC, LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, collection_enabled, arm_target_processing,
 )
 
 
@@ -47,10 +50,18 @@ class BfmActionGateway(Node):
             RobotHandPosition, os.getenv("HAND_INPUT_TOPIC", RAW_HAND_TOPIC),
             self.hand_callback, hand_qos,
         )
-        self.timer = self.create_timer(POLICY_DT, self.policy_tick)
+        self.policy_clock = SimPolicyClock()
+        self.create_subscription(Clock, '/clock', self.clock_callback,
+                                 QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1000,
+                                            reliability=ReliabilityPolicy.BEST_EFFORT))
         self.get_logger().info(
             "BFM 10 Hz gateway: bounded arm + raw hand -> held commands + /bfm/action"
         )
+
+    def clock_callback(self, msg):
+        stamp = msg.clock
+        if self.policy_clock.advance(stamp.sec * 1_000_000_000 + stamp.nanosec):
+            self.policy_tick(stamp)
 
     def arm_callback(self, msg):
         if (len(msg.name) != 14 or len(msg.position) != 14 or len(set(msg.name)) != 14
@@ -76,7 +87,7 @@ class BfmActionGateway(Node):
             return
         self.hand = deepcopy(msg)
 
-    def policy_tick(self):
+    def policy_tick(self, simulation_stamp=None):
         if not self.enabled:
             return
         if self.arm is None or self.hand is None:
@@ -94,7 +105,8 @@ class BfmActionGateway(Node):
                         for name, value in zip(arm.name, arm.position)]
         positions = dict(zip(arm.name, arm.position))
         action = BfmAction()
-        action.header.stamp = self.get_clock().now().to_msg()
+        action.header.stamp = (deepcopy(simulation_stamp) if simulation_stamp is not None
+                               else self.get_clock().now().to_msg())
         action.left_arm_joint_names = list(LEFT_ARM_JOINTS)
         action.left_arm_target = [positions[name] for name in LEFT_ARM_JOINTS]
         action.left_hand_target = [float(value) for value in hand.left_hand_position]

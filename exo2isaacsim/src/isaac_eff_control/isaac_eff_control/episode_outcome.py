@@ -51,7 +51,7 @@ def final_position_outcome(state):
 
 
 def atomic_outcome_update(path, outcome, identity):
-    """Preserve all sidecar fields except success and its evaluation audit."""
+    """Preserve sidecar fields except the explicit result and its evaluation audit."""
     path = Path(path)
     metadata = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(metadata, dict):
@@ -61,10 +61,13 @@ def atomic_outcome_update(path, outcome, identity):
     if not isinstance(episode, dict):
         episode = {}
     if (episode.get("episode_id"), episode.get("object_prim_path")) != identity:
-        outcome = {"success": None, "success_evaluation": {
+        outcome = {**outcome, "terminal": False, "end_reason": "error",
+                   "success": None, "success_evaluation": {
             **outcome["success_evaluation"], "review_required": True,
             "reason": "Sidecar episode/object identity mismatch"}}
-    metadata["success"] = outcome["success"]
+    for key in ("result_schema_version", "terminal", "end_reason", "success"):
+        if key in outcome:
+            metadata[key] = outcome[key]
     metadata["success_evaluation"] = outcome["success_evaluation"]
     temporary = None
     try:

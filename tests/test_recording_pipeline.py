@@ -109,6 +109,7 @@ def ros_stubs(overrides):
             "rclpy", "rclpy.node", "rclpy.qos", "rclpy.executors",
             "rospy", "zmq", "std_msgs", "std_msgs.msg",
             "sensor_msgs", "sensor_msgs.msg", "dynamic_biped", "dynamic_biped.msg",
+            "rosgraph_msgs", "rosgraph_msgs.msg",
         )
     }
     modules["rclpy.node"].Node = Node
@@ -122,6 +123,7 @@ def ros_stubs(overrides):
     qos.ReliabilityPolicy = SimpleNamespace(RELIABLE="reliable", BEST_EFFORT="best_effort")
     qos.DurabilityPolicy = SimpleNamespace(TRANSIENT_LOCAL="transient_local")
     qos.HistoryPolicy = SimpleNamespace(KEEP_LAST="keep_last")
+    modules["rosgraph_msgs.msg"].Clock = Message
     modules["std_msgs.msg"].Bool = Bool
     modules["std_msgs.msg"].String = Message
     modules["sensor_msgs.msg"].JointState = Message
@@ -159,6 +161,10 @@ class RecordingPipelineTests(unittest.TestCase):
             "test_sim_recorder",
             "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/sim_recorder.py",
         )
+        provenance = patch.object(self.recorder, 'recording_code_provenance', return_value={
+            'repository': 'fixture', 'status': 'unavailable', 'commit_sha': None,
+            'dirty': None, 'dirty_sha256': None})
+        provenance.start(); self.addCleanup(provenance.stop)
         self.ros1 = load_module(
             "test_ros1_receiver", "docker/exo_ros_bridge/ros1/bridge/ros1_receiver.py"
         )
@@ -285,7 +291,7 @@ class RecordingPipelineTests(unittest.TestCase):
         for name, camera in metadata["cameras"].items():
             self.assertEqual(camera["topic"], f"/sensors/camera/{name}/image_raw")
             self.assertEqual(camera["resolution"], [640, 480])
-            self.assertIsNone(camera["frame"])
+            self.assertEqual(camera["frame"], f"{name}_camera")
             self.assertIsNone(camera["intrinsics"]["camera_matrix"])
             self.assertIsNone(camera["intrinsics"]["distortion_coefficients"])
             self.assertGreater(camera["intrinsics"]["focal_length_mm"], 0)
@@ -753,7 +759,8 @@ class RecordingPipelineTests(unittest.TestCase):
         _, gateway = self.make_gateway()
         gateway.arm_callback(self.arm_source())
         gateway.hand_callback(self.hand_source())
-        self.assertEqual(gateway.timer.period, .1)
+        self.assertEqual(gateway.policy_clock.period_ns, 100_000_000)
+        self.assertEqual(gateway.timers, [])
         gateway.policy_tick()
         first = gateway.hand_pub.publish.call_args.args[0]
         arm = self.arm_source()

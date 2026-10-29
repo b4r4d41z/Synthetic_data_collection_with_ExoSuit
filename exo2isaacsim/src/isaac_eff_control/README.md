@@ -49,8 +49,9 @@ messages directly to the Articulation Controllers would bypass that conversion.
 Open `models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.usd` for the current
 scene. Its `Control_ActionGraph` camera helpers publish the three semantic image
 topics; `Data_collection_ActionGraph` publishes `/robot/state/joint_states`.
-Only their topic-name attributes change; `/clock`, graph wiring, camera frames,
-optics, timestamps, and robot parameters are preserved. Reopen the saved scene
+The collection extension now adds session-only camera frame IDs and drives the
+existing `/clock` publisher from physics steps. Camera triggers, optics and
+robot parameters are preserved. Reopen the saved scene
 after updating it; an already-open stage may retain its previous layer.
 
 The existing launch scripts use these new defaults without ROS1 changes.
@@ -193,8 +194,9 @@ to that link, using translation in meters and a `wxyz` camera-to-link quaternion
 They imply no alignment to a ROS optical frame.
 
 These are saved simulation parameters, not measured physical calibration or a
-live-stage query (`runtime_verified` is false). ROS frame IDs, calibrated camera
-matrices, and distortion parameters are unavailable and explicitly `null`.
+live-stage query (`runtime_verified` is false). The collection extension authors
+the documented distinct frame IDs; calibrated camera matrices and distortion
+parameters remain unavailable and explicitly `null`.
 The ideal focal lengths in pixels are derived from the saved focal length,
 apertures, and render resolution; no principal point or distortion is invented.
 In particular, the head camera's original MJCF FOV was an uncalibrated default.
@@ -338,7 +340,7 @@ ROS1 -> existing ZMQ bridge -> raw ROS2 arm + hand targets
                                                existing Isaac graph
 ```
 
-Source callbacks only update buffers. Every 100 ms a timer snapshots the
+Source callbacks only update buffers. Every 0.1 simulation seconds `/clock` triggers a snapshot of the
 latest valid full arm and full hand targets, forwards them, and publishes the
 same bimanual snapshot as `/bfm/action`. Between policy ticks the high-level
 targets stay held; the low-level hand trajectory continues. In BFM mode the
@@ -384,7 +386,7 @@ Hand values preserve `left_hand_position[0..5]` and `right_hand_position[0..5]`
 in controller units 0..100. The controller maps channel 0 to thumb MCP/IP,
 1 to thumb CMC FE/AA, and 2..5 to index/middle/ring/pinky. These six values are
 commands, not measured finger angles. No hand deg2rad or gripper normalization
-is introduced. One existing 10 Hz timer snapshots both buffered messages and
+is introduced. One simulation-time 10 Hz scheduler snapshots both buffered messages and
 publishes all four action groups from the exact data forwarded to held commands.
 Separate ROS messages are still not a DDS transaction or execution acknowledgement.
 
@@ -396,8 +398,7 @@ source. Raw inputs, mapped pre-hold arms, held logical hands, canonical actions,
 executed commands and measured state have distinct semantics, so their recorded
 topics are not redundant aliases. No replay tool is added by this change.
 
-New action headers use the gateway ROS clock (wall time by default, simulation
-time if `use_sim_time` is explicitly enabled). Forwarded command headers are
+New action headers use the selected `/clock` simulation-time sample. Forwarded command headers are
 preserved, including the existing mapped-arm timestamp behavior. Raw input
 headers are unchanged. Task-state headers use simulation time. The timestamp
 contract above remains authoritative: cross-topic synchronization uses the
@@ -1016,3 +1017,129 @@ Confirm the full measured finger state remains on `/robot/state/joint_states`.
 Start/stop via the existing recording
 Bool and inspect `ros2 bag info record_NAME/bag` and `episode.json`. Real
 Isaac PhysX/DDS/MCAP execution requires these checks; mocks cannot certify it.
+
+
+## Recording provenance, results and clock domains
+
+These additive metadata fields apply only to new recordings. Contract v3 and
+its 26D action values/order remain unchanged. Existing samples are not rewritten.
+
+`episode.json.recording_code` identifies the executing Synthetic checkout, not
+robot/asset revisions. It contains `repository`, full `commit_sha`, `dirty`, and
+`dirty_sha256`. The latter hashes the length-prefixed binary/full-index diff
+against HEAD plus sorted untracked paths, kinds, modes and contents (symlinks
+hash their targets without following them). Ignored build/recording artifacts
+are excluded by Git. Staging a change does not alter its working-tree identity.
+`executing_module_sha256` also hashes the running recorder's module file. The
+module path locates the checkout, independent of the current directory; a stale
+installed copy differing from source, missing Git or wrong repository produces
+`status: unavailable`, null Git fields and an explanation. Keep code immutable
+while recording. Lifecycle events snapshot their producer's provenance; recorder
+events carry the same per-recording snapshot as the sidecar.
+
+Result schema version 1 adds these top-level sidecar fields:
+
+| Field | Meaning |
+|---|---|
+| `terminal` | Boolean: an actual task terminal condition was declared. Never inferred from stopping a bag. |
+| `end_reason` | Null while recording; `user_stop` for the recording toggle/timeline STOP, `interrupted` for pause/close/shutdown, `aborted` for a replaced episode, `error` for failed control/bag/identity checks. |
+| `success` | Existing final-position-in-goal-OBB label: true, false or null if unavailable. False is an evaluated position failure, not an inferred terminal failure. |
+
+The current operator-driven workflow declares no automatic task terminal
+conditions, so it emits `terminal: false`, including an inside-goal manual stop.
+A converter must not interpret that combination as terminal task success.
+A true terminal result would require an explicit task condition (with a matching
+success/failure reason); this patch adds no such condition or automatic stop.
+`success_evaluation` retains the existing method, audit and unknown-state reason.
+Atomic sidecar replacement, finalization/escalation and STOP acknowledgement
+ordering are unchanged; shutdown uses `interrupted`, not a fabricated task failure.
+
+`/bfm/episode` remains diagnostics; only `/bfm/recorder_control` controls the
+recorder. Existing phase/identity events gain provenance, clock definitions and
+nonterminal/null result fields. Recorder events add `event_schema_version: 1`,
+`event_type`, `recording_id`, `episode`, `event_wall_time`, and `result_final`:
+`recording_started`, `recording_end_requested` (frozen, provisional result before
+SIGINT), then `recording_result` (final, after successful atomic sidecar save).
+The MCAP can receive the retained start/request events through its existing
+subscription. DDS delivery at shutdown is not a durable write acknowledgement;
+the final event is published after rosbag finalizes and is not guaranteed in that
+same MCAP. **The finalized episode.json is authoritative** for conversion,
+including changes caused by bag errors; never treat a provisional MCAP event as
+final or overwrite it with a guessed failure. Missing events do not erase the
+sidecar result. No MCAP contents or timestamps are rewritten/appended afterward.
+
+`clock_domains` in the sidecar/events explicitly describes each domain. The
+existing `time.synchronization_source = rosbag_record_timestamp` remains:
+
+| Signal/field | Clock |
+|---|---|
+| MCAP receive/log time | rosbag2 default system receive time, without `--use-sim-time`; cross-topic synchronization |
+| `/clock.clock` | Existing IsaacReadSimulationTime clock, now triggered by physics steps; existing stop-reset default retained |
+| `/bfm/action.header.stamp` | Selected `/clock` sample at decision generation; not controller application acknowledgement |
+| `/bfm/state.header.stamp` | Isaac timeline time in the existing physics callback; do not assume its epoch equals `/clock` |
+| `/robot/state/joint_states` header | Saved graph IsaacReadSimulationTime; joint sensor simulation `sensorTime` remains separate |
+| Image headers | Existing camera-helper simulation time; render cadence unchanged |
+| Raw bridge headers | Source-native ROS1/ExoSuit time, preserved |
+| Mapped arm/finger headers | Their producer node's ROS clock (system by default); held command headers preserve their source |
+| `created_at`, directory name, `event_wall_time`, `evaluated_at` | System wall time; ISO8601 fields include timezone offsets |
+| Outcome state receive age | Recorder-local monotonic time, unrelated to simulation progress |
+
+The gateway has no wall timer. A dedicated `OnPhysicsStep` node drives only the
+existing clock publisher's execution input; other graph triggers do not change.
+The gateway uses integer deadlines spaced by 100,000,000 ns of `/clock` time
+(`policy_dt`/`policy_hz` retain their names, now explicitly simulation units).
+Startup and backward clock jumps rebase and wait a full period; duplicate/frozen
+clock samples produce no decisions during pause. Missing multiple deadlines
+produces one current decision, never a replay burst. Deadlines do not accumulate
+floating-point drift. Execution is quantized to the first physics clock sample
+at/after the deadline: exactly 0.1 s when the physics step divides that period,
+otherwise within one physics step. No timestep/solver settings are changed.
+ROS transport/executor latency remains asynchronous; this is a logical simulation
+cadence, not a hard real-time guarantee of actuator application.
+
+Camera topics map to `head_camera`, `left_wrist_camera`, `right_wrist_camera`.
+These are stable unique identities; naming does not imply measured/calibrated
+ROS optical extrinsics. Only `frameId` is overridden in the session layer.
+
+### Isaac-container validation still required
+
+Rebuild the two packages once, then use the existing two launch scripts:
+
+```bash
+cd /workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select dynamic_biped isaac_eff_control
+source install/setup.bash
+cd ..
+# Terminal 1: bash launch_bfm_isaac.sh
+# Terminal 2: bash start_isaac_control.sh
+```
+
+In an additional sourced diagnostic terminal with domain 0, while both command
+sources are valid, observe decision simulation stamps:
+
+```bash
+ros2 topic echo /bfm/action --field header.stamp
+ros2 topic echo /clock --field clock --qos-reliability best_effort
+```
+
+Verify successive action stamps differ by 0.1 s (within a physics step), then
+repeat under slower rendering/RTF. Pause: no new actions. STOP/PLAY: no catch-up
+burst; stamps resume only after a new simulation interval. `ros2 topic hz` alone
+measures wall cadence and cannot prove this contract. In Kit's graph editor,
+verify the clock uses `bfm_clock_physics_step` and no second clock publisher exists.
+Check each frame independently (unchanged image topics):
+
+```bash
+ros2 topic echo /sensors/camera/head/image_raw --once --field header.frame_id --qos-reliability best_effort
+ros2 topic echo /sensors/camera/left_wrist/image_raw --once --field header.frame_id --qos-reliability best_effort
+ros2 topic echo /sensors/camera/right_wrist/image_raw --once --field header.frame_id --qos-reliability best_effort
+ros2 topic echo /bfm/episode --qos-durability transient_local
+```
+
+Record and stop one demonstration. Inspect `episode.json` for the actual HEAD,
+dirty digest and nonterminal stop reason, and run `ros2 bag info records/RECORD/bag`.
+For event inspection, replay `ros2 bag play records/RECORD/bag --topics /bfm/episode`
+in an isolated ROS domain with a matching `ros2 topic echo /bfm/episode` subscriber.
+Expect provisional events where delivered; use the sidecar for the final result.
+Host tests validate math/composition/stubs, not live Kit scheduling or MCAP delivery.

@@ -30,6 +30,26 @@ STATE_TOPIC = "/bfm/state"
 RAW_HAND_TOPIC = "/robot/command/hand_target"
 
 
+CLOCK_DOMAINS = {
+    "created_at_and_record_directory": "system_wall_time; ISO8601 offset / local folder time",
+    "mcap_log_time": "rosbag2 default system receive time; --use-sim-time is not enabled",
+    "synchronization": "mcap_log_time (unchanged); headers are not a universal clock",
+    "/clock.clock": "IsaacReadSimulationTime simulation time, published on physics steps; existing resetOnStop default",
+    "/bfm/action.header.stamp": "selected /clock sample; decision generation, not measured controller application",
+    "/bfm/state.header.stamp": "Isaac timeline.get_current_time at native physics callback; may have a different epoch from /clock",
+    "/robot/state/joint_states.header.stamp": "IsaacReadSimulationTime via saved graph; sensorTime is separately the joint sensor simulation time",
+    "camera_image.header.stamp": "Isaac ROS2CameraHelper simulation time (default useSystemTime=false); render cadence unchanged",
+    "raw_bridge.header.stamp": "source-native ExoSuit/ROS1 time, preserved by bridge",
+    "/bfm/source/arm_joint_target_rad.header.stamp": "arm node ROS clock (system unless use_sim_time); conversion time",
+    "held_arm_and_hand.header.stamp": "preserved input header, not application time",
+    "finger_joint_command.header.stamp": "hand node ROS clock (system unless use_sim_time); interpolation generation",
+    "success_evaluation.evaluated_at": "system_wall_time ISO8601 with offset",
+    "success_evaluation.state_age_sec": "recorder local monotonic receive age; not simulation elapsed time",
+    "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
+    "controller_application_time": "not measured by action/source headers; use measured state for response analysis",
+}
+
+
 ARM_MODEL_PATH = "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml"
 
 
@@ -172,6 +192,12 @@ def collection_metadata(enabled, state, configuration=None):
         "enabled": enabled,
         "policy_hz": POLICY_HZ,
         "policy_dt": POLICY_DT,
+        "policy_clock": {
+            "domain": "isaac_simulation", "topic": "/clock", "period_ns": 100_000_000,
+            "trigger": "physics_step", "scheduler": "integer_nanosecond_deadlines",
+            "quantization": "first physics clock sample at or after deadline",
+            "on_backward_jump": "rebase_without_tick", "on_missed_deadlines": "one_current_tick_no_burst",
+        },
         "contract_version": 3,
         "action_dim": 26,
         "arm_target_processing": arm_target_processing(),

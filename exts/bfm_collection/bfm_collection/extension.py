@@ -232,6 +232,9 @@ class CollectionExtension(omni.ext.IExt):
                     "collection owns the episode-selected pool path"
                 )
 
+            from isaac_eff_control.collection_graph import configure_collection_graph
+            configure_collection_graph(stage)
+
             self.config_path = path
 
             randomizer = SceneRandomizer(

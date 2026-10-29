@@ -6,6 +6,9 @@ STOP acknowledgements are sent only after rosbag has exited and finalized.
 import json
 from uuid import uuid4
 
+from .recording_provenance import recording_code_provenance
+from .bfm_contract import CLOCK_DOMAINS
+
 EPISODE_TOPIC = '/bfm/episode'
 CONTROL_TOPIC = '/bfm/recorder_control'
 ACK_TOPIC = '/bfm/recorder_ack'
@@ -45,7 +48,11 @@ class EpisodeChannel:
             self.acks.add(data['recorder_id'])
 
     def publish(self, phase, episode=None):
-        self.status = dict(self.status, phase=phase, episode=episode)
+        if not hasattr(self, 'recording_code'):
+            self.recording_code = recording_code_provenance(__file__)
+        self.status = dict(self.status, phase=phase, episode=episode,
+                           recording_code=self.recording_code, clock_domains=CLOCK_DOMAINS,
+                           result_schema_version=1, terminal=False, end_reason=None, success=None)
         msg = self.message_type()
         msg.data = json.dumps(self.status, allow_nan=False)
         self.publisher.publish(msg)

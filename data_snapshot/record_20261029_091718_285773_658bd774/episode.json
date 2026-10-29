@@ -5,8 +5,38 @@
   "instruction": "Sort the food items into their corresponding containers.",
   "robot": "kuavo_s40_sharpa",
   "scene": "s40_sharpa_two_cameras.usd",
+  "result_schema_version": 1,
+  "terminal": false,
+  "end_reason": "user_stop",
   "success": false,
-  "created_at": "2026-10-28T15:04:27.892625+00:00",
+  "recording_code": {
+    "repository": "https://github.com/b4r4d41z/Synthetic_data_collection_with_ExoSuit",
+    "status": "available",
+    "commit_sha": "83748d5ff798628fc740b6ea5f88ad82c533059a",
+    "dirty": true,
+    "dirty_sha256": "411738b7325bdf1f01b2727e7744fdf08e5387898eaa2e8174b8b6b6b2a4d2c8",
+    "executing_module_sha256": "6d8fdbdc7d02c8c4b1f3e7c217bc4188836af316d51df0ef6347e38601e2d292",
+    "dirty_digest_format": "sha256-length-prefixed-head-diff-and-sorted-untracked-v1"
+  },
+  "clock_domains": {
+    "created_at_and_record_directory": "system_wall_time; ISO8601 offset / local folder time",
+    "mcap_log_time": "rosbag2 default system receive time; --use-sim-time is not enabled",
+    "synchronization": "mcap_log_time (unchanged); headers are not a universal clock",
+    "/clock.clock": "IsaacReadSimulationTime simulation time, published on physics steps; existing resetOnStop default",
+    "/bfm/action.header.stamp": "selected /clock sample; decision generation, not measured controller application",
+    "/bfm/state.header.stamp": "Isaac timeline.get_current_time at native physics callback; may have a different epoch from /clock",
+    "/robot/state/joint_states.header.stamp": "IsaacReadSimulationTime via saved graph; sensorTime is separately the joint sensor simulation time",
+    "camera_image.header.stamp": "Isaac ROS2CameraHelper simulation time (default useSystemTime=false); render cadence unchanged",
+    "raw_bridge.header.stamp": "source-native ExoSuit/ROS1 time, preserved by bridge",
+    "/bfm/source/arm_joint_target_rad.header.stamp": "arm node ROS clock (system unless use_sim_time); conversion time",
+    "held_arm_and_hand.header.stamp": "preserved input header, not application time",
+    "finger_joint_command.header.stamp": "hand node ROS clock (system unless use_sim_time); interpolation generation",
+    "success_evaluation.evaluated_at": "system_wall_time ISO8601 with offset",
+    "success_evaluation.state_age_sec": "recorder local monotonic receive age; not simulation elapsed time",
+    "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
+    "controller_application_time": "not measured by action/source headers; use measured state for response analysis"
+  },
+  "created_at": "2026-10-29T09:17:18.285467+00:00",
   "time": {
     "synchronization_source": "rosbag_record_timestamp",
     "header_stamp": "source_native"
@@ -47,8 +77,8 @@
   "cameras": {
     "head": {
       "topic": "/sensors/camera/head/image_raw",
-      "frame": null,
-      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "frame": "head_camera",
+      "frame_note": "Collection extension sets this frameId before PLAY; frame naming alone does not establish calibrated ROS optical extrinsics.",
       "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link/head_camera",
       "resolution": [
         640,
@@ -90,8 +120,8 @@
     },
     "left_wrist": {
       "topic": "/sensors/camera/left_wrist/image_raw",
-      "frame": null,
-      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "frame": "left_wrist_camera",
+      "frame_note": "Collection extension sets this frameId before PLAY; frame naming alone does not establish calibrated ROS optical extrinsics.",
       "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount/left_hand_camera_head/left_hand_camera",
       "resolution": [
         640,
@@ -133,8 +163,8 @@
     },
     "right_wrist": {
       "topic": "/sensors/camera/right_wrist/image_raw",
-      "frame": null,
-      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "frame": "right_wrist_camera",
+      "frame_note": "Collection extension sets this frameId before PLAY; frame naming alone does not establish calibrated ROS optical extrinsics.",
       "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera",
       "resolution": [
         640,
@@ -179,6 +209,16 @@
     "enabled": true,
     "policy_hz": 10.0,
     "policy_dt": 0.1,
+    "policy_clock": {
+      "domain": "isaac_simulation",
+      "topic": "/clock",
+      "period_ns": 100000000,
+      "trigger": "physics_step",
+      "scheduler": "integer_nanosecond_deadlines",
+      "quantization": "first physics clock sample at or after deadline",
+      "on_backward_jump": "rebase_without_tick",
+      "on_missed_deadlines": "one_current_tick_no_burst"
+    },
     "contract_version": 3,
     "action_dim": 26,
     "arm_target_processing": {
@@ -392,7 +432,7 @@
       },
       "reference_prim_path": "/",
       "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-      "object_prim_path": "/World/Task/Fruits/orange2",
+      "object_prim_path": "/World/Task/Fruits/avocado",
       "container_prim_path": "/World/container_b04",
       "goal_local_center": [
         -0.08494214117424082,
@@ -503,31 +543,31 @@
       "runtime_verified": false
     },
     "episode": {
-      "episode_id": "689479e7a2a3456baf6d6c1870841781",
-      "asset": "orange2.usd",
-      "asset_path": "models/addons/objects/fruits_veggies/orange2.usd",
-      "object_prim_path": "/World/Task/Fruits/orange2",
+      "episode_id": "c74687e654504d02ac1a8fcf5d3e4497",
+      "asset": "avocado.usd",
+      "asset_path": "models/addons/objects/fruits_veggies/avocado.usd",
+      "object_prim_path": "/World/Task/Fruits/avocado",
       "position": [
-        0.9971286780607678,
-        4.0254454511211994,
-        0.7550594996547851
+        0.9789302926541518,
+        4.042263372932911,
+        0.7548251774517866
       ],
-      "yaw": 3.0889338569321136,
+      "yaw": 1.6646679560883717,
       "orientation_xyzw": [
         0.0,
         0.0,
-        0.9996534014154346,
-        0.026326356347814567
+        0.7395045049639276,
+        0.673151607840356
       ],
       "body_poses": {
         "/World/Task/Fruits/avocado": [
-          100.0,
-          100.0,
-          1.9298255373677238,
+          0.9789302926541518,
+          4.042263372932911,
+          0.7548251774517866,
           0.0,
           0.0,
-          0.0,
-          1.0
+          0.7395045049639276,
+          0.673151607840356
         ],
         "/World/Task/Fruits/lemon1": [
           102.0,
@@ -548,17 +588,17 @@
           1.0
         ],
         "/World/Task/Fruits/orange2": [
-          0.9971286780607678,
-          4.0254454511211994,
-          0.7550594996547851,
+          106.0,
+          100.0,
+          1.9300598623693803,
           0.0,
           0.0,
-          0.9996534014154346,
-          0.026326356347814567
+          0.0,
+          1.0
         ],
         "/World/container_b04": [
-          1.1353615133325978,
-          4.425325857535942,
+          1.1133151818786295,
+          4.468835976696788,
           0.7499995231628418,
           0.0,
           0.0,
@@ -567,11 +607,6 @@
         ]
       },
       "parking_positions": {
-        "/World/Task/Fruits/avocado": [
-          100.0,
-          100.0,
-          1.9298255373677238
-        ],
         "/World/Task/Fruits/lemon1": [
           102.0,
           100.0,
@@ -581,17 +616,22 @@
           104.0,
           100.0,
           1.9302100912563036
+        ],
+        "/World/Task/Fruits/orange2": [
+          106.0,
+          100.0,
+          1.9300598623693803
         ]
       },
       "container_prim_path": "/World/container_b04",
       "container_position": [
-        1.1353615133325978,
-        4.425325857535942,
+        1.1133151818786295,
+        4.468835976696788,
         0.7499995231628418
       ],
       "container_offset": [
-        0.045552930073015224,
-        -0.016120446785347263,
+        0.023506598619047026,
+        0.027389672375498803,
         0.0
       ],
       "container_transform": [
@@ -614,8 +654,8 @@
           0.0
         ],
         [
-          1.1353615133325978,
-          4.425325857535942,
+          1.1133151818786295,
+          4.468835976696788,
           0.7499995231628418,
           1.0
         ]
@@ -624,18 +664,18 @@
   },
   "success_evaluation": {
     "method": "final_object_position_in_goal_obb",
-    "episode_id": "689479e7a2a3456baf6d6c1870841781",
-    "object_prim_path": "/World/Task/Fruits/orange2",
-    "evaluated_at": "2026-10-28T15:05:01.992737+00:00",
+    "episode_id": "c74687e654504d02ac1a8fcf5d3e4497",
+    "object_prim_path": "/World/Task/Fruits/avocado",
+    "evaluated_at": "2026-10-29T09:17:47.324485+00:00",
     "object_position": [
-      1.0146120143839434,
-      4.514554205225894,
-      0.7938533134273856
+      0.9745021764979874,
+      4.43718897089393,
+      0.789205308964508
     ],
     "goal_center": [
-      1.0701118085406025,
-      4.606423194272491,
-      0.8088643514314761
+      1.0255160043243667,
+      4.466422064583477,
+      0.8088698703397446
     ],
     "goal_half_extents": [
       0.118,
@@ -643,12 +683,12 @@
       0.017130117062027467
     ],
     "goal_orientation": [
-      -2.4277248229634762e-05,
-      -2.1811089344762085e-06,
-      0.005988143097061061,
-      0.9999820706133221
+      2.1390603797935457e-06,
+      -7.486596619257657e-08,
+      -0.00033259243497930837,
+      0.999999944688844
     ],
-    "state_age_sec": 0.010733282004366629,
+    "state_age_sec": 0.05433916699985275,
     "review_required": false
   }
 }

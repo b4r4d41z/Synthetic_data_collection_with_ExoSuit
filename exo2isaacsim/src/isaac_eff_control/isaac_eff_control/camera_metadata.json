@@ -14,8 +14,8 @@
   "cameras": {
     "head": {
       "topic": "/sensors/camera/head/image_raw",
-      "frame": null,
-      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "frame": "head_camera",
+      "frame_note": "Collection extension sets this frameId before PLAY; frame naming alone does not establish calibrated ROS optical extrinsics.",
       "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zhead_1_link/zhead_2_link/head_camera",
       "resolution": [
         640,
@@ -57,8 +57,8 @@
     },
     "left_wrist": {
       "topic": "/sensors/camera/left_wrist/image_raw",
-      "frame": null,
-      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "frame": "left_wrist_camera",
+      "frame_note": "Collection extension sets this frameId before PLAY; frame naming alone does not establish calibrated ROS optical extrinsics.",
       "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount/left_hand_camera_head/left_hand_camera",
       "resolution": [
         640,
@@ -100,8 +100,8 @@
     },
     "right_wrist": {
       "topic": "/sensors/camera/right_wrist/image_raw",
-      "frame": null,
-      "frame_note": "ROS2CameraHelper frameId is not authored; the live ROS header frame is not established by this snapshot.",
+      "frame": "right_wrist_camera",
+      "frame_note": "Collection extension sets this frameId before PLAY; frame naming alone does not establish calibrated ROS optical extrinsics.",
       "usd_camera_prim": "/biped_s40_with_sharpa_wave_hands/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera",
       "resolution": [
         640,

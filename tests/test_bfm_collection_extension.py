@@ -442,6 +442,7 @@ class AdapterTests(unittest.TestCase):
             r.randomize.side_effect = compose
             with patch.dict(sys.modules, {"isaac_eff_control.bfm_contract": contract}), \
                     patch.object(adapter, "SceneRandomizer", return_value=r), \
+                    patch("isaac_eff_control.collection_graph.configure_collection_graph"), \
                     patch.object(extension, "_start_publisher", return_value=Mock()) as start:
                 usd.get_stage.return_value = stage
                 timeline.is_stopped.return_value = True

@@ -1,5 +1,5 @@
 # One absolute high-level decision held until the next 10 Hz policy tick.
-# header.stamp uses the gateway ROS clock. Cross-topic synchronization uses
+# header.stamp uses the selected Isaac /clock simulation-time sample. Cross-topic synchronization uses
 # rosbag2/MCAP recorded-message timestamps, not a universal header clock.
 std_msgs/Header header
 
