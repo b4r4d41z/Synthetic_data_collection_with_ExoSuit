@@ -101,7 +101,9 @@ def arm_target_processing():
         "joint_limits": {name: list(bounds) for name, bounds in limits},
         "bounds_source": ARM_MODEL_PATH, "bounds_source_sha256": digest,
         "model_revision": "sha256:" + digest,
-        "boundary": "BfmActionGateway.policy_tick after input validation",
+        "boundary": "BfmActionGateway.arm_callback before high-rate controller publication",
+        "controller_cadence": "validated source callback rate",
+        "canonical_action_cadence": "0.1 simulation seconds; latest bounded target snapshot",
     }
 
 

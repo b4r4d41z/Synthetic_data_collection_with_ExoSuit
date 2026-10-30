@@ -23,11 +23,17 @@ def load_configuration(path, repository):
         raise ValueError("Sorting collection requires schema 1 and the configured fruit pool")
     config = data["randomization"]
     assets = config["object_assets"]
-    # The versioned JSON is the whitelist; no directory scanning or other fruits.
-    if not isinstance(assets, list) or len(assets) != 4 or len(set(assets)) != 4:
-        raise ValueError("Configure exactly four distinct fruit assets")
+    # Selection and persistent topology are separate: excluded fruit stays parked.
+    pool = config["pool_assets"]
+    expected = {"avocado.usd", "lemon1.usd", "orange2.usd"}
+    if (not isinstance(assets, list) or len(assets) != 3
+            or {Path(a).name for a in assets} != expected
+            or not isinstance(pool, list) or len(pool) != 4 or len(set(pool)) != 4
+            or not set(assets).issubset(pool)
+            or {Path(a).name for a in pool} != expected | {"pomegranate.usd"}):
+        raise ValueError("Select avocado/lemon/orange only; keep all four physical pool assets")
     root = Path(repository).resolve()
-    for asset in assets:
+    for asset in pool:
         resolved = (root / asset).resolve()
         if not resolved.is_relative_to(root) or not resolved.is_file():
             raise ValueError(f"Missing or out-of-repository fruit: {asset}")
@@ -167,7 +173,7 @@ class SceneRandomizer:
                 Usd.TimeCode.Default()) != Gf.Matrix4d(1):
             raise ValueError("Sorting /World must have an identity world transform")
         self.rng = random.Random(self.config["seed"])
-        self.assets = {a: asset_geometry(self.repository / a) for a in self.config["object_assets"]}
+        self.assets = {a: asset_geometry(self.repository / a) for a in self.config["pool_assets"]}
         from pxr import UsdPhysics
         container = stage.GetPrimAtPath(CONTAINER_PATH)
         if (not container or not container.HasAPI(UsdPhysics.RigidBodyAPI)
@@ -280,6 +286,8 @@ class SceneRandomizer:
         obstacles.append((low, high))
         for _ in range(self.config["max_attempts"]):
             asset, x, y, yaw = sample_candidate(self.config, self.rng)
+            if asset not in self.config["object_assets"]:
+                raise ValueError(f"Excluded demonstration fruit: {asset}")
             _, source_lo, source_hi = self.assets[asset]
             rotation = Gf.Rotation(Gf.Vec3d(0, 0, 1), math.degrees(yaw))
             corners = [rotation.TransformDir(Gf.Vec3d(a, b, c))

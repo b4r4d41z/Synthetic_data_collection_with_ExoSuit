@@ -61,18 +61,29 @@
     "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
     "minimum_support_radius_m": 0.03426520788759943,
     "fruit_pool_asset": "models/stages/fruit_pool.usda",
-    "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289"
+    "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289",
+    "success_detector": {
+      "method": "collision_bound_in_floor_prism_and_settled_v1",
+      "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
+      "bounds": "enabled selected-fruit collision mesh bounds, transformed through live fruit and container rigid-body poses",
+      "margin_m": 0.003,
+      "floor_tolerance_m": 0.003,
+      "settle_sim_sec": 0.3,
+      "max_sample_gap_sim_sec": 0.05,
+      "linear_limit_m_s": 0.02,
+      "angular_limit_rad_s": 0.2,
+      "runtime_verified": false
+    }
   },
   "randomization": {
     "object_assets": [
       "models/addons/objects/fruits_veggies/avocado.usd",
       "models/addons/objects/fruits_veggies/lemon1.usd",
-      "models/addons/objects/fruits_veggies/pomegranate.usd",
       "models/addons/objects/fruits_veggies/orange2.usd"
     ],
     "object_spawn_region": {
       "x_min": 0.95,
-      "x_max": 1.1,
+      "x_max": 1.025,
       "y_min": 3.99,
       "y_max": 4.12
     },
@@ -101,10 +112,17 @@
         1.0898085832595825,
         4.441446304321289
       ],
-      "method": "Small 15 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
+      "method": "Nearer X half (0.95..1.025) of the original 0.95..1.10 by 3.99..4.12 rectangle; robot base world XY=(0.622417,4.214689). A 7.5 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
       "container_method": "Translation only: +/-60 mm around template origin (1.08980858, 4.44144630, 0.74999952) m. This is a requested 120 x 120 mm candidate offset region around the known valid pose, not a certified safe region; all support and collision checks remain mandatory. Preserve template rotation and Z. Reject unless footprint plus 25 mm margin is supported at the original height and clears robot colliders by 30 mm. Place fruit against the new container bounds. External table support still requires Isaac runtime validation.",
       "table_geometry_host_verified": false,
       "isaac_runtime_verified": false
-    }
+    },
+    "pool_assets": [
+      "models/addons/objects/fruits_veggies/avocado.usd",
+      "models/addons/objects/fruits_veggies/lemon1.usd",
+      "models/addons/objects/fruits_veggies/pomegranate.usd",
+      "models/addons/objects/fruits_veggies/orange2.usd"
+    ],
+    "collection_objects_note": "Avocado, lemon and orange only; pomegranate remains preloaded and always parked, never selected."
   }
 }

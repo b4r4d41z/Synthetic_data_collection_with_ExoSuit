@@ -243,6 +243,7 @@ class BfmTaskStatePublisher(Node):
                        for key, value in state_defaults(self.scene_config_path).items()}
         self.stage, self.factory = stage, sampler_factory
         self.last_time = None
+        self.success_detector = None
         self.sampler = None
         self._reported_counts = False
         if not self.enabled:
@@ -303,6 +304,18 @@ class BfmTaskStatePublisher(Node):
         for field, value in values.items():
             setattr(message, field, list(value))
         self.publisher.publish(message)
+        if self.success_detector is not None:
+            import json
+            from std_msgs.msg import String
+            try:
+                result = self.success_detector.measure(self.sampler, simulation_seconds)
+            except (ValueError, RuntimeError, KeyError, TypeError, IndexError, AttributeError) as error:
+                result = dict(episode_id=self.success_detector.episode_id,
+                              object_prim_path=self.config['object_prim_path'], success=None,
+                              reason=str(error), simulation_seconds=simulation_seconds)
+                self.success_detector.detector.since = None
+            diagnostic = String(); diagnostic.data = json.dumps(result, allow_nan=False)
+            self.success_publisher.publish(diagnostic)
         self.last_time = simulation_seconds
 
 
@@ -371,6 +384,14 @@ def start_task_state_publisher(*, episode=None, **parameters):
     from .physics_object_pool import PhysicsObjectPool
     object_pool = None
     handle = Handle()
+    if episode is not None:
+        from .fruit_success import LiveFruitSuccess, TOPIC
+        from std_msgs.msg import String
+        try:
+            node.success_detector = LiveFruitSuccess(stage, node.config, episode['episode_id'])
+        except (ValueError, RuntimeError) as error:
+            node.get_logger().warning(f'Success geometry unavailable; outcome requires review: {error}')
+        node.success_publisher = node.create_publisher(String, TOPIC, 10)
     handle.node = node  # Inspect sampler.resolved_body_counts after Play in Script Editor.
     handle.object_pool = object_pool
 

@@ -12,10 +12,10 @@
   "recording_code": {
     "repository": "https://github.com/b4r4d41z/Synthetic_data_collection_with_ExoSuit",
     "status": "available",
-    "commit_sha": "83748d5ff798628fc740b6ea5f88ad82c533059a",
+    "commit_sha": "2be4c1444faf59db070d365b578f88b07bc37899",
     "dirty": true,
-    "dirty_sha256": "411738b7325bdf1f01b2727e7744fdf08e5387898eaa2e8174b8b6b6b2a4d2c8",
-    "executing_module_sha256": "6d8fdbdc7d02c8c4b1f3e7c217bc4188836af316d51df0ef6347e38601e2d292",
+    "dirty_sha256": "42600816b6799231c07f72b349f947e83f266740c673a2ab4bee71f0abbf5132",
+    "executing_module_sha256": "99e2165870403dc1339e38a31f50b7b509cee30a0401466983fd17802bdaa0d0",
     "dirty_digest_format": "sha256-length-prefixed-head-diff-and-sorted-untracked-v1"
   },
   "clock_domains": {
@@ -36,7 +36,7 @@
     "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
     "controller_application_time": "not measured by action/source headers; use measured state for response analysis"
   },
-  "created_at": "2026-10-29T09:17:18.285467+00:00",
+  "created_at": "2026-10-30T03:08:04.310337+00:00",
   "time": {
     "synchronization_source": "rosbag_record_timestamp",
     "header_stamp": "source_native"
@@ -60,7 +60,8 @@
       "/bfm/state",
       "/bfm/source/arm_joint_target_rad",
       "/bfm/command/hand_target",
-      "/bfm/episode"
+      "/bfm/episode",
+      "/bfm/success"
     ]
   },
   "camera_configuration": {
@@ -292,7 +293,9 @@
       "bounds_source": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml",
       "bounds_source_sha256": "4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
       "model_revision": "sha256:4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
-      "boundary": "BfmActionGateway.policy_tick after input validation"
+      "boundary": "BfmActionGateway.arm_callback before high-rate controller publication",
+      "controller_cadence": "validated source callback rate",
+      "canonical_action_cadence": "0.1 simulation seconds; latest bounded target snapshot"
     },
     "action_group_order": [
       "left_arm",
@@ -432,7 +435,7 @@
       },
       "reference_prim_path": "/",
       "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-      "object_prim_path": "/World/Task/Fruits/avocado",
+      "object_prim_path": "/World/Task/Fruits/lemon1",
       "container_prim_path": "/World/container_b04",
       "goal_local_center": [
         -0.08494214117424082,
@@ -455,7 +458,7 @@
       "configured": true,
       "scene_configuration": {
         "file": "/workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim/build/isaac_eff_control/isaac_eff_control/sorting_scene.json",
-        "sha256": "0f15223c6f53f9fa3cab5e16386fa1472b3ef3bd49e4b84ed73136a3863b7b3e",
+        "sha256": "71e8ef1b0cf87c4b1560ba0d3dfe86158c0e178dc5bb606cc99c55ce01312767",
         "scene": "models/stages/stage_sorting_v1.usd",
         "provenance": {
           "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
@@ -492,18 +495,29 @@
           "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
           "minimum_support_radius_m": 0.03426520788759943,
           "fruit_pool_asset": "models/stages/fruit_pool.usda",
-          "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289"
+          "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289",
+          "success_detector": {
+            "method": "collision_bound_in_floor_prism_and_settled_v1",
+            "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
+            "bounds": "enabled selected-fruit collision mesh bounds, transformed through live fruit and container rigid-body poses",
+            "margin_m": 0.003,
+            "floor_tolerance_m": 0.003,
+            "settle_sim_sec": 0.3,
+            "max_sample_gap_sim_sec": 0.05,
+            "linear_limit_m_s": 0.02,
+            "angular_limit_rad_s": 0.2,
+            "runtime_verified": false
+          }
         },
         "randomization": {
           "object_assets": [
             "models/addons/objects/fruits_veggies/avocado.usd",
             "models/addons/objects/fruits_veggies/lemon1.usd",
-            "models/addons/objects/fruits_veggies/pomegranate.usd",
             "models/addons/objects/fruits_veggies/orange2.usd"
           ],
           "object_spawn_region": {
             "x_min": 0.95,
-            "x_max": 1.1,
+            "x_max": 1.025,
             "y_min": 3.99,
             "y_max": 4.12
           },
@@ -532,51 +546,58 @@
               1.0898085832595825,
               4.441446304321289
             ],
-            "method": "Small 15 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
+            "method": "Nearer X half (0.95..1.025) of the original 0.95..1.10 by 3.99..4.12 rectangle; robot base world XY=(0.622417,4.214689). A 7.5 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
             "container_method": "Translation only: +/-60 mm around template origin (1.08980858, 4.44144630, 0.74999952) m. This is a requested 120 x 120 mm candidate offset region around the known valid pose, not a certified safe region; all support and collision checks remain mandatory. Preserve template rotation and Z. Reject unless footprint plus 25 mm margin is supported at the original height and clears robot colliders by 30 mm. Place fruit against the new container bounds. External table support still requires Isaac runtime validation.",
             "table_geometry_host_verified": false,
             "isaac_runtime_verified": false
-          }
+          },
+          "pool_assets": [
+            "models/addons/objects/fruits_veggies/avocado.usd",
+            "models/addons/objects/fruits_veggies/lemon1.usd",
+            "models/addons/objects/fruits_veggies/pomegranate.usd",
+            "models/addons/objects/fruits_veggies/orange2.usd"
+          ],
+          "collection_objects_note": "Avocado, lemon and orange only; pomegranate remains preloaded and always parked, never selected."
         },
         "runtime_verified": false
       },
       "runtime_verified": false
     },
     "episode": {
-      "episode_id": "c74687e654504d02ac1a8fcf5d3e4497",
-      "asset": "avocado.usd",
-      "asset_path": "models/addons/objects/fruits_veggies/avocado.usd",
-      "object_prim_path": "/World/Task/Fruits/avocado",
+      "episode_id": "aa1c54933f2b4795a6e39ecc4a75eaa6",
+      "asset": "lemon1.usd",
+      "asset_path": "models/addons/objects/fruits_veggies/lemon1.usd",
+      "object_prim_path": "/World/Task/Fruits/lemon1",
       "position": [
-        0.9789302926541518,
-        4.042263372932911,
-        0.7548251774517866
+        1.0068035454784403,
+        4.059245239222832,
+        0.7538757458700442
       ],
-      "yaw": 1.6646679560883717,
+      "yaw": -0.251792906486052,
       "orientation_xyzw": [
-        0.0,
-        0.0,
-        0.7395045049639276,
-        0.673151607840356
+        -0.0,
+        -0.0,
+        -0.1255641419865299,
+        0.9920855034961384
       ],
       "body_poses": {
         "/World/Task/Fruits/avocado": [
-          0.9789302926541518,
-          4.042263372932911,
-          0.7548251774517866,
-          0.0,
-          0.0,
-          0.7395045049639276,
-          0.673151607840356
-        ],
-        "/World/Task/Fruits/lemon1": [
-          102.0,
           100.0,
-          1.9288761094165965,
+          100.0,
+          1.9298255373677238,
           0.0,
           0.0,
           0.0,
           1.0
+        ],
+        "/World/Task/Fruits/lemon1": [
+          1.0068035454784403,
+          4.059245239222832,
+          0.7538757458700442,
+          -0.0,
+          -0.0,
+          -0.1255641419865299,
+          0.9920855034961384
         ],
         "/World/Task/Fruits/pomegranate": [
           104.0,
@@ -597,8 +618,8 @@
           1.0
         ],
         "/World/container_b04": [
-          1.1133151818786295,
-          4.468835976696788,
+          1.1213884519821533,
+          4.486976389319303,
           0.7499995231628418,
           0.0,
           0.0,
@@ -607,10 +628,10 @@
         ]
       },
       "parking_positions": {
-        "/World/Task/Fruits/lemon1": [
-          102.0,
+        "/World/Task/Fruits/avocado": [
           100.0,
-          1.9288761094165965
+          100.0,
+          1.9298255373677238
         ],
         "/World/Task/Fruits/pomegranate": [
           104.0,
@@ -625,13 +646,13 @@
       },
       "container_prim_path": "/World/container_b04",
       "container_position": [
-        1.1133151818786295,
-        4.468835976696788,
+        1.1213884519821533,
+        4.486976389319303,
         0.7499995231628418
       ],
       "container_offset": [
-        0.023506598619047026,
-        0.027389672375498803,
+        0.031579868722570764,
+        0.045530084998014406,
         0.0
       ],
       "container_transform": [
@@ -654,8 +675,8 @@
           0.0
         ],
         [
-          1.1133151818786295,
-          4.468835976696788,
+          1.1213884519821533,
+          4.486976389319303,
           0.7499995231628418,
           1.0
         ]
@@ -663,32 +684,151 @@
     }
   },
   "success_evaluation": {
-    "method": "final_object_position_in_goal_obb",
-    "episode_id": "c74687e654504d02ac1a8fcf5d3e4497",
-    "object_prim_path": "/World/Task/Fruits/avocado",
-    "evaluated_at": "2026-10-29T09:17:47.324485+00:00",
-    "object_position": [
-      0.9745021764979874,
-      4.43718897089393,
-      0.789205308964508
+    "method": "collision_bound_in_floor_prism_and_settled_v1",
+    "episode_id": "aa1c54933f2b4795a6e39ecc4a75eaa6",
+    "object_prim_path": "/World/Task/Fruits/lemon1",
+    "evaluated_at": "2026-10-30T03:08:25.848236+00:00",
+    "success": false,
+    "speed_norms_linear_angular_fruit_container": [
+      0.11087017214371557,
+      6.558587532838204,
+      0.030840218487770407,
+      0.23936643322339213
     ],
-    "goal_center": [
-      1.0255160043243667,
-      4.466422064583477,
-      0.8088698703397446
+    "collision_bound_body_min": [
+      -0.03808565065264702,
+      -0.024803757667541504,
+      0.0011238913284614682
     ],
-    "goal_half_extents": [
-      0.118,
-      0.068,
-      0.017130117062027467
+    "collision_bound_body_max": [
+      0.03807544335722923,
+      0.024774428457021713,
+      0.05179984122514725
     ],
-    "goal_orientation": [
-      2.1390603797935457e-06,
-      -7.486596619257657e-08,
-      -0.00033259243497930837,
-      0.999999944688844
+    "interior_floor_polygon": [
+      [
+        -0.2619564324607093,
+        -0.12285222113132477
+      ],
+      [
+        -0.2619129061688621,
+        -0.12456691265106201
+      ],
+      [
+        -0.2615723848332603,
+        -0.12556666135787964
+      ],
+      [
+        -0.2610906451930244,
+        -0.12622356414794922
+      ],
+      [
+        -0.2603930324305732,
+        -0.12675374746322632
+      ],
+      [
+        -0.2593475222577293,
+        -0.12711037695407867
+      ],
+      [
+        -0.25767397284404825,
+        -0.12713168561458588
+      ],
+      [
+        0.08778969049556662,
+        -0.12713174521923065
+      ],
+      [
+        0.08946323990924765,
+        -0.12711043655872345
+      ],
+      [
+        0.09050875008209158,
+        -0.1267538070678711
+      ],
+      [
+        0.09120636284454275,
+        -0.126223623752594
+      ],
+      [
+        0.09168810248477866,
+        -0.12556672096252441
+      ],
+      [
+        0.09202862382038046,
+        -0.12456697225570679
+      ],
+      [
+        0.09207215011222769,
+        -0.12285227328538895
+      ],
+      [
+        0.09207217991455008,
+        0.12285222113132477
+      ],
+      [
+        0.09202865362270285,
+        0.12456691265106201
+      ],
+      [
+        0.09168814718826224,
+        0.12556666135787964
+      ],
+      [
+        0.09120640754802634,
+        0.12622356414794922
+      ],
+      [
+        0.09050879478557516,
+        0.12675374746322632
+      ],
+      [
+        0.08946326971157004,
+        0.12711037695407867
+      ],
+      [
+        0.0877897351990502,
+        0.12713168561458588
+      ],
+      [
+        -0.25767394304172586,
+        0.12713174521923065
+      ],
+      [
+        -0.2593474775542457,
+        0.12711043655872345
+      ],
+      [
+        -0.2603930026282508,
+        0.1267538070678711
+      ],
+      [
+        -0.261090615390702,
+        0.126223623752594
+      ],
+      [
+        -0.2615723550309379,
+        0.12556672096252441
+      ],
+      [
+        -0.2619128614653785,
+        0.12456697225570679
+      ],
+      [
+        -0.26195638775722574,
+        0.12285227328538895
+      ]
     ],
-    "state_age_sec": 0.05433916699985275,
+    "interior_floor": 0.010474557988345623,
+    "interior_ceiling": 0.1179291307926178,
+    "contained": false,
+    "stable": false,
+    "stable_duration_sim_sec": 0.0,
+    "simulation_seconds": 9.583333333333389,
+    "linear_limit_m_s": 0.02,
+    "angular_limit_rad_s": 0.2,
+    "required_dwell_sim_sec": 0.3,
+    "state_age_sec": 0.04968860799999675,
     "review_required": false
   }
 }

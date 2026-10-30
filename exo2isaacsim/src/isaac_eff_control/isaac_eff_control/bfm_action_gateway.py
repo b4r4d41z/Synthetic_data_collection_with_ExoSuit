@@ -1,6 +1,6 @@
 """10 Hz sample-and-hold after arm mapping and before hand interpolation.
 
-Only simulation-clock ticks forward commands in BFM mode; source callbacks only buffer.
+Validated source callbacks forward high-rate controls; simulation ticks sample actions.
 Run with the default single-threaded executor so a tick is one snapshot.
 """
 
@@ -74,6 +74,10 @@ class BfmActionGateway(Node):
             )
             return
         self.arm = deepcopy(msg)
+        bounded = deepcopy(self.arm)
+        bounded.position = [min(max(value, self.arm_limits[name][0]), self.arm_limits[name][1])
+                             for name, value in zip(msg.name, msg.position)]
+        self.arm_pub.publish(bounded)
 
     def hand_callback(self, msg):
         values = [*msg.left_hand_position, *msg.right_hand_position]
@@ -86,6 +90,7 @@ class BfmActionGateway(Node):
             )
             return
         self.hand = deepcopy(msg)
+        self.hand_pub.publish(deepcopy(self.hand))
 
     def policy_tick(self, simulation_stamp=None):
         if not self.enabled:
@@ -99,8 +104,7 @@ class BfmActionGateway(Node):
             )
             return
         arm, hand = deepcopy(self.arm), deepcopy(self.hand)
-        # Only the validated tick snapshot is saturated. Keep the buffered raw
-        # request and source message intact, including their native headers.
+        # Reapplying the same saturation is idempotent; raw input is never mutated.
         arm.position = [min(max(value, self.arm_limits[name][0]), self.arm_limits[name][1])
                         for name, value in zip(arm.name, arm.position)]
         positions = dict(zip(arm.name, arm.position))
@@ -113,10 +117,8 @@ class BfmActionGateway(Node):
         action.right_arm_joint_names = list(RIGHT_ARM_JOINTS)
         action.right_arm_target = [positions[name] for name in RIGHT_ARM_JOINTS]
         action.right_hand_target = [float(value) for value in hand.right_hand_position]
-        # Both full left/right commands come from this exact snapshot. Preserve
-        # their source headers; only the new decision receives a new header.
-        self.arm_pub.publish(arm)
-        self.hand_pub.publish(hand)
+        # Sample the target values forwarded by the high-rate callbacks.
+        # The decision timestamp is not a controller execution acknowledgement.
         self.action_pub.publish(action)
 
 

@@ -52,6 +52,7 @@ DEFAULT_TOPICS = [
     "/bfm/source/arm_joint_target_rad",
     "/bfm/command/hand_target",
     EPISODE_TOPIC,
+    "/bfm/success",
 ]
 
 EPISODE_PARAMETERS = {
@@ -137,6 +138,8 @@ class SimRecorder(Node):
             from dynamic_biped.msg import BfmState
             from std_msgs.msg import String
             self._episode_string = String
+            self._success_subscription = self.create_subscription(
+                String, '/bfm/success', self.success_callback, 10)
             self._ack_pub = self.create_publisher(String, ACK_TOPIC, 10)
             self._episode_pub = self.create_publisher(String, EPISODE_TOPIC, qos)
             self._episode_subscription = self.create_subscription(
@@ -202,30 +205,30 @@ class SimRecorder(Node):
         return episode.get("episode_id"), episode.get("object_prim_path")
 
     def state_callback(self, msg):
-        """Accept only post-start state for this active recording/control identity."""
-        if self._process is None or self._outcome_identity is None or self._pending_outcome is not None:
+        """State remains recorded unchanged; success uses dedicated geometry data."""
+
+    def success_callback(self, msg):
+        if self._process is None or self._pending_outcome is not None:
             return
         try:
-            if self._playing_identity() != self._outcome_identity:
-                raise ValueError("BFM state episode/object identity mismatch")
-            # BfmState has no identity fields; the existing STOP-ack/prepared/PLAY
-            # barrier and recorder control descriptor establish its producer.
-            if msg.header.frame_id != self._outcome_frame:
-                raise ValueError("BFM state frame differs from recorded goal frame")
-            result, geometry = final_position_outcome(msg)
-            self._outcome_state = (result, geometry, monotonic(), self._outcome_identity)
+            data = json.loads(msg.data)
+            identity = (data['episode_id'], data['object_prim_path'])
+            if identity != self._outcome_identity or self._playing_identity() != identity:
+                raise ValueError('Success episode/object mismatch')
+            if type(data['success']) is not bool:
+                raise ValueError(data.get('reason', 'Success measurement unavailable'))
+            self._outcome_state = (data['success'], data, monotonic(), identity)
             self._outcome_error = None
-        except (ValueError, TypeError, AttributeError, OverflowError) as error:
-            # A newer invalid packet invalidates the previous cached value.
+        except (ValueError, KeyError, TypeError) as error:
             self._outcome_state = None
             self._outcome_error = str(error)
-            self.get_logger().warning(f"BFM outcome state invalid: {error}", throttle_duration_sec=2.)
+            self.get_logger().warning(f'Success measurement invalid: {error}')
 
     def _capture_outcome(self, end_reason="user_stop"):
         """Freeze before rosbag wait/escalation; retries keep this same snapshot."""
         if self._outcome_identity is None or self._pending_outcome is not None:
             return
-        audit = {"method": "final_object_position_in_goal_obb",
+        audit = {"method": "collision_bound_in_floor_prism_and_settled_v1",
                  "episode_id": self._outcome_identity[0], "object_prim_path": self._outcome_identity[1],
                  "evaluated_at": datetime.now().astimezone().isoformat()}
         success, error = None, self._outcome_error

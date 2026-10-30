@@ -203,6 +203,7 @@ class RecordingPipelineTests(unittest.TestCase):
             "/bfm/source/arm_joint_target_rad",
             "/bfm/command/hand_target",
             "/bfm/episode",
+            "/bfm/success",
         ]
         node = self.recorder.SimRecorder()
         self.assertEqual(node.topics, expected)
@@ -697,8 +698,9 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway.policy_tick()
         gateway.arm_callback(self.arm_source())
         gateway.policy_tick()
-        for publisher in (gateway.action_pub, gateway.arm_pub, gateway.hand_pub):
-            publisher.publish.assert_not_called()
+        gateway.action_pub.publish.assert_not_called()
+        gateway.arm_pub.publish.assert_called_once()
+        gateway.hand_pub.publish.assert_not_called()
         self.assertTrue(gateway.logger.warning.called)
         gateway.hand_callback(self.hand_source())
         gateway.action_pub.publish.assert_not_called()
@@ -775,8 +777,9 @@ class RecordingPipelineTests(unittest.TestCase):
         arm.position[0] = 999.
         hand.right_hand_position[0] = 99
         hand.left_hand_position[0] = 99
-        for publisher in (gateway.action_pub, gateway.arm_pub, gateway.hand_pub):
-            publisher.publish.assert_called_once()
+        gateway.action_pub.publish.assert_called_once()
+        self.assertEqual(gateway.arm_pub.publish.call_count, 5)
+        self.assertEqual(gateway.hand_pub.publish.call_count, 5)
         self.assertEqual(first.right_hand_position, [0, 100, 42, 44, 61, 60])
         gateway.policy_tick()
         action = gateway.action_pub.publish.call_args.args[0]

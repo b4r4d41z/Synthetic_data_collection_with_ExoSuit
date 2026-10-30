@@ -116,7 +116,8 @@ class RecorderContractTests(unittest.TestCase):
         from test_episode_outcome import state
         for reason in ('user_stop', 'interrupted'):
             node = self.start()
-            node.state_callback(state())
+            node.success_callback(SimpleNamespace(data=json.dumps(dict(
+                episode_id='test', object_prim_path='/World/Task/Fruits/lemon1', success=True))))
             self.assertIsNotNone(node._process)  # An inside position never stops recording.
             self.assertTrue(node.stop_recording(reason))
             saved = json.loads((node._episode_path/'episode.json').read_text())
@@ -179,7 +180,9 @@ class GraphContractTests(unittest.TestCase):
         original = stage.GetRootLayer().ExportToString()
         before = {str(a.GetPath()):(a.Get(),tuple(a.GetConnections()))
                   for p in stage.Traverse() for a in p.GetAttributes()}
-        configure_collection_graph(stage)
+        with patch('isaac_eff_control.collection_graph.configure_physics_clock') as clock_setup:
+            configure_collection_graph(stage)
+        clock_setup.assert_called_once_with(stage)
         self.assertEqual(stage.GetRootLayer().ExportToString(), original)
         cameras = json.loads((PACKAGE/'isaac_eff_control/camera_metadata.json').read_text())['cameras']
         self.assertEqual(len(set(CAMERA_FRAMES.values())),3)
@@ -193,9 +196,5 @@ class GraphContractTests(unittest.TestCase):
                 name = next(n for n,c in cameras.items() if c['topic']==topic)
                 self.assertEqual(p.GetAttribute('inputs:frameId').Get(), CAMERA_FRAMES[name])
                 self.assertEqual(cameras[name]['frame'], CAMERA_FRAMES[name])
-        self.assertEqual(len(changed),4)  # Three frame strings and one exec connection.
-        self.assertTrue(all(p.endswith('.inputs:frameId') or p.endswith('/ros2_publish_clock.inputs:execIn') for p in changed))
-        step = stage.GetPrimAtPath(GRAPH_ROOT+'/Data_collection_ActionGraph/bfm_clock_physics_step')
-        self.assertEqual(step.GetAttribute('node:type').Get(), 'isaacsim.core.nodes.OnPhysicsStep')
-        clock = stage.GetPrimAtPath(GRAPH_ROOT+'/Data_collection_ActionGraph/ros2_publish_clock')
-        self.assertEqual(clock.GetAttribute('inputs:execIn').GetConnections(), [step.GetPath().AppendProperty('outputs:step')])
+        self.assertEqual(len(changed),3)
+        self.assertTrue(all(p.endswith('.inputs:frameId') for p in changed))

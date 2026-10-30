@@ -25,7 +25,7 @@ class ConfigurationTests(unittest.TestCase):
 
     def test_exact_whitelist_semantic_path_and_separate_state_parameters(self):
         self.assertEqual([Path(p).name for p in self.data["randomization"]["object_assets"]],
-                         ["avocado.usd", "lemon1.usd", "pomegranate.usd", "orange2.usd"])
+                         ["avocado.usd", "lemon1.usd", "orange2.usd"])
         self.assertEqual(self.data["parameters"]["object_prim_path"], runtime.OBJECT_PATH)
         self.assertNotIn("randomization", self.data["parameters"])
         self.assertEqual(self.data["parameters"]["container_prim_path"], "/World/container_b04")
@@ -180,7 +180,7 @@ class CompositionTests(unittest.TestCase):
         expected = ["/avocado01", "/lemon_01", "/pomegranate01", "/orange_02"]
         lowest = [.0001744633773341775, .0011238913284614682,
                   -.00021009051124565303, -.00005986162432236597]
-        for asset, default, z in zip(self.data["randomization"]["object_assets"], expected, lowest):
+        for asset, default, z in zip(self.data["randomization"]["pool_assets"], expected, lowest):
             path = ROOT/asset
             prim, lo, hi = runtime.asset_geometry(path)
             self.assertEqual(prim, default)
@@ -189,6 +189,13 @@ class CompositionTests(unittest.TestCase):
             self.assertFalse(missing)
             self.assertTrue(all(Path(p).is_file() for p in assets))
             self.assertTrue(all(Path(p).resolve().is_relative_to(ROOT) for p in assets))
+
+    def test_excluded_pomegranate_cannot_become_an_episode(self):
+        excluded = next(a for a in self.data['randomization']['pool_assets'] if 'pomegranate' in a)
+        with patch.object(runtime, 'sample_candidate', return_value=(excluded, 1., 4.05, 0.)):
+            with self.assertRaisesRegex(ValueError, 'Excluded demonstration fruit'):
+                self.randomizer.randomize()
+        self.assertIsNone(self.randomizer.last_episode)
 
     def test_repeated_selection_retains_all_four_bodies_and_only_changes_properties(self):
         from pxr import Sdf
@@ -224,7 +231,7 @@ class CompositionTests(unittest.TestCase):
                     for p in self.stage.Traverse()]
         before = topology()
         usd_before = self.stage.ExportToString()
-        for asset in self.randomizer.pool:
+        for asset in self.data["randomization"]["object_assets"]:
             with patch.object(runtime, "sample_candidate", return_value=(asset, 1., 4.05, .4)):
                 episode = self.randomizer.randomize()
             self.assertEqual(topology(), before)
@@ -232,6 +239,7 @@ class CompositionTests(unittest.TestCase):
             self.assertEqual(self.randomizer.current_object_path, runtime.fruit_path(asset))
             self.assertEqual(episode["object_prim_path"], self.randomizer.current_object_path)
             self.assertEqual(len(episode["parking_positions"]), 3)
+            self.assertIn('/World/Task/Fruits/pomegranate', episode['parking_positions'])
             for path, expected in episode["parking_positions"].items():
                 prim = self.stage.GetPrimAtPath(path)
                 pos = self.UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(

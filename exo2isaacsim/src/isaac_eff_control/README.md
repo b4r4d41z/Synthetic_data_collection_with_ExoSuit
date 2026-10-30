@@ -1143,3 +1143,104 @@ For event inspection, replay `ros2 bag play records/RECORD/bag --topics /bfm/epi
 in an isolated ROS domain with a matching `ros2 topic echo /bfm/episode` subscriber.
 Expect provisional events where delivered; use the sidecar for the final result.
 Host tests validate math/composition/stubs, not live Kit scheduling or MCAP delivery.
+
+## Corrected physics clock and collection pool
+
+Production control and dataset sampling are independent. Valid mapped arm input
+on `/bfm/source/arm_joint_target_rad` retains its raw pre-clamp values/header.
+Each callback saturates by the existing limits and immediately forwards to
+`/robot_arm_joint_command`. Valid raw hand input immediately forwards to
+`/bfm/command/hand_target`; the existing 50 Hz finger interpolation is unchanged.
+Only `/bfm/action` is sampled at 0.1 simulation seconds, using the latest valid
+bounded arm/logical hand targets in the unchanged 26D order. Invalid input blocks
+canonical sampling until replaced. Controller and action counts need not match;
+converters must not zip them one-to-one or treat a controller packet as a policy
+tick. Preserve high-rate commands separately; action stamps identify logical
+simulation decisions, not controller execution acknowledgements.
+
+The physics clock uses OmniGraph's runtime pipeline API, not a USD
+`evaluationMode=OnDemand` attribute. `GraphController.create_graph` requests
+`GRAPH_PIPELINE_STAGE_ONDEMAND`, execution evaluator and AUTOMATIC evaluation.
+Reused runtime graphs use `change_pipeline_stage`; `get_pipeline_stage()` must
+verify the enum before and after node construction. The dedicated path is
+`/World/s40_sharpa_two_cameras/BFM_Clock_ActionGraph`. Its four nodes are
+`isaacsim.core.nodes.OnPhysicsStep`, `isaacsim.core.nodes.IsaacReadSimulationTime`,
+`isaacsim.ros2.bridge.ROS2Context`, `isaacsim.ros2.bridge.ROS2PublishClock`.
+Runtime connections carry physics exec, simulation time and ROS context to the
+publisher. Existing context/QoS/time inputs are retained; topic is `/clock`.
+Only after node/connection/pipeline verification does setup disable the old
+publisher/misplaced step and enable the new graph. Failures disable the new graph,
+restore the old path and raise a clear setup error; there is no playback fallback.
+The original data graph's pipeline/evaluation mode is untouched. All changes use
+the session layer. The integer SimPolicyClock is unchanged: frozen/duplicate
+clock means no tick, backward jumps rebase, missed deadlines never replay bursts.
+API reference: https://docs.omniverse.nvidia.com/kit/docs/omni.graph/1.142.6/omni.graph.core/omni.graph.core.GraphController.html
+
+Spawn remains randomized in X `[0.95,1.025]`, Y `[3.99,4.12]` m, with the existing
+support, margins, exclusions, yaw, Z and container-offset checks. Active
+`object_assets` are avocado, lemon and orange. `pool_assets` describes all four
+preloaded actors: pomegranate is always parked, never selected; its asset and
+physics are not removed. This preserves the fixed five-body reset contract.
+
+`/bfm/success` is a recorded measured diagnostic, leaving `/bfm/state` unchanged.
+The selected fruit's enabled collision-mesh local bounding box is transformed
+through live fruit/container poses into container-local coordinates. Every
+corner must lie in the inspected inner-floor polygon extruded to the lowest rim,
+with 3 mm side/top margin and 3 mm floor-contact tolerance. Fruit AND container
+must each remain below 0.02 m/s linear and 0.2 rad/s angular speed for 0.3
+simulation seconds. Backward time, invalid measurements or gaps >0.05 simulation
+seconds reset dwell; duplicate time adds none. The recorder uses this diagnostic
+with existing identity/freshness/atomic-result checks; missing geometry is unknown,
+never a center-only fallback. Success does not imply terminal. Bounds are
+conservative (possible false negatives), not exact cooked PhysX hulls or proof
+of hand release. Provenance, MCAP synchronization and result schema are unchanged.
+
+### Live Isaac 6.1 acceptance (not established by host tests)
+
+Rebuild once, restart Isaac, and use the existing two launch commands:
+
+```bash
+cd /workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select dynamic_biped isaac_eff_control
+source install/setup.bash
+cd ..
+# Terminal 1: bash launch_bfm_isaac.sh
+# Terminal 2: bash start_isaac_control.sh
+```
+
+In Kit's Script Editor after stage attachment, verify the actual runtime object:
+
+```python
+import omni.graph.core as og
+g = og.get_graph_by_path('/World/s40_sharpa_two_cameras/BFM_Clock_ActionGraph')
+assert g.is_valid()
+assert g.get_pipeline_stage() == og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND
+assert g.get_evaluator_name() == 'execution'
+assert g.evaluation_mode == og.GraphEvaluationMode.GRAPH_EVALUATION_MODE_AUTOMATIC
+```
+
+In sourced diagnostic terminals (domain 0), run separately:
+
+```bash
+ros2 topic hz /clock
+ros2 topic hz /bfm/action
+ros2 topic hz /bfm/source/arm_joint_target_rad
+ros2 topic hz /robot_arm_joint_command
+ros2 topic hz /bfm/command/hand_target
+ros2 topic echo /clock --field clock --qos-reliability best_effort
+ros2 topic echo /bfm/action --field header.stamp
+ros2 topic echo /bfm/success
+ros2 bag info records/RECORD/bag
+```
+
+The non-on-demand error must be absent. Clock/actions must be nonzero, action
+stamp increments about 0.1 simulation seconds (within one physics step), while
+controllers follow the higher source rate even at low RTF. `hz` measures wall
+rate, so at RTF 0.3 about 3 action Hz is expected. PAUSE must stop clock/actions;
+PLAY must resume without a burst. Check smooth motion, repeated randomized
+avocado/lemon/orange spawns within bounds, and outside/protruding/moving/settled
+success diagnostics. The final sidecar must agree with the success evaluation.
+MCAP acceptance requires nonzero clock, action, state, arm source/controller,
+held hands, success, all three cameras and robot joint-state streams. A bag with
+zero `/bfm/action` messages is rejected for training regardless of other streams.

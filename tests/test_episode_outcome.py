@@ -33,7 +33,17 @@ class EpisodeOutcomeTests(unittest.TestCase):
 
     def receive(self, node, sample, time=10.):
         with patch.object(self.recorder, 'monotonic', return_value=time):
-            node.state_callback(sample)
+            # Recorder tests inject a diagnostic; actual geometry is tested in
+            # test_four_fixes. The legacy OBB helper remains independently tested.
+            from isaac_eff_control.episode_outcome import final_position_outcome
+            try:
+                if sample.header.frame_id != 'world': raise ValueError('Wrong frame')
+                result, audit = final_position_outcome(sample)
+            except ValueError as error:
+                result, audit = None, {'reason': str(error)}
+            node.success_callback(SimpleNamespace(data=json.dumps(dict(
+                episode_id=node._outcome_identity[0], object_prim_path=node._outcome_identity[1],
+                success=result, **audit))))
 
     def stop(self, node, time=10.1):
         with patch.object(self.recorder, 'monotonic', return_value=time):
@@ -76,7 +86,7 @@ class EpisodeOutcomeTests(unittest.TestCase):
                 saved.pop('terminal'); saved.pop('end_reason')
                 self.assertIs(saved.pop('success'), expected)
                 audit = saved.pop('success_evaluation')
-                self.assertEqual(audit['method'], 'final_object_position_in_goal_obb')
+                self.assertEqual(audit['method'], 'collision_bound_in_floor_prism_and_settled_v1')
                 self.assertFalse(audit['review_required'])
                 self.assertEqual(saved, {k:v for k,v in before.items() if k not in ('success', 'terminal', 'end_reason')})
                 self.assertEqual(bag.read_bytes(), b'unchanged recorded message bytes')

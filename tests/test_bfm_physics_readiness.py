@@ -32,6 +32,9 @@ class PhysicsReadinessTests(GoalTestBase):
         sys.modules['rclpy.executors'].SingleThreadedExecutor = Mock()
         patcher = patch.dict(sys.modules, self.modules)
         patcher.start(); self.addCleanup(patcher.stop)
+        success_patch = patch('isaac_eff_control.fruit_success.LiveFruitSuccess')
+        success_patch.start().return_value.measure.return_value = {'success': False}
+        self.addCleanup(success_patch.stop)
         self.factory = Mock(side_effect=lambda *_: Mock(read=Mock(return_value={
             key: ([0., 0., 0., 1.] if key == 'goal_orientation' else
                   [1., 1., 1.] if key == 'goal_half_extents' else [0.] * size)
