@@ -86,7 +86,7 @@ class EpisodeOutcomeTests(unittest.TestCase):
                 saved.pop('terminal'); saved.pop('end_reason')
                 self.assertIs(saved.pop('success'), expected)
                 audit = saved.pop('success_evaluation')
-                self.assertEqual(audit['method'], 'collision_bound_in_floor_prism_and_settled_v1')
+                self.assertEqual(audit['method'], 'collision_mesh_residence_latched_v2')
                 self.assertFalse(audit['review_required'])
                 self.assertEqual(saved, {k:v for k,v in before.items() if k not in ('success', 'terminal', 'end_reason')})
                 self.assertEqual(bag.read_bytes(), b'unchanged recorded message bytes')
@@ -204,3 +204,39 @@ class EpisodeOutcomeTests(unittest.TestCase):
             text = (harness.ROOT/'exo2isaacsim/src/dynamic_biped/msg'/filename).read_text()
             fields = [line.split()[-1] for line in text.splitlines() if line and not line.startswith('#')]
             self.assertNotIn('success', fields)
+
+    def test_latched_placement_survives_stop_delay_but_not_new_recording(self):
+        from isaac_eff_control.fruit_success import SettledContainment
+        from test_four_fixes import corners
+        node = self.start()
+        detector = SettledContainment([(-.16,-.11),(.16,-.11),(.16,.11),(-.16,.11)], .011, .118)
+        for seconds in (0., .12, .31, .5):
+            result, audit = detector.update(seconds, corners(x=.4 if seconds == .5 else 0.), [0]*4)
+            with patch.object(self.recorder, 'monotonic', return_value=10.):
+                node.success_callback(SimpleNamespace(data=json.dumps(dict(
+                    episode_id=node._outcome_identity[0], object_prim_path=node._outcome_identity[1],
+                    success=result, **audit))))
+        # STOP is allowed to arrive long after the last known placement. The
+        # result is historical, not a stale claim about the current geometry.
+        saved = self.stop(node, time=100.)
+        self.assertTrue(saved['success'])
+        self.assertFalse(saved['success_evaluation']['contained'])
+        self.assertTrue(saved['success_evaluation']['success_latched'])
+        self.assertFalse(saved['terminal'])
+        self.assertEqual(saved['end_reason'], 'user_stop')
+        node.recording_callback(harness.Bool(False))
+        node.recording_callback(harness.Bool(True))
+        self.assertIsNone(self.stop(node, time=101.)['success'])
+
+    def test_rollback_diagnostic_replaces_earned_outcome(self):
+        from isaac_eff_control.fruit_success import SettledContainment
+        from test_four_fixes import corners
+        node = self.start()
+        detector = SettledContainment([(-.16,-.11),(.16,-.11),(.16,.11),(-.16,.11)], .011, .118)
+        for seconds in (0., .31, .01):
+            result, audit = detector.update(seconds, corners(), [0]*4)
+            with patch.object(self.recorder, 'monotonic', return_value=10.):
+                node.success_callback(SimpleNamespace(data=json.dumps(dict(
+                    episode_id=node._outcome_identity[0], object_prim_path=node._outcome_identity[1],
+                    success=result, **audit))))
+        self.assertFalse(self.stop(node)['success'])

@@ -26,8 +26,8 @@ class SuccessTests(unittest.TestCase):
 
     def test_outside_protruding_moving_and_contained(self):
         for p,s,expected in [(corners(.3),(0,0,0,0),False),
-                (corners(.14),(0,0,0,0),False), (corners(),(.2,0,0,0),False),
-                (corners(),(0,.3,0,0),False), (corners(),(0,0,0,.3),False),
+                (corners(.14),(0,0,0,0),False), (corners(),(.2,0,0,0),True),
+                (corners(),(0,.3,0,0),True), (corners(),(0,0,0,.3),True),
                 (corners(),(0,0,0,0),True)]:
             self.assertIs(self.run_dwell(p,s)[0],expected)
 
@@ -36,7 +36,7 @@ class SuccessTests(unittest.TestCase):
         self.assertFalse(self.run_dwell(corners(.10,.08))[0])
         d=self.detector()
         for _ in range(100): self.assertFalse(d.update(0.,corners(),[0]*4)[0])
-        self.assertFalse(d.update(.4,corners(),[0]*4)[0])  # Missing history.
+        self.assertTrue(d.update(.4,corners(),[0]*4)[0])  # Skipped callbacks retain residence.
         self.assertFalse(d.update(0.,corners(),[0]*4)[0])  # Reset.
 
     def test_actual_four_assets_and_rotated_container(self):

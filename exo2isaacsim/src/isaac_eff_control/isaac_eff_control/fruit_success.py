@@ -1,8 +1,12 @@
-"""Conservative collision-bound containment and simulation-time dwell; no writes."""
+"""Collision-mesh placement with simulation-time confirmation and episode latch."""
 import itertools
 import math
 
+import numpy as np
+
 TOPIC = '/bfm/success'
+METHOD = 'collision_mesh_residence_latched_v2'
+DWELL_NS = 300_000_000
 
 
 def hull(points):
@@ -20,29 +24,88 @@ def hull(points):
 
 
 class SettledContainment:
+    """Confirm sampled residence, independently of update rate or wall time.
+
+    Unobserved intervals between valid contained samples count as residence;
+    they are not proof of continuous collision/contact. No callback-rate gate.
+    An observed exit/invalid sample breaks qualification. Earned success is an
+    episode outcome and survives later exits/invalid samples until reset.
+    """
+
     def __init__(self, polygon, floor, ceiling):
         self.polygon, self.floor, self.ceiling = polygon, floor, ceiling
-        self.since = self.last = None
+        edges = np.asarray(polygon, dtype=float)
+        if (edges.ndim != 2 or edges.shape[1] != 2 or len(edges) < 3
+                or not np.isfinite(edges).all() or not math.isfinite(floor)
+                or not math.isfinite(ceiling) or floor >= ceiling):
+            raise ValueError('Invalid container interior')
+        delta = np.roll(edges, -1, axis=0) - edges
+        lengths = np.linalg.norm(delta, axis=1)
+        if np.any(lengths == 0):
+            raise ValueError('Degenerate container interior edge')
+        self.normals = np.column_stack((-delta[:, 1], delta[:, 0])) / lengths[:, None]
+        self.offsets = np.sum(edges * self.normals, axis=1)
+        self.reset()
 
-    def update(self, seconds, corners, speeds):
-        if not math.isfinite(seconds) or seconds < 0 or len(corners)!=8 or len(speeds)!=4:
-            raise ValueError('Invalid success sample dimensions/time')
-        if not all(math.isfinite(v) for p in corners for v in p) or not all(map(math.isfinite, speeds)):
-            self.since = self.last = None
-            raise ValueError('Nonfinite success measurement')
-        inside = all(self.floor-.003 <= p[2] <= self.ceiling-.003 and all(
-            ((b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0])) /
-            math.hypot(b[0]-a[0], b[1]-a[1]) >= .003
-            for a,b in zip(self.polygon,self.polygon[1:]+self.polygon[:1])) for p in corners)
-        stable = all(v <= limit for v,limit in zip(speeds,(.02,.2,.02,.2)))
-        if self.last is None or seconds < self.last or seconds-self.last > .05 or not inside or not stable:
-            self.since = seconds if inside and stable else None
-        self.last = seconds
-        dwell = seconds-self.since if self.since is not None else 0.
-        return bool(inside and stable and dwell >= .3-1e-9), dict(
-            method='collision_bound_in_floor_prism_and_settled_v1', contained=inside,
-            stable=stable, stable_duration_sim_sec=dwell, simulation_seconds=seconds,
-            linear_limit_m_s=.02, angular_limit_rad_s=.2, required_dwell_sim_sec=.3)
+    def reset(self):
+        """New episode/physics epoch: discard qualification AND earned success."""
+        self.since_ns = self.last_ns = self.first_success_ns = None
+
+    def invalid_sample(self, reason):
+        """Break pending residence; never invent success from missing data."""
+        self.since_ns = None
+        return dict(method=METHOD, success=True if self.first_success_ns is not None else None,
+                    contained=None, stable=None, measurement_valid=False, reason=str(reason),
+                    stable_duration_sim_sec=0., simulation_seconds=None, **self._semantics())
+
+    def _semantics(self):
+        return dict(required_dwell_sim_sec=DWELL_NS / 1e9, velocity_gate=False,
+                    stability_semantics='sampled_container_residence',
+                    success_semantics='episode_success_once',
+                    success_latched=self.first_success_ns is not None,
+                    first_success_sim_sec=(None if self.first_success_ns is None else
+                                           self.first_success_ns / 1e9))
+
+    def update(self, seconds, points, speeds):
+        try:
+            if not math.isfinite(seconds) or seconds < 0:
+                raise ValueError('Invalid success simulation time')
+            now_ns = round(seconds * 1_000_000_000)
+            # Check rollback even if the new pose later proves invalid.
+            if self.last_ns is not None and now_ns < self.last_ns:
+                self.reset()
+            points = np.asarray(points, dtype=float)
+            if (points.ndim != 2 or points.shape[1] != 3 or len(points) < 4
+                    or len(speeds) != 4 or not np.isfinite(points).all()
+                    or not all(math.isfinite(v) and v >= 0 for v in speeds)):
+                raise ValueError('Invalid success geometry/velocity telemetry')
+        except (ValueError, TypeError, OverflowError):
+            self.invalid_sample('Invalid success sample')
+            raise ValueError('Invalid success sample') from None
+
+        # A convex interior contains every mesh triangle (and its convex hull)
+        # iff it contains its vertices. No artificial AABB empty-space corners.
+        side_clearance = float(np.min(points[:, 0, None] * self.normals[:, 0]
+                                      + points[:, 1, None] * self.normals[:, 1] - self.offsets))
+        floor_clearance = float(points[:, 2].min() - self.floor)
+        rim_clearance = float(self.ceiling - points[:, 2].max())
+        inside = floor_clearance >= -.003 and rim_clearance >= .003 and side_clearance >= .003
+        interval = None if self.last_ns is None else (now_ns - self.last_ns) / 1e9
+        if not inside:
+            self.since_ns = None
+        elif self.since_ns is None:
+            self.since_ns = now_ns
+        self.last_ns = now_ns
+        dwell_ns = 0 if self.since_ns is None else now_ns - self.since_ns
+        qualified = inside and dwell_ns >= DWELL_NS
+        if qualified and self.first_success_ns is None:
+            self.first_success_ns = now_ns
+        return self.first_success_ns is not None, dict(
+            method=METHOD, contained=inside, stable=qualified, measurement_valid=True,
+            stable_duration_sim_sec=dwell_ns / 1e9, simulation_seconds=seconds,
+            sample_interval_sim_sec=interval, collision_vertices_tested=len(points),
+            floor_clearance_m=floor_clearance, rim_clearance_m=rim_clearance,
+            side_clearance_m=side_clearance, **self._semantics())
 
 
 class LiveFruitSuccess:
@@ -62,6 +125,7 @@ class LiveFruitSuccess:
                 transform = cache.GetLocalToWorldTransform(p)*inverse
                 points.extend(transform.Transform(v) for v in UsdGeom.Mesh(p).GetPointsAttr().Get())
         if not points: raise ValueError('Fruit collision mesh missing')
+        self.vertices = np.unique(np.asarray(points, dtype=float), axis=0)
         self.corners = list(itertools.product(*[(min(p[i] for p in points),max(p[i] for p in points)) for i in range(3)]))
         body = stage.GetPrimAtPath(self.container)
         mesh = stage.GetPrimAtPath(self.container+'/Container_B04_01')
@@ -96,9 +160,11 @@ class LiveFruitSuccess:
             m = Gf.Matrix4d(1); m.SetRotate(q); m.SetTranslateOnly(Gf.Vec3d(*pose[:3]))
             return m, [math.hypot(*velocity[:3]),math.hypot(*velocity[3:])]
         fruit, a = matrix('object_prim_path'); container,b = matrix('container_prim_path')
-        relative = fruit*container.GetInverse()
-        corners = [relative.Transform(Gf.Vec3d(*p)) for p in self.corners]
-        success,audit = self.detector.update(seconds,corners,a+b)
+        # Gf matrices transform row vectors; cached vertices include child
+        # transforms/scales, while live tensor poses supply the rigid-body pose.
+        relative = np.asarray(fruit*container.GetInverse())
+        points = self.vertices @ relative[:3, :3] + relative[3, :3]
+        success,audit = self.detector.update(seconds,points,a+b)
         return dict(episode_id=self.episode_id, object_prim_path=self.path, success=success,
                     speed_norms_linear_angular_fruit_container=a+b,
                     collision_bound_body_min=[min(p[i] for p in self.corners) for i in range(3)],

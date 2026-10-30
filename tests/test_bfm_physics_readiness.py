@@ -221,3 +221,65 @@ class PhysicsReadinessTests(GoalTestBase):
         self.assertEqual(self.handle.phase,'failed')
         self.assertEqual(self.node.publisher.publish.call_count,published)
         self.assertTrue(all(b.writes == ['pose','velocity'] for b in bodies.values()))
+
+    def test_success_uses_physics_time_without_changing_state_timestamp_or_views(self):
+        from isaac_eff_control.fruit_success import SettledContainment
+        from test_four_fixes import corners
+        detector = SettledContainment([(-.16,-.11),(.16,-.11),(.16,.11),(-.16,.11)], .011, .118)
+        def measure(sampler, seconds):
+            success, audit = detector.update(seconds, corners(), [0]*4)
+            return dict(success=success, **audit)
+        self.node.success_detector = SimpleNamespace(detector=detector, measure=measure, episode_id='test')
+        self.node.success_time_source = self.manager.get_simulation_time
+        self.node.success_publisher = Mock()
+        self.ready()
+        sampler = self.node.sampler
+        import json
+        for index, seconds in enumerate((0., 0., .12, .22, .31)):
+            self.timeline.get_current_time.return_value = index + 1.
+            self.manager.get_simulation_time.return_value = seconds
+            self.update(None)
+            diagnostic = json.loads(self.node.success_publisher.publish.call_args.args[0].data)
+            self.assertEqual(diagnostic['simulation_seconds'], seconds)
+            self.assertEqual(diagnostic['success'], seconds >= .3)
+            self.assertEqual(self.node.publisher.publish.call_args.args[0].header.stamp.sec, index+1)
+        self.assertIs(self.node.sampler, sampler)
+        self.assertIsNotNone(detector.first_success_ns)
+        self.timeline.is_playing.return_value = False
+        count = self.node.success_publisher.publish.call_count
+        self.event(SimpleNamespace(type=3)); self.update(None)
+        self.assertEqual(self.node.success_publisher.publish.call_count, count)
+        self.assertIsNotNone(detector.first_success_ns)
+        self.event(SimpleNamespace(type=2))
+        self.assertIsNone(detector.first_success_ns)
+        self.assertIsNone(detector.since_ns)
+        self.update(None)  # STOP/reset must not overwrite the last diagnostic.
+        self.assertEqual(self.node.success_publisher.publish.call_count, count)
+
+    def test_success_constructor_binds_official_physics_clock(self):
+        self.install_live_episode()
+        self.assertIs(self.node.success_time_source, self.manager.get_simulation_time)
+
+    def test_success_measurement_error_breaks_pending_dwell_and_preserves_earned_label(self):
+        from isaac_eff_control.fruit_success import SettledContainment
+        from test_four_fixes import corners
+        import json
+        detector = SettledContainment([(-.16,-.11),(.16,-.11),(.16,.11),(-.16,.11)], .011, .118)
+        self.node.success_detector = SimpleNamespace(detector=detector,
+            measure=Mock(side_effect=ValueError('invalid physics pose')), episode_id='test')
+        self.node.success_publisher = Mock()
+        self.ready()
+        detector.update(0., corners(), [0]*4)
+        self.update(None)
+        diagnostic = json.loads(self.node.success_publisher.publish.call_args.args[0].data)
+        self.assertIsNone(diagnostic['success'])
+        self.assertIsNone(detector.since_ns)
+        detector.update(.1, corners(), [0]*4)
+        detector.update(.4, corners(), [0]*4)
+        self.timeline.get_current_time.return_value = .5
+        self.update(None)
+        diagnostic = json.loads(self.node.success_publisher.publish.call_args.args[0].data)
+        self.assertTrue(diagnostic['success'])
+        self.assertFalse(diagnostic['measurement_valid'])
+        self.assertIsNone(diagnostic['contained'])
+        self.assertTrue(self.node.enabled)

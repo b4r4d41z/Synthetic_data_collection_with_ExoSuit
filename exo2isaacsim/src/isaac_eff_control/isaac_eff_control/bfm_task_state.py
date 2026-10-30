@@ -244,6 +244,7 @@ class BfmTaskStatePublisher(Node):
         self.stage, self.factory = stage, sampler_factory
         self.last_time = None
         self.success_detector = None
+        self.success_time_source = None
         self.sampler = None
         self._reported_counts = False
         if not self.enabled:
@@ -264,6 +265,8 @@ class BfmTaskStatePublisher(Node):
         self.get_logger().info(f"Measured /bfm/state in {self.config['state_frame']}: {self.config}")
 
     def reset(self):
+        if self.success_detector is not None:
+            self.success_detector.detector.reset()
         self.last_time = None
         self.sampler = None  # Recreate PhysX views after Stop/Play.
         self._reported_counts = False
@@ -308,12 +311,17 @@ class BfmTaskStatePublisher(Node):
             import json
             from std_msgs.msg import String
             try:
-                result = self.success_detector.measure(self.sampler, simulation_seconds)
+                # Only success uses completed physics time. Keep /bfm/state's
+                # existing timestamp and publication contract unchanged.
+                seconds = (self.success_time_source() if self.success_time_source is not None
+                           else simulation_seconds)
+                result = self.success_detector.measure(self.sampler, seconds)
+                result['clock_domain'] = 'isaac_physics_simulation_time'
             except (ValueError, RuntimeError, KeyError, TypeError, IndexError, AttributeError) as error:
                 result = dict(episode_id=self.success_detector.episode_id,
-                              object_prim_path=self.config['object_prim_path'], success=None,
-                              reason=str(error), simulation_seconds=simulation_seconds)
-                self.success_detector.detector.since = None
+                              object_prim_path=self.config['object_prim_path'],
+                              clock_domain='isaac_physics_simulation_time',
+                              **self.success_detector.detector.invalid_sample(error))
             diagnostic = String(); diagnostic.data = json.dumps(result, allow_nan=False)
             self.success_publisher.publish(diagnostic)
         self.last_time = simulation_seconds
@@ -389,6 +397,7 @@ def start_task_state_publisher(*, episode=None, **parameters):
         from std_msgs.msg import String
         try:
             node.success_detector = LiveFruitSuccess(stage, node.config, episode['episode_id'])
+            node.success_time_source = SimulationManager.get_simulation_time
         except (ValueError, RuntimeError) as error:
             node.get_logger().warning(f'Success geometry unavailable; outcome requires review: {error}')
         node.success_publisher = node.create_publisher(String, TOPIC, 10)

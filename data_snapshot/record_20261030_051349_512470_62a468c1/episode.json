@@ -8,14 +8,14 @@
   "result_schema_version": 1,
   "terminal": false,
   "end_reason": "user_stop",
-  "success": false,
+  "success": true,
   "recording_code": {
     "repository": "https://github.com/b4r4d41z/Synthetic_data_collection_with_ExoSuit",
     "status": "available",
-    "commit_sha": "2be4c1444faf59db070d365b578f88b07bc37899",
+    "commit_sha": "2925af6cdb38dd3ffddc34311fb38e5567e2eacd",
     "dirty": true,
-    "dirty_sha256": "42600816b6799231c07f72b349f947e83f266740c673a2ab4bee71f0abbf5132",
-    "executing_module_sha256": "99e2165870403dc1339e38a31f50b7b509cee30a0401466983fd17802bdaa0d0",
+    "dirty_sha256": "063996ad1ab9bef314c0a9d9b43204ea9f1de6370b80b39e458f601d15bd9351",
+    "executing_module_sha256": "bd17aacd209bfd094e39659e5771cbe203aa9cf4fde09b30b6ef66585bcb05ac",
     "dirty_digest_format": "sha256-length-prefixed-head-diff-and-sorted-untracked-v1"
   },
   "clock_domains": {
@@ -36,7 +36,7 @@
     "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
     "controller_application_time": "not measured by action/source headers; use measured state for response analysis"
   },
-  "created_at": "2026-10-30T03:08:04.310337+00:00",
+  "created_at": "2026-10-30T05:13:49.512143+00:00",
   "time": {
     "synchronization_source": "rosbag_record_timestamp",
     "header_stamp": "source_native"
@@ -435,7 +435,7 @@
       },
       "reference_prim_path": "/",
       "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-      "object_prim_path": "/World/Task/Fruits/lemon1",
+      "object_prim_path": "/World/Task/Fruits/orange2",
       "container_prim_path": "/World/container_b04",
       "goal_local_center": [
         -0.08494214117424082,
@@ -458,7 +458,7 @@
       "configured": true,
       "scene_configuration": {
         "file": "/workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim/build/isaac_eff_control/isaac_eff_control/sorting_scene.json",
-        "sha256": "71e8ef1b0cf87c4b1560ba0d3dfe86158c0e178dc5bb606cc99c55ce01312767",
+        "sha256": "235f89f502dad8bfa873a837d5f7b1fca1e0d8788f471ceb1edbcc43e681b873",
         "scene": "models/stages/stage_sorting_v1.usd",
         "provenance": {
           "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
@@ -497,15 +497,16 @@
           "fruit_pool_asset": "models/stages/fruit_pool.usda",
           "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289",
           "success_detector": {
-            "method": "collision_bound_in_floor_prism_and_settled_v1",
+            "method": "collision_mesh_residence_latched_v2",
             "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
-            "bounds": "enabled selected-fruit collision mesh bounds, transformed through live fruit and container rigid-body poses",
+            "bounds": "all enabled selected-fruit collision mesh vertices, transformed through live fruit and intended container rigid-body poses",
             "margin_m": 0.003,
             "floor_tolerance_m": 0.003,
             "settle_sim_sec": 0.3,
-            "max_sample_gap_sim_sec": 0.05,
-            "linear_limit_m_s": 0.02,
-            "angular_limit_rad_s": 0.2,
+            "clock": "SimulationManager.get_simulation_time; completed physics time",
+            "qualification": "elapsed simulation time across contained observations; duplicate time adds nothing; exit or invalid measurement clears pending dwell; no callback-gap cutoff",
+            "success_semantics": "episode_success_once; latched until episode/physics reset or simulation-time rollback; independent of terminal",
+            "velocity_gate": false,
             "runtime_verified": false
           }
         },
@@ -564,21 +565,21 @@
       "runtime_verified": false
     },
     "episode": {
-      "episode_id": "aa1c54933f2b4795a6e39ecc4a75eaa6",
-      "asset": "lemon1.usd",
-      "asset_path": "models/addons/objects/fruits_veggies/lemon1.usd",
-      "object_prim_path": "/World/Task/Fruits/lemon1",
+      "episode_id": "3f5297bdc2aa465bb9313eda8db3d1cb",
+      "asset": "orange2.usd",
+      "asset_path": "models/addons/objects/fruits_veggies/orange2.usd",
+      "object_prim_path": "/World/Task/Fruits/orange2",
       "position": [
-        1.0068035454784403,
-        4.059245239222832,
-        0.7538757458700442
+        1.0062169018381224,
+        4.0530796712064285,
+        0.75505949915136
       ],
-      "yaw": -0.251792906486052,
+      "yaw": -2.871129902876482,
       "orientation_xyzw": [
         -0.0,
         -0.0,
-        -0.1255641419865299,
-        0.9920855034961384
+        -0.990870163799883,
+        0.13481957755160448
       ],
       "body_poses": {
         "/World/Task/Fruits/avocado": [
@@ -591,13 +592,13 @@
           1.0
         ],
         "/World/Task/Fruits/lemon1": [
-          1.0068035454784403,
-          4.059245239222832,
-          0.7538757458700442,
-          -0.0,
-          -0.0,
-          -0.1255641419865299,
-          0.9920855034961384
+          102.0,
+          100.0,
+          1.9288761094165965,
+          0.0,
+          0.0,
+          0.0,
+          1.0
         ],
         "/World/Task/Fruits/pomegranate": [
           104.0,
@@ -609,17 +610,17 @@
           1.0
         ],
         "/World/Task/Fruits/orange2": [
-          106.0,
-          100.0,
-          1.9300598623693803,
-          0.0,
-          0.0,
-          0.0,
-          1.0
+          1.0062169018381224,
+          4.0530796712064285,
+          0.75505949915136,
+          -0.0,
+          -0.0,
+          -0.990870163799883,
+          0.13481957755160448
         ],
         "/World/container_b04": [
-          1.1213884519821533,
-          4.486976389319303,
+          1.1179286213318578,
+          4.382179506685872,
           0.7499995231628418,
           0.0,
           0.0,
@@ -633,26 +634,26 @@
           100.0,
           1.9298255373677238
         ],
+        "/World/Task/Fruits/lemon1": [
+          102.0,
+          100.0,
+          1.9288761094165965
+        ],
         "/World/Task/Fruits/pomegranate": [
           104.0,
           100.0,
           1.9302100912563036
-        ],
-        "/World/Task/Fruits/orange2": [
-          106.0,
-          100.0,
-          1.9300598623693803
         ]
       },
       "container_prim_path": "/World/container_b04",
       "container_position": [
-        1.1213884519821533,
-        4.486976389319303,
+        1.1179286213318578,
+        4.382179506685872,
         0.7499995231628418
       ],
       "container_offset": [
-        0.031579868722570764,
-        0.045530084998014406,
+        0.02812003807227531,
+        -0.059266797635416875,
         0.0
       ],
       "container_transform": [
@@ -675,8 +676,8 @@
           0.0
         ],
         [
-          1.1213884519821533,
-          4.486976389319303,
+          1.1179286213318578,
+          4.382179506685872,
           0.7499995231628418,
           1.0
         ]
@@ -684,26 +685,26 @@
     }
   },
   "success_evaluation": {
-    "method": "collision_bound_in_floor_prism_and_settled_v1",
-    "episode_id": "aa1c54933f2b4795a6e39ecc4a75eaa6",
-    "object_prim_path": "/World/Task/Fruits/lemon1",
-    "evaluated_at": "2026-10-30T03:08:25.848236+00:00",
-    "success": false,
+    "method": "collision_mesh_residence_latched_v2",
+    "episode_id": "3f5297bdc2aa465bb9313eda8db3d1cb",
+    "object_prim_path": "/World/Task/Fruits/orange2",
+    "evaluated_at": "2026-10-30T05:14:12.868758+00:00",
+    "success": true,
     "speed_norms_linear_angular_fruit_container": [
-      0.11087017214371557,
-      6.558587532838204,
-      0.030840218487770407,
-      0.23936643322339213
+      0.00870412224161125,
+      0.25603726731937715,
+      0.008206819366196189,
+      0.0038145787067188166
     ],
     "collision_bound_body_min": [
-      -0.03808565065264702,
-      -0.024803757667541504,
-      0.0011238913284614682
+      -0.035910919308662415,
+      -0.035911254584789276,
+      -5.986162432236597e-05
     ],
     "collision_bound_body_max": [
-      0.03807544335722923,
-      0.024774428457021713,
-      0.05179984122514725
+      0.03591092303395271,
+      0.035911258310079575,
+      0.07345886528491974
     ],
     "interior_floor_polygon": [
       [
@@ -821,14 +822,24 @@
     ],
     "interior_floor": 0.010474557988345623,
     "interior_ceiling": 0.1179291307926178,
-    "contained": false,
-    "stable": false,
-    "stable_duration_sim_sec": 0.0,
-    "simulation_seconds": 9.583333333333389,
-    "linear_limit_m_s": 0.02,
-    "angular_limit_rad_s": 0.2,
+    "contained": true,
+    "stable": true,
+    "measurement_valid": true,
+    "stable_duration_sim_sec": 1.216666667,
+    "simulation_seconds": 15.966666666666667,
+    "sample_interval_sim_sec": 0.016666667,
+    "collision_vertices_tested": 10408,
+    "floor_clearance_m": -0.0020819421636766033,
+    "rim_clearance_m": 0.03780143554240023,
+    "side_clearance_m": 0.07767136543901287,
     "required_dwell_sim_sec": 0.3,
-    "state_age_sec": 0.04968860799999675,
+    "velocity_gate": false,
+    "stability_semantics": "sampled_container_residence",
+    "success_semantics": "episode_success_once",
+    "success_latched": true,
+    "first_success_sim_sec": 15.05,
+    "clock_domain": "isaac_physics_simulation_time",
+    "state_age_sec": 0.008185734001017408,
     "review_required": false
   }
 }

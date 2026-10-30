@@ -26,6 +26,7 @@ from std_msgs.msg import Bool
 
 from .bfm_episode import ACK_TOPIC, CONTROL_TOPIC, EPISODE_TOPIC
 from .recording_provenance import recording_code_provenance
+from .fruit_success import METHOD as SUCCESS_METHOD
 from .episode_outcome import atomic_outcome_update, final_position_outcome
 
 from .bfm_contract import (
@@ -228,7 +229,7 @@ class SimRecorder(Node):
         """Freeze before rosbag wait/escalation; retries keep this same snapshot."""
         if self._outcome_identity is None or self._pending_outcome is not None:
             return
-        audit = {"method": "collision_bound_in_floor_prism_and_settled_v1",
+        audit = {"method": SUCCESS_METHOD,
                  "episode_id": self._outcome_identity[0], "object_prim_path": self._outcome_identity[1],
                  "evaluated_at": datetime.now().astimezone().isoformat()}
         success, error = None, self._outcome_error
@@ -237,9 +238,14 @@ class SimRecorder(Node):
         elif self._outcome_state is not None:
             result, geometry, received, identity = self._outcome_state
             age = monotonic() - received
+            # A confirmed historical placement is not a final-pose estimate.
+            # Preserve it across STOP delivery delays; unqualified/legacy samples
+            # still require freshness. Identity and abnormal-stop checks remain.
+            confirmed = (result is True and geometry.get('method') == SUCCESS_METHOD
+                         and geometry.get('success_latched') is True)
             if identity != self._outcome_identity:
                 error = "Cached state episode/object identity mismatch"
-            elif not 0 <= age <= self.bfm_state_max_age_sec:
+            elif age < 0 or (age > self.bfm_state_max_age_sec and not confirmed):
                 error = "Final BFM state is stale"
             else:
                 success, error = result, None

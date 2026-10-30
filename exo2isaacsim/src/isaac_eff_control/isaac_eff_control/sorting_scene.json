@@ -63,15 +63,16 @@
     "fruit_pool_asset": "models/stages/fruit_pool.usda",
     "fruit_pool_sha256": "c0b760b83567919e7faf1ca4f79def9a0fe2e1c7108aaf77795e7891911eb289",
     "success_detector": {
-      "method": "collision_bound_in_floor_prism_and_settled_v1",
+      "method": "collision_mesh_residence_latched_v2",
       "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
-      "bounds": "enabled selected-fruit collision mesh bounds, transformed through live fruit and container rigid-body poses",
+      "bounds": "all enabled selected-fruit collision mesh vertices, transformed through live fruit and intended container rigid-body poses",
       "margin_m": 0.003,
       "floor_tolerance_m": 0.003,
       "settle_sim_sec": 0.3,
-      "max_sample_gap_sim_sec": 0.05,
-      "linear_limit_m_s": 0.02,
-      "angular_limit_rad_s": 0.2,
+      "clock": "SimulationManager.get_simulation_time; completed physics time",
+      "qualification": "elapsed simulation time across contained observations; duplicate time adds nothing; exit or invalid measurement clears pending dwell; no callback-gap cutoff",
+      "success_semantics": "episode_success_once; latched until episode/physics reset or simulation-time rollback; independent of terminal",
+      "velocity_gate": false,
       "runtime_verified": false
     }
   },
