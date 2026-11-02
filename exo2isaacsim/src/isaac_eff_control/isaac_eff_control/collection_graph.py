@@ -1,4 +1,4 @@
-"""Only frame identities and the simulation-clock trigger, before PLAY."""
+"""Transient camera cadence/identities and the physics clock, before PLAY."""
 import json
 from pathlib import Path
 
@@ -6,28 +6,133 @@ CAMERA_FRAMES = {name: f'{name}_camera' for name in ('head', 'left_wrist', 'righ
 GRAPH_ROOT = '/World/s40_sharpa_two_cameras'
 
 
-def configure_collection_graph(stage):
-    from pxr import Sdf, Usd
+CAMERA_RATE_HZ = 15.0
+
+
+def _camera_bindings(stage):
+    """Validate the saved creation recipe; render products are allocated at PLAY."""
+    from pxr import Sdf, UsdGeom, UsdRender
     cameras = json.loads(Path(__file__).with_name('camera_metadata.json').read_text())['cameras']
+    expected = {f'/sensors/camera/{name}/image_raw' for name in CAMERA_FRAMES}
     helpers = {}
-    for prim in Usd.PrimRange(stage.GetPrimAtPath(GRAPH_ROOT + '/Control_ActionGraph')):
+    for prim in stage.Traverse():
         if prim.GetAttribute('node:type').Get() == 'isaacsim.ros2.bridge.ROS2CameraHelper':
             topic = prim.GetAttribute('inputs:topicName').Get()
             if topic in helpers:
-                raise ValueError(f'Duplicate camera helper for {topic}')
+                raise ValueError(f'[BFM CAMERA] Duplicate camera helper for {topic}')
             helpers[topic] = prim
-    if set(helpers) != {c['topic'] for c in cameras.values()}:
-        raise ValueError('Expected the three configured camera publishers')
+    if set(cameras) != set(CAMERA_FRAMES) or set(helpers) != expected:
+        raise ValueError(f'[BFM CAMERA] Expected three camera helpers {sorted(expected)}; got {list(helpers)}')
+    bindings = {}
+    for name, info in cameras.items():
+        topic = f'/sensors/camera/{name}/image_raw'
+        if info['topic'] != topic or info['resolution'] != [640, 480]:
+            raise ValueError(f'[BFM CAMERA] {name}: unexpected topic/resolution metadata')
+        helper = helpers[topic]
+        camera_path = Sdf.Path(info['usd_camera_prim']).ReplacePrefix(
+            Sdf.Path('/biped_s40_with_sharpa_wave_hands'), Sdf.Path(GRAPH_ROOT))
+        camera = stage.GetPrimAtPath(camera_path)
+        if not camera or not camera.IsActive() or not camera.IsA(UsdGeom.Camera):
+            raise ValueError(f'[BFM CAMERA] {name}: missing Camera {camera_path}')
+        source = helper.GetAttribute('inputs:renderProductPath').GetConnections()
+        if len(source) != 1 or source[0].name != 'outputs:renderProductPath':
+            raise ValueError(f'[BFM CAMERA] {name}: missing/invalid render-product connection')
+        creator = stage.GetPrimAtPath(source[0].GetPrimPath())
+        if (not creator or not creator.IsActive() or
+                creator.GetAttribute('node:type').Get() != 'isaacsim.core.nodes.IsaacCreateRenderProduct'):
+            raise ValueError(f'[BFM CAMERA] {name}: invalid render-product creator {source[0]}')
+        targets = creator.GetRelationship('inputs:cameraPrim').GetForwardedTargets()
+        if targets != [camera_path]:
+            raise ValueError(f'[BFM CAMERA] {name}: creator camera {targets} != {camera_path}')
+        if helper.GetAttribute('inputs:execIn').GetConnections() != [creator.GetPath().AppendProperty('outputs:execOut')]:
+            raise ValueError(f'[BFM CAMERA] {name}: helper execIn must follow its render-product creator')
+        trigger = creator.GetAttribute('inputs:execIn').GetConnections()
+        step = stage.GetPrimAtPath(trigger[0].GetPrimPath()) if len(trigger) == 1 else None
+        if (not step or not step.IsActive() or trigger[0].name != 'outputs:step' or
+                step.GetAttribute('node:type').Get() != 'isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame'):
+            raise ValueError(f'[BFM CAMERA] {name}: invalid render-product initialization trigger')
+        ticks = step.GetAttribute('inputs:execIn').GetConnections()
+        playback = stage.GetPrimAtPath(ticks[0].GetPrimPath()) if len(ticks) == 1 else None
+        if (not playback or not playback.IsActive() or ticks[0].name != 'outputs:tick' or
+                playback.GetAttribute('node:type').Get() != 'omni.graph.action.OnPlaybackTick'):
+            raise ValueError(f'[BFM CAMERA] {name}: missing playback initialization path')
+        for prim, fields in ((helper, ('topicName', 'type', 'enabled', 'frameSkipCount', 'frameId')),
+                             (creator, ('width', 'height', 'enabled'))):
+            if any(prim.GetAttribute('inputs:'+field).GetConnections() for field in fields):
+                raise ValueError(f'[BFM CAMERA] {name}: dynamic publisher settings are unsupported')
+            if prim.GetAttribute('inputs:enabled').Get() is False:
+                raise ValueError(f'[BFM CAMERA] {name}: disabled publisher/render product')
+        # Unauthored values use Isaac's rgb / zero-skip defaults.
+        if helper.GetAttribute('inputs:type').Get() not in (None, 'rgb'):
+            raise ValueError(f'[BFM CAMERA] {name}: expected RGB helper')
+        if helper.GetAttribute('inputs:frameSkipCount').Get() not in (None, 0):
+            raise ValueError(f'[BFM CAMERA] {name}: remove deprecated nonzero frameSkipCount; use sensor tickRate')
+        resolution = [creator.GetAttribute('inputs:'+key).Get() for key in ('width', 'height')]
+        if resolution != info['resolution']:
+            raise ValueError(f'[BFM CAMERA] {name}: render-product resolution {resolution} != 640x480')
+        # An empty target is normal: IsaacCreateRenderProduct creates it at PLAY.
+        # If an existing product is supplied, validate its real camera relationship.
+        products = creator.GetRelationship('inputs:renderProductPrim').GetForwardedTargets()
+        if len(products) > 1:
+            raise ValueError(f'[BFM CAMERA] {name}: multiple render-product targets')
+        if products:
+            product = UsdRender.Product(stage.GetPrimAtPath(products[0]))
+            if (not product or product.GetCameraRel().GetForwardedTargets() != [camera_path]
+                    or list(product.GetResolutionAttr().Get()) != info['resolution']):
+                raise ValueError(f'[BFM CAMERA] {name}: invalid render product {products[0]}')
+        bindings[name] = (camera, creator, helper)
+    return bindings
+
+
+def _set_camera_rate(camera):
+    """Isaac 6.x generic USD API (no camera wrapper or geometry writes)."""
+    from pxr import Sdf, Usd
+    if not Usd.SchemaRegistry().FindAppliedAPIPrimDefinition('OmniSensorAPI'):
+        raise RuntimeError('[BFM CAMERA] OmniSensorAPI unavailable; load the Isaac Sim 6.x sensor schema')
+    if not camera.ApplyAPI('OmniSensorAPI'):
+        raise RuntimeError(f'[BFM CAMERA] Cannot apply OmniSensorAPI to {camera.GetPath()}')
+    camera.CreateAttribute('omni:sensor:tickRate', Sdf.ValueTypeNames.Float, custom=False).Set(CAMERA_RATE_HZ)
+
+
+def validate_camera_publishers(stage):
+    """Read-only check of the graph recipe and effective session configuration."""
+    bindings = _camera_bindings(stage)
+    for name, (camera, _, helper) in bindings.items():
+        schemas = camera.GetMetadata('apiSchemas')
+        rate = camera.GetAttribute('omni:sensor:tickRate')
+        if (not schemas or 'OmniSensorAPI' not in schemas.GetAppliedItems()
+                or not rate or rate.Get() != CAMERA_RATE_HZ or rate.ValueMightBeTimeVarying()
+                or rate.GetConnections()):
+            raise ValueError(f'[BFM CAMERA] {name}: expected OmniSensorAPI tickRate={CAMERA_RATE_HZ} Hz')
+        if helper.GetAttribute('inputs:frameId').Get() != CAMERA_FRAMES[name]:
+            raise ValueError(f'[BFM CAMERA] {name}: unexpected frame identity')
+    return bindings
+
+
+def configure_camera_publishers(stage):
+    """Request equal sensor/render cadence, not frame skipping or duplicated images.
+
+    Isaac 6.x multi-tick rendering uses physics simulation time. A requested
+    15 Hz cannot guarantee 15 wall Hz or deadlines under low RTF/GPU overload.
+    """
+    from pxr import Sdf, Usd
+    bindings = _camera_bindings(stage)  # Validate every mapping before authoring.
+    with Usd.EditContext(stage, stage.GetSessionLayer()):
+        for name, (camera, _, helper) in bindings.items():
+            _set_camera_rate(camera)
+            helper.CreateAttribute('inputs:frameId', Sdf.ValueTypeNames.String).Set(CAMERA_FRAMES[name])
+    validate_camera_publishers(stage)
+    print(f'[BFM CAMERA] three cameras validated (head, left_wrist, right_wrist); '
+          f'target={CAMERA_RATE_HZ:g} Hz simulation time; runtime/session configuration active', flush=True)
+
+
+def configure_collection_graph(stage):
     graph = GRAPH_ROOT + '/Data_collection_ActionGraph'
     clock = stage.GetPrimAtPath(graph + '/ros2_publish_clock')
     if clock.GetAttribute('node:type').Get() != 'isaacsim.ros2.bridge.ROS2PublishClock':
         raise ValueError('Expected the existing /clock publisher')
-    # Session opinions avoid rewriting binary scenes or robot/reference assets.
-    # Only /clock changes trigger; joint-state and camera triggers stay intact.
-    with Usd.EditContext(stage, stage.GetSessionLayer()):
-        for name, camera in cameras.items():
-            helpers[camera['topic']].CreateAttribute('inputs:frameId', Sdf.ValueTypeNames.String).Set(CAMERA_FRAMES[name])
-        configure_physics_clock(stage)
+    configure_camera_publishers(stage)
+    configure_physics_clock(stage)
 
 
 def configure_physics_clock(stage):

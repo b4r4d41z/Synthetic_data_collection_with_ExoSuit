@@ -173,14 +173,15 @@ class RecorderContractTests(unittest.TestCase):
 
 @unittest.skipUnless(importlib.util.find_spec('pxr'), 'OpenUSD unavailable')
 class GraphContractTests(unittest.TestCase):
-    def test_only_frames_and_clock_trigger_change_in_session_layer(self):
+    def test_camera_configuration_and_clock_stay_in_session_layer(self):
         from pxr import Usd, UsdGeom
         from isaac_eff_control.collection_graph import CAMERA_FRAMES, configure_collection_graph, GRAPH_ROOT
         stage = Usd.Stage.Open(str(ROOT/'models/stages/stage_sorting_v1.usd'))
         original = stage.GetRootLayer().ExportToString()
         before = {str(a.GetPath()):(a.Get(),tuple(a.GetConnections()))
                   for p in stage.Traverse() for a in p.GetAttributes()}
-        with patch('isaac_eff_control.collection_graph.configure_physics_clock') as clock_setup:
+        import isaac_eff_control.collection_graph as graph
+        with patch.object(graph, 'configure_physics_clock') as clock_setup, sensor_authoring(graph):
             configure_collection_graph(stage)
         clock_setup.assert_called_once_with(stage)
         self.assertEqual(stage.GetRootLayer().ExportToString(), original)
@@ -198,3 +199,155 @@ class GraphContractTests(unittest.TestCase):
                 self.assertEqual(cameras[name]['frame'], CAMERA_FRAMES[name])
         self.assertEqual(len(changed),3)
         self.assertTrue(all(p.endswith('.inputs:frameId') for p in changed))
+
+        # No existing image settings, optics, geometry or connections changed.
+        # The only new camera attribute is the requested simulation tick rate.
+        added = {str(a.GetPath()) for p in stage.Traverse() for a in p.GetAttributes()
+                 if str(a.GetPath()) not in before and a.HasAuthoredValueOpinion()}
+        self.assertEqual(len(added), 3)
+        self.assertTrue(all(p.endswith('.omni:sensor:tickRate') for p in added))
+        graph.validate_camera_publishers(stage)
+        for camera, _, _ in graph._camera_bindings(stage).values():
+            self.assertEqual(camera.GetAttribute('omni:sensor:tickRate').Get(), 15.)
+            self.assertIn('OmniSensorAPI', camera.GetMetadata('apiSchemas').GetAppliedItems())
+        # A separate opening of the asset has no transient rate or schema.
+        fresh = Usd.Stage.Open(stage.GetRootLayer())
+        for camera, _, _ in graph._camera_bindings(fresh).values():
+            self.assertFalse(camera.GetAttribute('omni:sensor:tickRate').HasAuthoredValueOpinion())
+
+
+def sensor_authoring(graph):
+    """Host OpenUSD lacks NVIDIA's schema. Stub only schema/rate authoring.
+
+    Real stage composition, mappings and validation still run. In Isaac, use
+    the real schema application instead. This is not a renderer/runtime test.
+    """
+    from contextlib import nullcontext
+    from pxr import Sdf, Usd
+    if Usd.SchemaRegistry().FindAppliedAPIPrimDefinition('OmniSensorAPI'):
+        return nullcontext()
+    def author(camera):
+        camera.AddAppliedSchema('OmniSensorAPI')
+        camera.CreateAttribute('omni:sensor:tickRate', Sdf.ValueTypeNames.Float, custom=False).Set(graph.CAMERA_RATE_HZ)
+    return patch.object(graph, '_set_camera_rate', side_effect=author)
+
+
+@unittest.skipUnless(importlib.util.find_spec('pxr'), 'OpenUSD unavailable')
+class CameraRuntimeTests(unittest.TestCase):
+    def setUp(self):
+        from pxr import Usd
+        import isaac_eff_control.collection_graph as graph
+        self.graph = graph
+        self.stage = Usd.Stage.Open(str(ROOT/'models/stages/stage_sorting_v1.usd'))
+        self.real_set_camera_rate = graph._set_camera_rate
+        self.authoring = sensor_authoring(graph)
+        self.authoring.__enter__()
+        self.addCleanup(self.authoring.__exit__, None, None, None)
+
+    def test_three_expected_bindings_and_idempotent_session_configuration(self):
+        from pxr import Usd
+        root = self.stage.GetRootLayer().ExportToString()
+        disk = {layer.realPath: hashlib.sha256(Path(layer.realPath).read_bytes()).hexdigest()
+                for layer in self.stage.GetUsedLayers() if layer.realPath}
+        self.graph.configure_camera_publishers(self.stage)
+        session = self.stage.GetSessionLayer().ExportToString()
+        self.graph.configure_camera_publishers(self.stage)
+        self.assertEqual(self.stage.GetSessionLayer().ExportToString(), session)
+        self.assertEqual(self.stage.GetRootLayer().ExportToString(), root)
+        self.assertEqual(self.stage.GetEditTarget().GetLayer(), self.stage.GetRootLayer())
+        bindings = self.graph.validate_camera_publishers(self.stage)
+        self.assertEqual(set(bindings), {'head', 'left_wrist', 'right_wrist'})
+        for name, (camera, creator, helper) in bindings.items():
+            self.assertEqual(helper.GetAttribute('inputs:topicName').Get(), f'/sensors/camera/{name}/image_raw')
+            self.assertEqual(creator.GetRelationship('inputs:cameraPrim').GetTargets(), [camera.GetPath()])
+            self.assertEqual(camera.GetAttribute('omni:sensor:tickRate').Get(), 15.)
+        for path, digest in disk.items():
+            self.assertEqual(hashlib.sha256(Path(path).read_bytes()).hexdigest(), digest)
+
+    def test_invalid_helpers_camera_and_render_links_fail_before_any_configuration(self):
+        from pxr import Sdf, Usd
+        for fault in ('missing_helper', 'duplicate', 'wrong_topic', 'missing_camera',
+                      'camera_type', 'wrong_camera', 'missing_camera_rel', 'missing_product_link',
+                      'wrong_product_node', 'wrong_exec', 'missing_trigger', 'missing_playback', 'resolution',
+                      'disabled', 'not_rgb', 'frame_skip'):
+            with self.subTest(fault=fault):
+                stage = Usd.Stage.Open(self.stage.GetRootLayer())
+                bindings = self.graph._camera_bindings(stage)
+                camera, creator, helper = bindings['left_wrist']
+                with Usd.EditContext(stage, stage.GetSessionLayer()):
+                    if fault == 'missing_helper': helper.SetActive(False)
+                    if fault == 'duplicate':
+                        extra = stage.DefinePrim('/Duplicate', 'OmniGraphNode')
+                        extra.CreateAttribute('node:type', Sdf.ValueTypeNames.Token).Set('isaacsim.ros2.bridge.ROS2CameraHelper')
+                        extra.CreateAttribute('inputs:topicName', Sdf.ValueTypeNames.String).Set(helper.GetAttribute('inputs:topicName').Get())
+                    if fault == 'wrong_topic': helper.GetAttribute('inputs:topicName').Set('/wrong')
+                    if fault == 'missing_camera': camera.SetActive(False)
+                    if fault == 'camera_type': camera.SetTypeName('Xform')
+                    if fault == 'wrong_camera': creator.GetRelationship('inputs:cameraPrim').SetTargets([bindings['head'][0].GetPath()])
+                    if fault == 'missing_camera_rel': creator.GetRelationship('inputs:cameraPrim').SetTargets([])
+                    if fault == 'missing_product_link': helper.GetAttribute('inputs:renderProductPath').SetConnections([])
+                    if fault == 'wrong_product_node': creator.GetAttribute('node:type').Set('Invalid')
+                    if fault == 'wrong_exec': helper.GetAttribute('inputs:execIn').SetConnections([])
+                    if fault == 'missing_trigger': creator.GetAttribute('inputs:execIn').SetConnections([])
+                    if fault == 'missing_playback':
+                        step = stage.GetPrimAtPath(creator.GetAttribute('inputs:execIn').GetConnections()[0].GetPrimPath())
+                        step.GetAttribute('inputs:execIn').SetConnections([])
+                    if fault == 'resolution': creator.GetAttribute('inputs:width').Set(320)
+                    if fault == 'disabled': helper.GetAttribute('inputs:enabled').Set(False)
+                    if fault == 'not_rgb': helper.GetAttribute('inputs:type').Set('depth')
+                    if fault == 'frame_skip': helper.GetAttribute('inputs:frameSkipCount').Set(2)
+                before = stage.GetSessionLayer().ExportToString()
+                with self.assertRaisesRegex(ValueError, r'\[BFM CAMERA\]'):
+                    self.graph.configure_camera_publishers(stage)
+                self.assertEqual(stage.GetSessionLayer().ExportToString(), before)
+
+    def test_existing_product_must_point_to_correct_camera_and_resolution(self):
+        from pxr import Gf, Usd, UsdRender
+        camera, creator, _ = self.graph._camera_bindings(self.stage)['head']
+        with Usd.EditContext(self.stage, self.stage.GetSessionLayer()):
+            product = UsdRender.Product.Define(self.stage, '/Render/TestHead')
+            product.CreateCameraRel().SetTargets([camera.GetPath()])
+            product.CreateResolutionAttr().Set(Gf.Vec2i(640, 480))
+            creator.GetRelationship('inputs:renderProductPrim').SetTargets([product.GetPath()])
+        self.graph.configure_camera_publishers(self.stage)
+        for fault in ('wrong_camera', 'missing_product', 'wrong_resolution'):
+            with self.subTest(fault=fault), Usd.EditContext(self.stage, self.stage.GetSessionLayer()):
+                product.GetCameraRel().SetTargets([camera.GetPath()])
+                product.GetResolutionAttr().Set(Gf.Vec2i(640, 480))
+                creator.GetRelationship('inputs:renderProductPrim').SetTargets([product.GetPath()])
+                if fault == 'wrong_camera': product.GetCameraRel().SetTargets(['/NoCamera'])
+                if fault == 'missing_product': creator.GetRelationship('inputs:renderProductPrim').SetTargets(['/NoProduct'])
+                if fault == 'wrong_resolution': product.GetResolutionAttr().Set(Gf.Vec2i(320, 240))
+                with self.assertRaisesRegex(ValueError, 'invalid render product'):
+                    self.graph.validate_camera_publishers(self.stage)
+
+    def test_inconsistent_or_dynamic_rate_is_rejected(self):
+        from pxr import Usd
+        self.graph.configure_camera_publishers(self.stage)
+        camera = self.graph._camera_bindings(self.stage)['right_wrist'][0]
+        rate = camera.GetAttribute('omni:sensor:tickRate')
+        with Usd.EditContext(self.stage, self.stage.GetSessionLayer()):
+            rate.Set(10.)
+            with self.assertRaisesRegex(ValueError, 'right_wrist.*tickRate'):
+                self.graph.validate_camera_publishers(self.stage)
+            rate.Set(15.)
+            rate.Set(10., 1.)
+            rate.Set(15., 2.)
+            with self.assertRaisesRegex(ValueError, 'right_wrist.*tickRate'):
+                self.graph.validate_camera_publishers(self.stage)
+
+    def test_real_schema_authoring_uses_supported_api_and_fails_if_unavailable(self):
+        from pxr import Sdf, Usd
+        from unittest.mock import Mock
+        # Exercise the real authoring function with a fake prim/registry only;
+        # no claim that NVIDIA's plugin exists in host OpenUSD.
+        camera = Mock()
+        real = self.real_set_camera_rate
+        with patch.object(Usd, 'SchemaRegistry') as registry:
+            real(camera)
+            camera.ApplyAPI.assert_called_once_with('OmniSensorAPI')
+            camera.CreateAttribute.assert_called_once_with('omni:sensor:tickRate', Sdf.ValueTypeNames.Float, custom=False)
+            camera.CreateAttribute.return_value.Set.assert_called_once_with(15.)
+            registry.return_value.FindAppliedAPIPrimDefinition.return_value = None
+            with self.assertRaisesRegex(RuntimeError, 'OmniSensorAPI unavailable'):
+                real(camera)
