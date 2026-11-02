@@ -21,7 +21,7 @@ class LaunchTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name)
-        for name in ('launch_bfm_isaac.sh', 'start_isaac_control.sh', 'tools/collection'):
+        for name in ('launch_bfm_isaac.sh', 'start_isaac_control.sh', 'start_bfm_policy_control.sh', 'tools/collection'):
             source, target = ROOT/name, self.root/name
             if source.is_dir(): shutil.copytree(source, target)
             else: shutil.copy(source, target)
@@ -94,6 +94,7 @@ python3 -c 'import os,json; print(json.dumps(dict(os.environ)))'
         result = self.run_script('launch_bfm_isaac.sh')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('--enable\nbfm_collection', result.stdout)
+        self.assertIn('--exec\n"'+str(self.root/'tools/collection/open_sorting_stage.py')+'"', result.stdout)
         self.setup.unlink()
         result = self.run_script('start_isaac_control.sh')
         self.assertNotEqual(result.returncode, 0)
@@ -101,6 +102,53 @@ python3 -c 'import os,json; print(json.dumps(dict(os.environ)))'
         self.assertFalse(self.log.exists())
         isaac.unlink()
         self.assertIn('Isaac Sim not found', self.run_script('launch_bfm_isaac.sh').stderr)
+
+    def test_stage_startup_opens_repository_scene_without_play(self):
+        import asyncio
+        import runpy
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        events = []
+        async def update(): events.append('update')
+        async def open_stage(path):
+            events.append('open')
+            self.assertEqual(Path(path), ROOT/'models/stages/stage_sorting_v1.usd')
+            return True, 0
+        timeline = Mock()
+        timeline.stop.side_effect = lambda: events.append('stop')
+        app = SimpleNamespace(next_update_async=update)
+        context = SimpleNamespace(open_stage_async=open_stage)
+        modules = {
+            'omni.kit.app': SimpleNamespace(get_app=lambda: app),
+            'omni.timeline': SimpleNamespace(get_timeline_interface=lambda: timeline),
+            'omni.usd': SimpleNamespace(get_context=lambda: context),
+        }
+        modules['omni.kit'] = SimpleNamespace(app=modules['omni.kit.app'])
+        modules['omni'] = SimpleNamespace(kit=modules['omni.kit'],
+            timeline=modules['omni.timeline'], usd=modules['omni.usd'])
+        with patch.dict(sys.modules, modules), patch.object(asyncio, 'ensure_future') as schedule:
+            runpy.run_path(str(ROOT/'tools/collection/open_sorting_stage.py'))
+            schedule.assert_called_once()
+            asyncio.run(schedule.call_args.args[0])
+        self.assertEqual(events, ['update', 'stop', 'open'])
+        timeline.play.assert_not_called()
+        text = (ROOT/'launch_bfm_isaac.sh').read_text()
+        self.assertIn('--/isaac/startup/create_new_stage=false', text)
+
+    def test_policy_launcher_runs_only_hand_executor_with_project_environment(self):
+        self.executable('ros2', f'''#!{sys.executable}
+import json, os, sys
+print(json.dumps(dict(args=sys.argv[1:], mode=os.environ['BFM_COLLECTION_MODE'],
+                      domain=os.environ['ROS_DOMAIN_ID'])))
+''')
+        self.env['BFM_COLLECTION_MODE'] = '0'
+        result = self.run_script('start_bfm_policy_control.sh')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), dict(
+            args=['run', 'isaac_eff_control', 'eff_control_node'], mode='1', domain='0'))
+        self.assertFalse(self.log.exists())  # No tmux collection workers.
+        self.setup.unlink()
+        self.assertNotEqual(self.run_script('start_bfm_policy_control.sh').returncode, 0)
 
     def test_existing_session_is_interrupted_and_preserved_if_not_finished(self):
         self.executable('sleep', '#!/bin/bash\nexit 0\n')
@@ -142,7 +190,7 @@ else: print('%1')
         self.assertIn('display-message', self.log.read_text())
 
     def test_shell_syntax(self):
-        for name in ('launch_bfm_isaac.sh', 'start_isaac_control.sh',
+        for name in ('launch_bfm_isaac.sh', 'start_isaac_control.sh', 'start_bfm_policy_control.sh',
                      'tools/collection/environment.bash', 'tools/collection/worker.bash'):
             subprocess.run(['bash', '-n', str(ROOT/name)], check=True)
 
@@ -207,6 +255,7 @@ class StatusTests(unittest.TestCase):
         with patch.dict(os.environ, BFM_COLLECTION_MODE='1'):
             module = harness.load_module('status_held_hand',
                 'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py')
+        self.assertEqual(module.HAND_INPUT_TOPIC, '/bfm/command/hand_target')
         node = module.IsaacEffControlNode()
         msg = harness.Message(); msg.left_hand_position = msg.right_hand_position = [0.]*6
         node.hand_callback(msg)
