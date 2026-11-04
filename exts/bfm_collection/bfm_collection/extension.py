@@ -189,17 +189,17 @@ class CollectionExtension(omni.ext.IExt):
             return
 
         # Other scenes/robot-only USDs are completely outside this extension.
-        expected = (
-            self.repository
-            / "models/stages/stage_sorting_v1.usd"
-        )
+        expected = {
+            (self.repository / "models/stages" / name).resolve()
+            for name in ("stage_sorting_v1.usd", "s40_sharpa_collision_v2.usda")
+        }
 
         root_real_path = stage.GetRootLayer().realPath
 
         if not root_real_path:
             return
 
-        if Path(root_real_path).resolve() != expected.resolve():
+        if Path(root_real_path).resolve() not in expected:
             return
 
         try:
@@ -277,6 +277,16 @@ class CollectionExtension(omni.ext.IExt):
         episode = self.lifecycle.prepare()
         if episode is None:
             return
+        scene = Path(self.stage.GetRootLayer().realPath).resolve()
+        if scene == (self.repository / "models/stages/s40_sharpa_collision_v2.usda").resolve():
+            import hashlib
+            # Existing episode serialization carries this into MCAP/episode.json.
+            # Keep the base V1 configuration provenance and identify its override.
+            episode["physics_scene_override"] = {
+                "layer": str(scene.relative_to(self.repository.resolve())),
+                "sha256": hashlib.sha256(scene.read_bytes()).hexdigest(),
+                "self_collisions": True,
+            }
         self.episode_channel.publish("prepared", episode)
         print(
             "[BFM] Episode plan prepared:\n"

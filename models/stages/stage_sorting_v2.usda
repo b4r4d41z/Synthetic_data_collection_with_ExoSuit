@@ -1,0 +1,26 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+    timeCodesPerSecond = 60
+    subLayers = [@stage_sorting_v1.usd@]
+)
+
+# Independent sorting scene. Geometry, joints, graphs and cameras remain in V1.
+over "World"
+{
+    over "s40_sharpa_two_cameras" (
+        variants = { string Physics = "physx" }
+    )
+    {
+        over "fix_base_joint" (
+            prepend apiSchemas = ["PhysxArticulationAPI"]
+        )
+        {
+            # PhysX consumes the explicit value before Newton fallback.
+            bool physxArticulation:enabledSelfCollisions = true
+            bool newton:selfCollisionEnabled = true
+        }
+    }
+}

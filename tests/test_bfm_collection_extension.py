@@ -457,6 +457,7 @@ class AdapterTests(unittest.TestCase):
                 extension._update(None)
                 self.assertEqual(extension.lifecycle.state, "prepared")
                 r.randomize.assert_called_once()
+                self.assertNotIn("physics_scene_override", extension.episode_channel.publish.call_args.args[1])
                 start.assert_not_called()
                 extension._update(None)  # No repeat preparation on idle updates.
                 timeline.is_stopped.return_value = False
@@ -482,6 +483,16 @@ class AdapterTests(unittest.TestCase):
                 self.assertEqual(r.randomize.call_count, 2)
                 extension._detach()
                 r.close.assert_called_once()
+                # V2 has the same lifecycle and adds only its override identity.
+                stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/s40_sharpa_collision_v2.usda")
+                extension._update(None)
+                self.assertEqual(extension.lifecycle.state, "prepared")
+                metadata = extension.episode_channel.publish.call_args.args[1]["physics_scene_override"]
+                self.assertEqual(metadata["layer"], "models/stages/s40_sharpa_collision_v2.usda")
+                import hashlib
+                self.assertEqual(metadata["sha256"], hashlib.sha256((ROOT/metadata["layer"]).read_bytes()).hexdigest())
+                self.assertTrue(metadata["self_collisions"])
+                extension._detach()
             life = Mock()
             extension.episode_channel = Mock()
             extension.lifecycle = life
