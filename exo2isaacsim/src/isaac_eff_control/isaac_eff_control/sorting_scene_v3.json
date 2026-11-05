@@ -73,7 +73,7 @@
       "velocity_gate": false,
       "runtime_verified": false
     },
-    "fruit_pool_sha256": "87c21f27173b8bd6958682ca4babe6a0cce79f1c46fb06ae1f54aaab2df90cea",
+    "fruit_pool_sha256": "df7552709df984db49394293796888aaa9af9b53c0709ad209e9b7202ebb6d5b",
     "scene_sha256": "c7f108ee86080e3097f9257005c858d666f423b6191f82ef7fbbde43d836e214",
     "object_pool_normalization": "References source meshes/textures without edits. Apple/lunchbag child body promoted to pool root with COM/principal axes transformed and mass/inertia preserved; ketchup body retained. Zero initial velocities, gravity, same fruit contact material/margins and static parking cradles."
   },
@@ -81,7 +81,9 @@
     "object_assets": [
       "models/addons/objects/objaverse/apple_02.usd",
       "models/addons/objects/objaverse/lunchbag.usd",
-      "models/addons/objects/hope/ketchup_bottle.usd"
+      "models/addons/objects/hope/ketchup_bottle.usd",
+      "models/addons/objects/fruits_veggies/avocado.usd",
+      "models/addons/objects/fruits_veggies/orange2.usd"
     ],
     "object_spawn_region": {
       "x_min": 0.95,
@@ -122,9 +124,11 @@
     "pool_assets": [
       "models/addons/objects/objaverse/apple_02.usd",
       "models/addons/objects/objaverse/lunchbag.usd",
-      "models/addons/objects/hope/ketchup_bottle.usd"
+      "models/addons/objects/hope/ketchup_bottle.usd",
+      "models/addons/objects/fruits_veggies/avocado.usd",
+      "models/addons/objects/fruits_veggies/orange2.usd"
     ],
-    "collection_objects_note": "V3 only: apple_02, lunchbag, ketchup_bottle; all bodies loaded before simulation.",
+    "collection_objects_note": "V3 only: apple_02, lunchbag, ketchup_bottle, avocado, orange2; all bodies loaded before simulation.",
     "scenario": "things_v3",
     "pool_path": "/World/Task/Things",
     "parking_path": "/World/Task/ThingsParking"

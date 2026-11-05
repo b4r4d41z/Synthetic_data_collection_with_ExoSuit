@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 import numpy as np
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 import test_bfm_collection_extension as collection
 from test_physics_object_pool import LiveBody, module as pool_module
 
@@ -30,8 +30,11 @@ class SortingV3Tests(unittest.TestCase):
         self.support.start(); self.addCleanup(self.support.stop)
         self.planner = runtime.SceneRandomizer(self.stage, self.data, ROOT)
 
-    def test_three_preloaded_bodies_geometry_mass_and_textures(self):
+    def test_five_preloaded_bodies_geometry_mass_and_textures(self):
         bodies = list(self.planner.pool.values())
+        self.assertEqual(set(bodies), {f'/World/Task/Things/{name}' for name in
+                                      ('apple_02','lunchbag','ketchup_bottle','avocado','orange2')})
+        self.assertEqual(len({tuple(p) for p in self.planner.parking.values()}), 5)
         active = [str(p.GetPath()) for p in self.stage.Traverse()
                   if p.HasAPI(UsdPhysics.RigidBodyAPI) and str(p.GetPath()).startswith('/World/Task/')]
         self.assertEqual(set(active), set(bodies))
@@ -45,6 +48,8 @@ class SortingV3Tests(unittest.TestCase):
             self.assertEqual(UsdPhysics.MassAPI(body).GetMassAttr().Get(), UsdPhysics.MassAPI(old_body).GetMassAttr().Get())
             self.assertEqual([p for p in Usd.PrimRange(body) if p.HasAPI(UsdPhysics.RigidBodyAPI)], [body])
             pool_module.PhysicsObjectPool._validate_composition(SimpleNamespace(stage=self.stage), path)
+            np.testing.assert_allclose(UsdGeom.XformCache().GetLocalToWorldTransform(body).ExtractTranslation(),
+                                       self.planner.parking[asset], atol=1e-8)
             bounds = UsdGeom.BBoxCache(Usd.TimeCode.Default(), ['default','render','proxy']).ComputeUntransformedBound(body).ComputeAlignedRange()
             np.testing.assert_allclose(bounds.GetMin(), self.planner.assets[asset][1])
             np.testing.assert_allclose(bounds.GetMax(), self.planner.assets[asset][2])
@@ -67,6 +72,8 @@ class SortingV3Tests(unittest.TestCase):
                 self.assertTrue(Path(texture.resolvedPath).is_file(), str(texture))
             for shape in runtime.collision_shapes(body):
                 self.assertEqual(shape.GetAttribute('physxCollision:contactOffset').Get(), np.float32(.002))
+                material, _ = UsdShade.MaterialBindingAPI(shape).ComputeBoundMaterial('physics')
+                self.assertEqual(str(material.GetPath()), '/World/Task/Things/ThingContact')
 
     def test_both_layouts_all_objects_and_independent_random_positions(self):
         observed, positions, boxes = set(), set(), set()
@@ -92,8 +99,12 @@ class SortingV3Tests(unittest.TestCase):
                 self.assertAlmostEqual(low[2], .755)
                 self.assertAlmostEqual(boxlo[2], .75, places=5)
                 self.assertFalse(runtime.overlaps(low,high,boxlo,boxhi,.03))
-                self.assertEqual(len(episode['body_poses']), 4)
-        self.assertEqual(len(observed), 6)
+                self.assertEqual(len(episode['body_poses']), 6)
+                self.assertEqual(episode['object_prim_path'], '/World/Task/Things/'+Path(episode['asset']).stem)
+                self.assertEqual(set(episode['parking_positions']),
+                                 set(self.planner.pool.values()) - {episode['object_prim_path']})
+        self.assertEqual(observed, {(layout, name+'.usd') for layout in ('A','B')
+                                    for name in ('apple_02','lunchbag','ketchup_bottle','avocado','orange2')})
         self.assertGreater(len(positions), 200); self.assertGreater(len(boxes), 200)
 
     def test_seed_reproducibility_and_v2_region_definitions(self):
@@ -133,19 +144,26 @@ class SortingV3Tests(unittest.TestCase):
 
     def test_v3_configuration_rejects_missing_duplicate_or_legacy_pool_assets(self):
         import tempfile
-        for fault in ('missing','duplicate','legacy','wrong_path'):
+        for fault in ('missing','duplicate','lemon','pomegranate','wrong_path',
+                      'selection_missing','selection_duplicate','selection_lemon','selection_pomegranate'):
             data = deepcopy(self.data)
             pool = data['randomization']['pool_assets']
             if fault == 'missing':pool.pop()
             if fault == 'duplicate':pool[-1] = pool[0]
-            if fault == 'legacy':pool[-1] = 'models/addons/objects/fruits_veggies/lemon1.usd'
+            if fault in ('lemon','pomegranate'):
+                pool[-1] = 'models/addons/objects/fruits_veggies/'+('lemon1' if fault == 'lemon' else fault)+'.usd'
             if fault == 'wrong_path':data['randomization']['pool_path'] = runtime.POOL_PATH
+            selection = data['randomization']['object_assets']
+            if fault == 'selection_missing':selection.pop()
+            if fault == 'selection_duplicate':selection[-1] = selection[0]
+            if fault in ('selection_lemon','selection_pomegranate'):
+                selection[-1] = 'models/addons/objects/fruits_veggies/'+('lemon1' if fault == 'selection_lemon' else 'pomegranate')+'.usd'
             with self.subTest(fault=fault), tempfile.NamedTemporaryFile(mode='w', suffix='.json') as f:
                 json.dump(data,f);f.flush()
                 with self.assertRaisesRegex(ValueError, 'V3 requires'):
                     runtime.load_configuration(f.name, ROOT)
 
-    def test_same_lifecycle_and_live_reset_four_actors_without_usd_edits(self):
+    def test_same_lifecycle_and_live_reset_six_actors_without_usd_edits(self):
         life = runtime.CollectionLifecycle(self.planner, Mock(return_value=Mock(phase='playing')), lambda:True)
         life.prepare(); episode = deepcopy(self.planner.last_episode)
         before = self.stage.ExportToString()
@@ -153,8 +171,11 @@ class SortingV3Tests(unittest.TestCase):
         self.assertEqual(self.planner.last_episode, episode)
         actors = {path:LiveBody() for path in episode['body_poses']}
         view = SimpleNamespace(create_rigid_body_view=lambda path:actors[path])
-        pool = pool_module.PhysicsObjectPool(self.stage, episode, log=Mock())
+        log = Mock()
+        pool = pool_module.PhysicsObjectPool(self.stage, episode, log=log)
         pool.bind(view); pool.apply_episode(); pool.verify_episode()
+        self.assertEqual(len(pool.bodies), 6)
+        log.assert_any_call('[BFM PHYSX] things pool resolved: 5/5; container resolved: 1')
         self.assertTrue(pool.parking_settled())
         for path, actor in actors.items():
             np.testing.assert_allclose(actor.pose[0], episode['body_poses'][path], atol=1e-5)

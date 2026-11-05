@@ -27,17 +27,17 @@ def load_configuration(path, repository):
     assets = config["object_assets"]
     # Selection and persistent topology are separate: excluded fruit stays parked.
     pool = config["pool_assets"]
-    expected = ({"apple_02.usd", "lunchbag.usd", "ketchup_bottle.usd"} if v3
+    expected = ({"apple_02.usd", "lunchbag.usd", "ketchup_bottle.usd", "avocado.usd", "orange2.usd"} if v3
                 else {"avocado.usd", "lemon1.usd", "orange2.usd"})
     if v3 and (config.get("pool_path") != "/World/Task/Things"
                or config.get("parking_path") != "/World/Task/ThingsParking"):
         raise ValueError("V3 requires the pre-authored things pool and parking")
-    if (not isinstance(assets, list) or len(assets) != 3
+    if (not isinstance(assets, list) or len(assets) != (5 if v3 else 3)
             or {Path(a).name for a in assets} != expected
-            or not isinstance(pool, list) or len(pool) != (3 if v3 else 4) or len(set(pool)) != len(pool)
+            or not isinstance(pool, list) or len(pool) != (5 if v3 else 4) or len(set(pool)) != len(pool)
             or not set(assets).issubset(pool)
             or {Path(a).name for a in pool} != (expected if v3 else expected | {"pomegranate.usd"})):
-        raise ValueError("V3 requires apple_02/lunchbag/ketchup_bottle in its selection and physical pool" if v3
+        raise ValueError("V3 requires apple_02/lunchbag/ketchup_bottle/avocado/orange2 in its selection and physical pool" if v3
                          else "Select avocado/lemon/orange only; keep all four physical pool assets")
     root = Path(repository).resolve()
     for asset in pool:

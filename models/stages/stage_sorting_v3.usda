@@ -1,18 +1,933 @@
 #usda 1.0
 (
+    customLayerData = {
+        dictionary cameraSettings = {
+            dictionary Front = {
+                double3 position = (5, 0, 0)
+                double radius = 5
+            }
+            dictionary Perspective = {
+                double3 position = (2.5482270923454036, 6.521428329620421, 2.59034291889449)
+                double3 target = (-28.846800723581946, -28.504660771963344, -26.635198509248152)
+            }
+            dictionary Right = {
+                double3 position = (0, -5, 0)
+                double radius = 5
+            }
+            dictionary Top = {
+                double3 position = (0, 0, 5)
+                double radius = 5
+            }
+            string boundCamera = "/World/s40_sharpa_two_cameras/Geometry/base_link/zhead_1_link/zhead_2_link/head_camera"
+        }
+        dictionary omni_layer = {
+            string authoring_layer = "./stage_sorting_v3.usda"
+        }
+        dictionary renderSettings = {
+        }
+    }
     defaultPrim = "World"
     metersPerUnit = 1
-    upAxis = "Z"
+    subLayers = [
+        @things_pool.usda@,
+        @stage_sorting_v2.usda@
+    ]
     timeCodesPerSecond = 60
-    subLayers = [@things_pool.usda@, @stage_sorting_v2.usda@]
+    upAxis = "Z"
 )
 
-# V3 replaces the pool at stage composition, never during episode resets.
 over "World"
 {
     over "Task"
     {
-        over "Fruits" (active = false) {}
-        over "Parking" (active = false) {}
+        over "Fruits" (
+            active = false
+        )
+        {
+        }
+
+        over "Parking" (
+            active = false
+        )
+        {
+        }
+
+        over "Things"
+        {
+            over "apple_02"
+            {
+            }
+
+            over "avocado"
+            {
+            }
+
+            over "ketchup_bottle"
+            {
+            }
+
+            over "lunchbag"
+            {
+            }
+
+            over "orange2"
+            {
+            }
+        }
+    }
+
+    over "s40_sharpa_two_cameras"
+    {
+        over "Geometry"
+        {
+            over "base_link"
+            {
+                over "leg_l1_link"
+                {
+                    over "leg_l2_link"
+                    {
+                        over "leg_l3_link"
+                        {
+                            over "leg_l4_link"
+                            {
+                                over "leg_l5_link"
+                                {
+                                    over "leg_l6_link"
+                                    {
+                                        over "leg_l6_joint"
+                                        {
+                                            float state:angular:physics:position = 0.08243717
+                                            float state:angular:physics:velocity = 5.565941e-10
+                                        }
+                                    }
+
+                                    over "leg_l5_joint"
+                                    {
+                                        float state:angular:physics:position = -1.0538285
+                                        float state:angular:physics:velocity = -6.862301e-8
+                                    }
+                                }
+
+                                over "leg_l4_joint"
+                                {
+                                    float state:angular:physics:position = 0.8932816
+                                    float state:angular:physics:velocity = -1.6549144e-8
+                                }
+                            }
+
+                            over "leg_l3_joint"
+                            {
+                                float state:angular:physics:position = -1.0061845
+                                float state:angular:physics:velocity = -2.3223743e-8
+                            }
+                        }
+
+                        over "leg_l2_joint"
+                        {
+                            float state:angular:physics:position = -0.09342865
+                            float state:angular:physics:velocity = -1.7740797e-9
+                        }
+                    }
+
+                    over "leg_l1_joint"
+                    {
+                        float state:angular:physics:position = -1.9107196
+                        float state:angular:physics:velocity = 1.0344203e-7
+                    }
+                }
+
+                over "leg_r1_link"
+                {
+                    over "leg_r2_link"
+                    {
+                        over "leg_r3_link"
+                        {
+                            over "leg_r4_link"
+                            {
+                                over "leg_r5_link"
+                                {
+                                    over "leg_r6_link"
+                                    {
+                                        over "leg_r6_joint"
+                                        {
+                                            float state:angular:physics:position = -0.0824465
+                                            float state:angular:physics:velocity = -8.927775e-8
+                                        }
+                                    }
+
+                                    over "leg_r5_joint"
+                                    {
+                                        float state:angular:physics:position = -1.0538288
+                                        float state:angular:physics:velocity = -1.3251594e-7
+                                    }
+                                }
+
+                                over "leg_r4_joint"
+                                {
+                                    float state:angular:physics:position = 0.8930461
+                                    float state:angular:physics:velocity = -1.9902624e-8
+                                }
+                            }
+
+                            over "leg_r3_joint"
+                            {
+                                float state:angular:physics:position = -1.0059084
+                                float state:angular:physics:velocity = -4.9652034e-8
+                            }
+                        }
+
+                        over "leg_r2_joint"
+                        {
+                            float state:angular:physics:position = 0.09342282
+                            float state:angular:physics:velocity = -3.6342807e-10
+                        }
+                    }
+
+                    over "leg_r1_joint"
+                    {
+                        float state:angular:physics:position = 1.9107589
+                        float state:angular:physics:velocity = -6.007396e-8
+                    }
+                }
+
+                over "zarm_l1_link"
+                {
+                    over "zarm_l2_link"
+                    {
+                        over "zarm_l3_link"
+                        {
+                            over "zarm_l4_link"
+                            {
+                                over "zarm_l5_link"
+                                {
+                                    over "zarm_l6_link"
+                                    {
+                                        over "zarm_l7_link"
+                                        {
+                                            over "left_hand_camera_mount"
+                                            {
+                                                over "left_hand_camera_head"
+                                                {
+                                                }
+                                            }
+
+                                            over "zarm_l7_end_effector"
+                                            {
+                                                over "left_hand_C_MC"
+                                                {
+                                                    over "left_thumb_CMC_VL"
+                                                    {
+                                                        over "left_thumb_MC"
+                                                        {
+                                                            over "left_thumb_MCP_VL"
+                                                            {
+                                                                over "left_thumb_PP"
+                                                                {
+                                                                    over "left_thumb_DP"
+                                                                    {
+                                                                        over "left_thumb_IP"
+                                                                        {
+                                                                            float state:angular:physics:position = 0.00071529107
+                                                                            float state:angular:physics:velocity = -3.7644415e-7
+                                                                        }
+                                                                    }
+
+                                                                    over "left_thumb_MCP_AA"
+                                                                    {
+                                                                        float state:angular:physics:position = 0.0007195345
+                                                                        float state:angular:physics:velocity = -0.0000044256158
+                                                                    }
+                                                                }
+
+                                                                over "left_thumb_MCP_FE"
+                                                                {
+                                                                    float state:angular:physics:position = 0.0017446531
+                                                                    float state:angular:physics:velocity = -0.000024939529
+                                                                }
+                                                            }
+
+                                                            over "left_thumb_CMC_AA"
+                                                            {
+                                                                float state:angular:physics:position = -19.994253
+                                                                float state:angular:physics:velocity = -0.0019366255
+                                                            }
+                                                        }
+
+                                                        over "left_thumb_CMC_FE"
+                                                        {
+                                                            float state:angular:physics:position = 89.999825
+                                                            float state:angular:physics:velocity = -0.0008680181
+                                                        }
+                                                    }
+
+                                                    over "left_index_MCP_VL"
+                                                    {
+                                                        over "left_index_PP"
+                                                        {
+                                                            over "left_index_MP"
+                                                            {
+                                                                over "left_index_DP"
+                                                                {
+                                                                    over "left_index_DIP"
+                                                                    {
+                                                                        float state:angular:physics:position = 0.0001487459
+                                                                        float state:angular:physics:velocity = -0.00008460113
+                                                                    }
+                                                                }
+
+                                                                over "left_index_PIP"
+                                                                {
+                                                                    float state:angular:physics:position = 0.0003924325
+                                                                    float state:angular:physics:velocity = -0.0004273527
+                                                                }
+                                                            }
+
+                                                            over "left_index_MCP_AA"
+                                                            {
+                                                                float state:angular:physics:position = -0.00020101675
+                                                                float state:angular:physics:velocity = 0.00017182404
+                                                            }
+                                                        }
+
+                                                        over "left_index_MCP_FE"
+                                                        {
+                                                            float state:angular:physics:position = 0.00004645419
+                                                            float state:angular:physics:velocity = -0.00067436555
+                                                        }
+                                                    }
+
+                                                    over "left_middle_MCP_VL"
+                                                    {
+                                                        over "left_middle_PP"
+                                                        {
+                                                            over "left_middle_MP"
+                                                            {
+                                                                over "left_middle_DP"
+                                                                {
+                                                                    over "left_middle_DIP"
+                                                                    {
+                                                                        float state:angular:physics:position = 0.00014954066
+                                                                        float state:angular:physics:velocity = -0.00008602958
+                                                                    }
+                                                                }
+
+                                                                over "left_middle_PIP"
+                                                                {
+                                                                    float state:angular:physics:position = 0.00039609452
+                                                                    float state:angular:physics:velocity = -0.00043472816
+                                                                }
+                                                            }
+
+                                                            over "left_middle_MCP_AA"
+                                                            {
+                                                                float state:angular:physics:position = -0.00020098269
+                                                                float state:angular:physics:velocity = 0.0001914896
+                                                            }
+                                                        }
+
+                                                        over "left_middle_MCP_FE"
+                                                        {
+                                                            float state:angular:physics:position = 0.000047277485
+                                                            float state:angular:physics:velocity = -0.0006859107
+                                                        }
+                                                    }
+
+                                                    over "left_ring_MCP_VL"
+                                                    {
+                                                        over "left_ring_PP"
+                                                        {
+                                                            over "left_ring_MP"
+                                                            {
+                                                                over "left_ring_DP"
+                                                                {
+                                                                    over "left_ring_DIP"
+                                                                    {
+                                                                        float state:angular:physics:position = 0.00014954638
+                                                                        float state:angular:physics:velocity = -0.00008451286
+                                                                    }
+                                                                }
+
+                                                                over "left_ring_PIP"
+                                                                {
+                                                                    float state:angular:physics:position = 0.000395062
+                                                                    float state:angular:physics:velocity = -0.00042575249
+                                                                }
+                                                            }
+
+                                                            over "left_ring_MCP_AA"
+                                                            {
+                                                                float state:angular:physics:position = -0.0001916575
+                                                                float state:angular:physics:velocity = 0.00020704845
+                                                            }
+                                                        }
+
+                                                        over "left_ring_MCP_FE"
+                                                        {
+                                                            float state:angular:physics:position = 0.00004648543
+                                                            float state:angular:physics:velocity = -0.000668895
+                                                        }
+                                                    }
+
+                                                    over "left_pinky_MC"
+                                                    {
+                                                        over "left_pinky_MCP_VL"
+                                                        {
+                                                            over "left_pinky_PP"
+                                                            {
+                                                                over "left_pinky_MP"
+                                                                {
+                                                                    over "left_pinky_DP"
+                                                                    {
+                                                                        over "left_pinky_DIP"
+                                                                        {
+                                                                            float state:angular:physics:position = 0.00014934066
+                                                                            float state:angular:physics:velocity = -0.000082870865
+                                                                        }
+                                                                    }
+
+                                                                    over "left_pinky_PIP"
+                                                                    {
+                                                                        float state:angular:physics:position = 0.0003931699
+                                                                        float state:angular:physics:velocity = -0.00041554807
+                                                                    }
+                                                                }
+
+                                                                over "left_pinky_MCP_AA"
+                                                                {
+                                                                    float state:angular:physics:position = -0.00018261762
+                                                                    float state:angular:physics:velocity = 0.00022723428
+                                                                }
+                                                            }
+
+                                                            over "left_pinky_MCP_FE"
+                                                            {
+                                                                float state:angular:physics:position = 0.000044938497
+                                                                float state:angular:physics:velocity = -0.000640965
+                                                            }
+                                                        }
+
+                                                        over "left_pinky_CMC"
+                                                        {
+                                                            float state:angular:physics:position = 0.000064138396
+                                                            float state:angular:physics:velocity = -0.0031576583
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            over "zarm_l7_joint"
+                                            {
+                                                float state:angular:physics:position = -0.011692669
+                                                float state:angular:physics:velocity = -0.0022294966
+                                            }
+                                        }
+
+                                        over "zarm_l6_joint"
+                                        {
+                                            float state:angular:physics:position = 0.0067143273
+                                            float state:angular:physics:velocity = -0.00056594855
+                                        }
+                                    }
+
+                                    over "zarm_l5_joint"
+                                    {
+                                        float state:angular:physics:position = -0.0004530348
+                                        float state:angular:physics:velocity = 0.0018268995
+                                    }
+                                }
+
+                                over "zarm_l4_joint"
+                                {
+                                    float state:angular:physics:position = -0.0000016403675
+                                    float state:angular:physics:velocity = -0.08717156
+                                }
+                            }
+
+                            over "zarm_l3_joint"
+                            {
+                                float state:angular:physics:position = -0.0007257048
+                                float state:angular:physics:velocity = 0.0068368157
+                            }
+                        }
+
+                        over "zarm_l2_joint"
+                        {
+                            float state:angular:physics:position = 0.00065057253
+                            float state:angular:physics:velocity = 0.012804208
+                        }
+                    }
+
+                    over "zarm_l1_joint"
+                    {
+                        float state:angular:physics:position = 0.016232217
+                        float state:angular:physics:velocity = -0.25223637
+                    }
+                }
+
+                over "zarm_r1_link"
+                {
+                    over "zarm_r2_link"
+                    {
+                        over "zarm_r3_link"
+                        {
+                            over "zarm_r4_link"
+                            {
+                                over "zarm_r5_link"
+                                {
+                                    over "zarm_r6_link"
+                                    {
+                                        over "zarm_r7_link"
+                                        {
+                                            over "right_hand_camera_mount"
+                                            {
+                                                over "right_hand_camera_head"
+                                                {
+                                                }
+                                            }
+
+                                            over "zarm_r7_end_effector"
+                                            {
+                                                over "right_hand_C_MC"
+                                                {
+                                                    over "right_thumb_CMC_VL"
+                                                    {
+                                                        over "right_thumb_MC"
+                                                        {
+                                                            over "right_thumb_MCP_VL"
+                                                            {
+                                                                over "right_thumb_PP"
+                                                                {
+                                                                    over "right_thumb_DP"
+                                                                    {
+                                                                        over "right_thumb_IP"
+                                                                        {
+                                                                            float state:angular:physics:position = -0.00069123117
+                                                                            float state:angular:physics:velocity = -2.413745e-7
+                                                                        }
+                                                                    }
+
+                                                                    over "right_thumb_MCP_AA"
+                                                                    {
+                                                                        float state:angular:physics:position = -0.0007011785
+                                                                        float state:angular:physics:velocity = 0.0000026647076
+                                                                    }
+                                                                }
+
+                                                                over "right_thumb_MCP_FE"
+                                                                {
+                                                                    float state:angular:physics:position = -0.0016310371
+                                                                    float state:angular:physics:velocity = 0.000025709925
+                                                                }
+                                                            }
+
+                                                            over "right_thumb_CMC_AA"
+                                                            {
+                                                                float state:angular:physics:position = 19.994427
+                                                                float state:angular:physics:velocity = 0.0018525821
+                                                            }
+                                                        }
+
+                                                        over "right_thumb_CMC_FE"
+                                                        {
+                                                            float state:angular:physics:position = -89.99983
+                                                            float state:angular:physics:velocity = 0.00080666936
+                                                        }
+                                                    }
+
+                                                    over "right_index_MCP_VL"
+                                                    {
+                                                        over "right_index_PP"
+                                                        {
+                                                            over "right_index_MP"
+                                                            {
+                                                                over "right_index_DP"
+                                                                {
+                                                                    over "right_index_DIP"
+                                                                    {
+                                                                        float state:angular:physics:position = -0.00019046779
+                                                                        float state:angular:physics:velocity = 0.00008328691
+                                                                    }
+                                                                }
+
+                                                                over "right_index_PIP"
+                                                                {
+                                                                    float state:angular:physics:position = -0.00065068
+                                                                    float state:angular:physics:velocity = 0.00042566663
+                                                                }
+                                                            }
+
+                                                            over "right_index_MCP_AA"
+                                                            {
+                                                                float state:angular:physics:position = 0.00021447992
+                                                                float state:angular:physics:velocity = -0.00016488503
+                                                            }
+                                                        }
+
+                                                        over "right_index_MCP_FE"
+                                                        {
+                                                            float state:angular:physics:position = -0.00005386861
+                                                            float state:angular:physics:velocity = 0.00071684754
+                                                        }
+                                                    }
+
+                                                    over "right_middle_MCP_VL"
+                                                    {
+                                                        over "right_middle_PP"
+                                                        {
+                                                            over "right_middle_MP"
+                                                            {
+                                                                over "right_middle_DP"
+                                                                {
+                                                                    over "right_middle_DIP"
+                                                                    {
+                                                                        float state:angular:physics:position = -0.00019038662
+                                                                        float state:angular:physics:velocity = 0.000084172476
+                                                                    }
+                                                                }
+
+                                                                over "right_middle_PIP"
+                                                                {
+                                                                    float state:angular:physics:position = -0.0006486194
+                                                                    float state:angular:physics:velocity = 0.0004290859
+                                                                }
+                                                            }
+
+                                                            over "right_middle_MCP_AA"
+                                                            {
+                                                                float state:angular:physics:position = 0.00021438315
+                                                                float state:angular:physics:velocity = -0.00018216645
+                                                            }
+                                                        }
+
+                                                        over "right_middle_MCP_FE"
+                                                        {
+                                                            float state:angular:physics:position = -0.000053400374
+                                                            float state:angular:physics:velocity = 0.00072077545
+                                                        }
+                                                    }
+
+                                                    over "right_ring_MCP_VL"
+                                                    {
+                                                        over "right_ring_PP"
+                                                        {
+                                                            over "right_ring_MP"
+                                                            {
+                                                                over "right_ring_DP"
+                                                                {
+                                                                    over "right_ring_DIP"
+                                                                    {
+                                                                        float state:angular:physics:position = -0.00018973443
+                                                                        float state:angular:physics:velocity = 0.00008246336
+                                                                    }
+                                                                }
+
+                                                                over "right_ring_PIP"
+                                                                {
+                                                                    float state:angular:physics:position = -0.0006446021
+                                                                    float state:angular:physics:velocity = 0.0004182115
+                                                                }
+                                                            }
+
+                                                            over "right_ring_MCP_AA"
+                                                            {
+                                                                float state:angular:physics:position = 0.00020585768
+                                                                float state:angular:physics:velocity = -0.00019740972
+                                                            }
+                                                        }
+
+                                                        over "right_ring_MCP_FE"
+                                                        {
+                                                            float state:angular:physics:position = -0.000051428284
+                                                            float state:angular:physics:velocity = 0.00070139376
+                                                        }
+                                                    }
+
+                                                    over "right_pinky_MC"
+                                                    {
+                                                        over "right_pinky_MCP_VL"
+                                                        {
+                                                            over "right_pinky_PP"
+                                                            {
+                                                                over "right_pinky_MP"
+                                                                {
+                                                                    over "right_pinky_DP"
+                                                                    {
+                                                                        over "right_pinky_DIP"
+                                                                        {
+                                                                            float state:angular:physics:position = -0.00018886925
+                                                                            float state:angular:physics:velocity = 0.000079758946
+                                                                        }
+                                                                    }
+
+                                                                    over "right_pinky_PIP"
+                                                                    {
+                                                                        float state:angular:physics:position = -0.0006393849
+                                                                        float state:angular:physics:velocity = 0.00040565754
+                                                                    }
+                                                                }
+
+                                                                over "right_pinky_MCP_AA"
+                                                                {
+                                                                    float state:angular:physics:position = 0.0001975587
+                                                                    float state:angular:physics:velocity = -0.00021898585
+                                                                }
+                                                            }
+
+                                                            over "right_pinky_MCP_FE"
+                                                            {
+                                                                float state:angular:physics:position = -0.000048746253
+                                                                float state:angular:physics:velocity = 0.00067101704
+                                                            }
+                                                        }
+
+                                                        over "right_pinky_CMC"
+                                                        {
+                                                            float state:angular:physics:position = -0.000080712234
+                                                            float state:angular:physics:velocity = 0.0033315325
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            over "zarm_r7_joint"
+                                            {
+                                                float state:angular:physics:position = -5.0971026
+                                                float state:angular:physics:velocity = 0.001828099
+                                            }
+                                        }
+
+                                        over "zarm_r6_joint"
+                                        {
+                                            float state:angular:physics:position = 0.9725181
+                                            float state:angular:physics:velocity = -0.00094233267
+                                        }
+                                    }
+
+                                    over "zarm_r5_joint"
+                                    {
+                                        float state:angular:physics:position = 0.3536826
+                                        float state:angular:physics:velocity = 0.000120460456
+                                    }
+                                }
+
+                                over "zarm_r4_joint"
+                                {
+                                    float state:angular:physics:position = -0.0000016387977
+                                    float state:angular:physics:velocity = -0.08460789
+                                }
+                            }
+
+                            over "zarm_r3_joint"
+                            {
+                                float state:angular:physics:position = 0.26385516
+                                float state:angular:physics:velocity = -0.0077018337
+                            }
+                        }
+
+                        over "zarm_r2_joint"
+                        {
+                            float state:angular:physics:position = 0.002380858
+                            float state:angular:physics:velocity = -0.012167201
+                        }
+                    }
+
+                    over "zarm_r1_joint"
+                    {
+                        float state:angular:physics:position = 0.014879594
+                        float state:angular:physics:velocity = -0.21771951
+                    }
+                }
+
+                over "zhead_1_link"
+                {
+                    over "zhead_2_link"
+                    {
+                        over "zhead_2_joint"
+                        {
+                            float state:angular:physics:position = 30.00002
+                            float state:angular:physics:velocity = 4.9932164e-10
+                        }
+                    }
+
+                    over "zhead_1_joint"
+                    {
+                        float state:angular:physics:position = -0.00036138983
+                        float state:angular:physics:velocity = -3.2799475e-15
+                    }
+                }
+            }
+        }
+    }
+
+    over "container_b04"
+    {
     }
 }
+
+over "Render"
+{
+    over "OmniverseKit"
+    {
+        over "HydraTextures"
+        {
+            over "omni_kit_widget_viewport_ViewportTexture_0"
+            {
+                rel camera = </OmniverseKit_Persp>
+                bool omni:rtx:material:db:syncLoads = 1
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1280, 720)
+            }
+
+            over "Replicator_01"
+            {
+                rel camera = </World/s40_sharpa_two_cameras/Geometry/base_link/zhead_1_link/zhead_2_link/head_camera>
+                bool omni:rtx:material:db:syncLoads = 1
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (640, 480)
+            }
+
+            over "Replicator"
+            {
+                rel camera = </World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/right_hand_camera_mount/right_hand_camera_head/right_hand_camera>
+                bool omni:rtx:material:db:syncLoads = 1
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (640, 480)
+            }
+
+            over "Replicator_02"
+            {
+                rel camera = </World/s40_sharpa_two_cameras/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/left_hand_camera_mount/left_hand_camera_head/left_hand_camera>
+                bool omni:rtx:material:db:syncLoads = 1
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (640, 480)
+            }
+
+            over "omni_kit_widget_viewport_ViewportTexture_1"
+            {
+                rel camera = </World/s40_sharpa_two_cameras/Geometry/base_link/zhead_1_link/zhead_2_link/head_camera>
+                bool omni:rtx:material:db:syncLoads = 1
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1280, 720)
+            }
+        }
+    }
+}
+
+over "OmniverseKit_Persp" (
+    prepend apiSchemas = ["OmniRtxCameraAutoExposureAPI_1", "OmniRtxCameraExposureAPI_1"]
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (0.01, 10000000)
+    float exposure:fStop = 5
+    float exposure:responsivity = 1.1026709
+    float exposure:time = 0.02
+    float focalLength = 18.147562
+    float focusDistance = 400
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -55.37695333875834)
+    float3 xformOp:rotateXYZ = (58.14601, -4.5481934e-13, 138.12909)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (2.5482270923454036, 6.521428329620421, 2.59034291889449)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+}
+
+over "OmniverseKit_Front" (
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (1, 10000000)
+    float horizontalAperture = 50
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -5)
+    token projection = "orthographic"
+    float verticalAperture = 50
+    float3 xformOp:rotateXYZ = (90, -1.2722219e-14, 90)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (5, 0, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+}
+
+over "OmniverseKit_Right" (
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (1, 10000000)
+    float horizontalAperture = 50
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -5)
+    token projection = "orthographic"
+    float verticalAperture = 50
+    float3 xformOp:rotateXYZ = (90, -1.41245e-30, 1.2722219e-14)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (0, -5, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+}
+
+over "OmniverseKit_Top" (
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (1, 10000000)
+    float horizontalAperture = 50
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -5)
+    token projection = "orthographic"
+    float verticalAperture = 50
+    float3 xformOp:rotateXYZ = (-1.2722219e-14, -7.016709e-15, -90)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (0, 0, 5)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+}
+
