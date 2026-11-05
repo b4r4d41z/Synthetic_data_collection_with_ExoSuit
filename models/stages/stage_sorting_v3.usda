@@ -1,0 +1,18 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+    timeCodesPerSecond = 60
+    subLayers = [@things_pool.usda@, @stage_sorting_v2.usda@]
+)
+
+# V3 replaces the pool at stage composition, never during episode resets.
+over "World"
+{
+    over "Task"
+    {
+        over "Fruits" (active = false) {}
+        over "Parking" (active = false) {}
+    }
+}

@@ -10,28 +10,35 @@ from uuid import uuid4
 POOL_PATH = "/World/Task/Fruits"
 OBJECT_PATH = POOL_PATH + "/avocado"
 
-def fruit_path(asset):
-    return POOL_PATH + "/" + Path(asset).stem
+def fruit_path(asset, pool_path=POOL_PATH):
+    return pool_path + "/" + Path(asset).stem
 
 CONTAINER_PATH = "/World/container_b04"
 
 
 def load_configuration(path, repository):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    if (data.get("schema_version") != 1 or data["parameters"]["object_prim_path"] != OBJECT_PATH
+    v3 = data.get("randomization", {}).get("scenario") == "things_v3"
+    object_path = "/World/Task/Things/apple_02" if v3 else OBJECT_PATH
+    if (data.get("schema_version") != 1 or data["parameters"]["object_prim_path"] != object_path
             or data["parameters"]["container_prim_path"] != CONTAINER_PATH):
-        raise ValueError("Sorting collection requires schema 1 and the configured fruit pool")
+        raise ValueError("Sorting collection requires schema 1 and the configured object pool")
     config = data["randomization"]
     assets = config["object_assets"]
     # Selection and persistent topology are separate: excluded fruit stays parked.
     pool = config["pool_assets"]
-    expected = {"avocado.usd", "lemon1.usd", "orange2.usd"}
+    expected = ({"apple_02.usd", "lunchbag.usd", "ketchup_bottle.usd"} if v3
+                else {"avocado.usd", "lemon1.usd", "orange2.usd"})
+    if v3 and (config.get("pool_path") != "/World/Task/Things"
+               or config.get("parking_path") != "/World/Task/ThingsParking"):
+        raise ValueError("V3 requires the pre-authored things pool and parking")
     if (not isinstance(assets, list) or len(assets) != 3
             or {Path(a).name for a in assets} != expected
-            or not isinstance(pool, list) or len(pool) != 4 or len(set(pool)) != 4
+            or not isinstance(pool, list) or len(pool) != (3 if v3 else 4) or len(set(pool)) != len(pool)
             or not set(assets).issubset(pool)
-            or {Path(a).name for a in pool} != expected | {"pomegranate.usd"}):
-        raise ValueError("Select avocado/lemon/orange only; keep all four physical pool assets")
+            or {Path(a).name for a in pool} != (expected if v3 else expected | {"pomegranate.usd"})):
+        raise ValueError("V3 requires apple_02/lunchbag/ketchup_bottle in its selection and physical pool" if v3
+                         else "Select avocado/lemon/orange only; keep all four physical pool assets")
     root = Path(repository).resolve()
     for asset in pool:
         resolved = (root / asset).resolve()
@@ -76,20 +83,23 @@ def collision_shapes(prim):
             yield child
 
 
-def asset_geometry(path):
+def asset_geometry(path, *, allow_child_body=False):
     """Reference the actual sole body at its default prim, preserving materials.
 
-    The four inspected sources all have a body at the default prim. Validate
-    this rather than silently introducing a visual wrapper or nested bodies.
+    Legacy fruits require a default-prim body. V3 also accepts the inspected
+    apple/lunchbag child body: things_pool.usda promotes it to the pool root,
+    preserving its geometry transforms and mass frame without nested bodies.
     Bounds include every visual/collision mesh, including orange2's stem.
     """
     from pxr import Gf, Usd, UsdGeom, UsdPhysics
     stage = Usd.Stage.Open(str(path))
     root = stage.GetDefaultPrim()
     bodies = [p for p in stage.Traverse() if p.HasAPI(UsdPhysics.RigidBodyAPI)]
-    if (not root or bodies != [root]
-            or UsdPhysics.RigidBodyAPI(root).GetRigidBodyEnabledAttr().Get() is False
-            or UsdPhysics.RigidBodyAPI(root).GetKinematicEnabledAttr().Get() is True
+    body = bodies[0] if len(bodies) == 1 else None
+    if (not root or body is None or (body != root and not allow_child_body)
+            or not body.GetPath().HasPrefix(root.GetPath())
+            or UsdPhysics.RigidBodyAPI(body).GetRigidBodyEnabledAttr().Get() is False
+            or UsdPhysics.RigidBodyAPI(body).GetKinematicEnabledAttr().Get() is True
             or not list(collision_shapes(root))):
         raise ValueError(f"Asset must have one dynamic default-prim body with collision: {path}")
     if UsdGeom.GetStageMetersPerUnit(stage) != 1 or UsdGeom.GetStageUpAxis(stage) != "Z":
@@ -173,7 +183,9 @@ class SceneRandomizer:
                 Usd.TimeCode.Default()) != Gf.Matrix4d(1):
             raise ValueError("Sorting /World must have an identity world transform")
         self.rng = random.Random(self.config["seed"])
-        self.assets = {a: asset_geometry(self.repository / a) for a in self.config["pool_assets"]}
+        self.v3 = self.config.get("scenario") == "things_v3"
+        self.assets = {a: asset_geometry(self.repository / a, allow_child_body=self.v3)
+                       for a in self.config["pool_assets"]}
         from pxr import UsdPhysics
         container = stage.GetPrimAtPath(CONTAINER_PATH)
         if (not container or not container.HasAPI(UsdPhysics.RigidBodyAPI)
@@ -189,7 +201,7 @@ class SceneRandomizer:
         self.container_bounds = ([min(b.GetMin()[i] for b in bounds) for i in range(3)],
                                  [max(b.GetMax()[i] for b in bounds) for i in range(3)])
         self.last_episode = None
-        self.pool = {a: fruit_path(a) for a in self.assets}
+        self.pool = {a: fruit_path(a, self.config.get("pool_path", POOL_PATH)) for a in self.assets}
         self.parking = {}
         try:
             for asset, path in self.pool.items():
@@ -203,7 +215,7 @@ class SceneRandomizer:
                        or abs(bounds.GetMax()[i]-self.assets[asset][2][i]) > 1e-6
                        for i in range(3)):
                     raise ValueError(f"Pool geometry differs from configured asset: {path}")
-                floor = stage.GetPrimAtPath("/World/Task/Parking/" + Path(asset).stem + "/floor")
+                floor = stage.GetPrimAtPath(self.config.get("parking_path", "/World/Task/Parking") + "/" + Path(asset).stem + "/floor")
                 if not floor or not list(collision_shapes(floor)):
                     raise ValueError(f"Missing static parking support for {path}")
                 if any(p.HasAPI(UsdPhysics.RigidBodyAPI) for p in Usd.PrimRange(floor)):
@@ -258,11 +270,37 @@ class SceneRandomizer:
             for shape in shapes:
                 bound = cache.ComputeWorldBound(shape).ComputeAlignedRange()
                 obstacles.append((list(bound.GetMin()), list(bound.GetMax())))
+        if self.v3:
+            # Same two candidate regions as V2, expressed as footprint centres.
+            centre = [(a+b)/2 for a,b in zip(*self.container_bounds)]
+            offsets = self.config["container_offset_region"]
+            regions = {"right": dict(self.config["object_spawn_region"]), "left": {
+                key: centre[0 if key.startswith("x") else 1] + value
+                for key, value in offsets.items()}}
+            layout = self.rng.choice(("A", "B"))
+            object_region = regions["right" if layout == "A" else "left"]
+            box_region = regions["left" if layout == "A" else "right"]
+            candidate_config = dict(self.config, object_spawn_region=object_region,
+                                    object_assets=[self.rng.choice(self.config["object_assets"])])
+            # Preserve legacy obstacle handling; V3 also excludes environmental
+            # colliders outside the support table and the task's movable bodies.
+            excluded = (self.data["provenance"]["robot_root"], self.config["table_prim_path"],
+                        CONTAINER_PATH, self.config["pool_path"], self.config["parking_path"])
+            for shape in collision_shapes(self.stage.GetPseudoRoot()):
+                if any(str(shape.GetPath()) == p or str(shape.GetPath()).startswith(p+"/") for p in excluded):
+                    continue
+                bound = cache.ComputeWorldBound(shape).ComputeAlignedRange()
+                if not bound.IsEmpty():
+                    obstacles.append((list(bound.GetMin()), list(bound.GetMax())))
         # Validate the container against live support and robot geometry first.
         region = self.config["container_offset_region"]
         for _ in range(self.config["max_attempts"]):
-            offset = [self.rng.uniform(region["x_min"], region["x_max"]),
-                      self.rng.uniform(region["y_min"], region["y_max"]), 0.]
+            if self.v3:
+                offset = [self.rng.uniform(box_region[axis+"_min"], box_region[axis+"_max"]) - centre[i]
+                          for i, axis in enumerate(("x", "y"))] + [0.]
+            else:
+                offset = [self.rng.uniform(region["x_min"], region["x_max"]),
+                          self.rng.uniform(region["y_min"], region["y_max"]), 0.]
             low, high = ([v + offset[i] for i, v in enumerate(bound)]
                          for bound in self.container_bounds)
             margin = self.config["edge_margin_m"]
@@ -285,7 +323,7 @@ class SceneRandomizer:
         # a complete valid fruit/container plan exists.
         obstacles.append((low, high))
         for _ in range(self.config["max_attempts"]):
-            asset, x, y, yaw = sample_candidate(self.config, self.rng)
+            asset, x, y, yaw = sample_candidate(candidate_config if self.v3 else self.config, self.rng)
             if asset not in self.config["object_assets"]:
                 raise ValueError(f"Excluded demonstration fruit: {asset}")
             _, source_lo, source_hi = self.assets[asset]
@@ -328,6 +366,8 @@ class SceneRandomizer:
                              "container_prim_path": CONTAINER_PATH,
                              "container_position": list(container_position), "container_offset": offset,
                              "container_transform": [list(row) for row in transform]}
+        if self.v3:
+            self.last_episode.update(scenario="things_v3", layout=layout, placement_regions=regions)
         return self.last_episode
 
 

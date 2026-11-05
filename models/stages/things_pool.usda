@@ -1,0 +1,907 @@
+#usda 1.0
+# Stable V3 five-object pool; source geometry, materials and textures stay referenced.
+# Apple/lunchbag child bodies are promoted to the root with transformed mass
+# frames. Their captured geometry transforms and inertias remain unchanged.
+# Same contact material, collider margins and remote cradles as fruit_pool.
+# All bodies exist before PhysX starts; resets change live poses/velocities only.
+(
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def "World"
+{
+    def "Task"
+    {
+        def Xform "Things"
+        {
+            def Material "ThingContact" (
+                prepend apiSchemas = ["PhysicsMaterialAPI", "PhysxMaterialAPI"]
+            )
+            {
+                float physics:dynamicFriction = 0.5
+                float physics:restitution = 0
+                float physics:staticFriction = 0.6
+                token physxMaterial:frictionCombineMode = "average"
+                token physxMaterial:restitutionCombineMode = "average"
+            }
+
+            def Xform "apple_02" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
+                prepend references = @../addons/objects/objaverse/apple_02.usd@
+            )
+            {
+                rel material:binding:physics = </World/Task/Things/ThingContact> (
+                    bindMaterialAs = "strongerThanDescendants"
+                )
+                vector3f physics:angularVelocity = (0, 0, 0)
+                point3f physics:centerOfMass = (-0.0002396542, 0.00036137988, -0.017344648)
+                float3 physics:diagonalInertia = (0.00015898321, 0.00016968133, 0.00015990496)
+                float physics:mass = 0.16601999
+                quatf physics:principalAxes = (0.9997527, 0.018000172, -0.011821586, -0.0055553336)
+                vector3f physics:velocity = (0, 0, 0)
+                bool physxRigidBody:disableGravity = 0
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (100, 100, 1.9813579296990302, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "Geometry"
+                {
+                    over "apple_15_model_normalized_0_vis" (
+                        delete apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        over "apple_15_tn__model_normalized_collision_0_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_0_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_10_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_10_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_11_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_11_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_12_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_12_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_13_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_13_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_14_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_14_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_15_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_15_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_16_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_16_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_17_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_17_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_18_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_18_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_19_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_19_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_1_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_1_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_20_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_20_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_21_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_21_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_22_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_22_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_23_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_23_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_24_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_24_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_25_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_25_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_26_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_26_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_27_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_27_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_28_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_28_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_29_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_29_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_2_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_2_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_30_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_30_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_31_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_31_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_3_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_3_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_4_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_4_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_5_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_5_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_6_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_6_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_7_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_7_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_8_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_8_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "apple_15_tn__model_normalized_collision_9_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_9_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+                    }
+                }
+            }
+
+            def Xform "lunchbag" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
+                prepend references = @../addons/objects/objaverse/lunchbag.usd@
+            )
+            {
+                rel material:binding:physics = </World/Task/Things/ThingContact> (
+                    bindMaterialAs = "strongerThanDescendants"
+                )
+                vector3f physics:angularVelocity = (0, 0, 0)
+                point3f physics:centerOfMass = (0.001969667, -0.001700441, -0.04081409)
+                float3 physics:diagonalInertia = (0.00013862748, 0.00021226858, 0.00013848131)
+                float physics:mass = 0.28446978
+                quatf physics:principalAxes = (0.9998764, 0.015699565, -0.0006531631, 0.00067293295)
+                vector3f physics:velocity = (0, 0, 0)
+                bool physxRigidBody:disableGravity = 0
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (102, 100, 2.002499997913837, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "Geometry"
+                {
+                    over "more_bagged_food_7_model_normalized_0_vis" (
+                        delete apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        over "more_bagged_food_7_tn__model_normalized_collision_0_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_0_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_10_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_10_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_11_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_11_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_12_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_12_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_13_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_13_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_14_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_14_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_15_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_15_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_16_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_16_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_17_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_17_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_18_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_18_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_19_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_19_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_1_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_1_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_20_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_20_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_21_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_21_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_22_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_22_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_23_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_23_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_24_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_24_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_25_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_25_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_26_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_26_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_27_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_27_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_28_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_28_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_29_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_29_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_2_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_2_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_30_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_30_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_31_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_31_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_3_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_3_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_4_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_4_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_5_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_5_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_6_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_6_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_7_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_7_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_8_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_8_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_9_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_9_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+                    }
+                }
+            }
+
+            def Xform "ketchup_bottle" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
+                prepend references = @../addons/objects/hope/ketchup_bottle.usd@
+            )
+            {
+                rel material:binding:physics = </World/Task/Things/ThingContact> (
+                    bindMaterialAs = "strongerThanDescendants"
+                )
+                vector3f physics:angularVelocity = (0, 0, 0)
+                float physics:mass = 0.5
+                vector3f physics:velocity = (0, 0, 0)
+                bool physxRigidBody:disableGravity = 0
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (104, 100, 2.004303902685642, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "obj_000011_Mesh" (
+                    prepend apiSchemas = ["PhysxCollisionAPI"]
+                )
+                {
+                    float physxCollision:contactOffset = 0.002
+                    float physxCollision:restOffset = 0
+                }
+            }
+
+
+            # Reused V2 fruits, excluding lemon and pomegranate.
+            def Xform "avocado" (
+                prepend references = @../addons/objects/fruits_veggies/avocado.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (106, 100, 1.9298255366226658, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "avocado01_inst"
+                {
+                    over "Avocado_01" (
+                        prepend apiSchemas = ["PhysxCollisionAPI"]
+                    )
+                    {
+                        float physxCollision:contactOffset = 0.002
+                        float physxCollision:restOffset = 0
+                        rel material:binding:physics = </World/Task/Things/ThingContact>
+                    }
+                }
+            }
+
+            def Xform "orange2" (
+                prepend references = @../addons/objects/fruits_veggies/orange2.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (108, 100, 1.9300598616243223, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "orange_02_inst"
+                {
+                    over "Orange_02"
+                    {
+                        over "OrangeSkin" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                            rel material:binding:physics = </World/Task/Things/ThingContact>
+                        }
+                        over "OrangeStem" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                            rel material:binding:physics = </World/Task/Things/ThingContact>
+                        }
+                    }
+                }
+            }
+
+        }
+
+        def Xform "ThingsParking"
+        {
+            def "apple_02" (
+                prepend references = @fruit_pool.usda@</World/Task/Parking/avocado>
+            )
+            {
+            }
+
+            def "lunchbag" (
+                prepend references = @fruit_pool.usda@</World/Task/Parking/lemon1>
+            )
+            {
+            }
+
+            def "ketchup_bottle" (
+                prepend references = @fruit_pool.usda@</World/Task/Parking/pomegranate>
+            )
+            {
+            }
+
+            # Additional distinct parking supports at x=106 m and x=108 m.
+            # Reuse already validated static cradle geometry from fruit_pool.usda.
+            def "avocado" (
+                prepend references = @fruit_pool.usda@</World/Task/Parking/orange2>
+            )
+            {
+            }
+
+            def Xform "orange2" (
+                prepend references = @fruit_pool.usda@</World/Task/Parking/orange2>
+            )
+            {
+                double3 xformOp:translate = (2, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+        }
+    }
+}

@@ -39,7 +39,7 @@ def native_tensor(template, data, *, indices=False):
 
 
 class PhysicsObjectPool:
-    """Own only five local body views and reset buffers, never the shared world."""
+    """Own only the episode's local body views and buffers, never the shared world."""
     def __init__(self, stage, episode, log=print):
         from pxr import UsdGeom
         self.stage, self.episode, self.log = stage, episode, log
@@ -49,8 +49,10 @@ class PhysicsObjectPool:
         self.targets = {path: list(pose) for path, pose in episode['body_poses'].items()}
         expected = {episode['object_prim_path'], episode['container_prim_path'],
                     *episode['parking_positions']}
-        if set(self.targets) != expected or len(expected) != 5:
-            raise ValueError('Episode must identify four distinct fruits and one container')
+        count = 4 if episode.get('scenario') == 'things_v3' else 5
+        if set(self.targets) != expected or len(expected) != count:
+            raise ValueError('Episode must identify three distinct things and one container' if count == 4
+                             else 'Episode must identify four distinct fruits and one container')
         for path, pose in self.targets.items():
             if (len(pose) != 7 or not all(math.isfinite(v) for v in pose)
                     or not math.isclose(math.hypot(*pose[3:]), 1., abs_tol=1e-6)):
@@ -111,7 +113,7 @@ class PhysicsObjectPool:
             raise ValueError(f'No enabled collision geometry owned by {path}')
 
     def bind(self, simulation_view):
-        """All five actors pass preflight before any physical state is changed."""
+        """All planned actors pass preflight before any physical state is changed."""
         import numpy as np
         if self.simulation_view is simulation_view:
             return
@@ -138,7 +140,9 @@ class PhysicsObjectPool:
                              native_tensor(transforms, [0], indices=True))
             bodies[path] = body
         self.simulation_view, self.bodies, self.buffers = simulation_view, bodies, buffers
-        self.log('[BFM PHYSX] fruit pool resolved: 4/4; container resolved: 1')
+        self.log('[BFM PHYSX] things pool resolved: 3/3; container resolved: 1'
+                 if self.episode.get('scenario') == 'things_v3' else
+                 '[BFM PHYSX] fruit pool resolved: 4/4; container resolved: 1')
 
     def apply_episode(self):
         if not self.bodies:

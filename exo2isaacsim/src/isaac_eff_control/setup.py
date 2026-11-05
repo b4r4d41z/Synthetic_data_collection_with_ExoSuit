@@ -10,6 +10,7 @@ setup(
         package_name: [
             'camera_metadata.json',
             'sorting_scene.json',
+            'sorting_scene_v3.json',
         ]
     },
     data_files=[

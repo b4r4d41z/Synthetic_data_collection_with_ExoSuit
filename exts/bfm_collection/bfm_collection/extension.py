@@ -191,7 +191,8 @@ class CollectionExtension(omni.ext.IExt):
         # Other scenes/robot-only USDs are completely outside this extension.
         expected = {
             (self.repository / "models/stages" / name).resolve()
-            for name in ("stage_sorting_v1.usd", "s40_sharpa_collision_v2.usda")
+            for name in ("stage_sorting_v1.usd", "s40_sharpa_collision_v2.usda",
+                         "stage_sorting_v2.usda", "stage_sorting_v3.usda")
         }
 
         root_real_path = stage.GetRootLayer().realPath
@@ -215,6 +216,8 @@ class CollectionExtension(omni.ext.IExt):
             )
 
             path = scene_config_default()
+            if Path(root_real_path).name == "stage_sorting_v3.usda":
+                path = str(Path(path).with_name("sorting_scene_v3.json"))
 
             data = load_configuration(
                 path,
@@ -287,6 +290,9 @@ class CollectionExtension(omni.ext.IExt):
                 "sha256": hashlib.sha256(scene.read_bytes()).hexdigest(),
                 "self_collisions": True,
             }
+        if scene == (self.repository / "models/stages/stage_sorting_v3.usda").resolve():
+            from isaac_eff_control.bfm_contract import scene_configuration
+            episode["scene_configuration"] = scene_configuration(self.config_path)
         self.episode_channel.publish("prepared", episode)
         print(
             "[BFM] Episode plan prepared:\n"
