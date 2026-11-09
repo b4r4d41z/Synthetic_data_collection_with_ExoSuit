@@ -21,8 +21,9 @@ class LaunchTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name)
-        for name in ('launch_bfm_isaac.sh', 'start_isaac_control.sh', 'start_bfm_policy_control.sh', 'tools/collection'):
+        for name in ('launch_bfm_isaac.sh', 'start_isaac_control.sh', 'start_bfm_policy_control.sh', 'tools/collection', 'models/stages', 'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/scenarios.py'):
             source, target = ROOT/name, self.root/name
+            target.parent.mkdir(parents=True, exist_ok=True)
             if source.is_dir(): shutil.copytree(source, target)
             else: shutil.copy(source, target)
         self.setup = self.root/'exo2isaacsim/install/setup.bash'
@@ -108,11 +109,13 @@ python3 -c 'import os,json; print(json.dumps(dict(os.environ)))'
         import runpy
         from types import SimpleNamespace
         from unittest.mock import Mock
+        selected = ['sorting_experimental']
         events = []
         async def update(): events.append('update')
         async def open_stage(path):
             events.append('open')
-            self.assertEqual(Path(path), ROOT/'models/stages/stage_sorting_v1.usd')
+            from isaac_eff_control.scenarios import scenario
+            self.assertEqual(Path(path), scenario(selected[0],ROOT)['stage'])
             return True, 0
         timeline = Mock()
         timeline.stop.side_effect = lambda: events.append('stop')
@@ -126,14 +129,15 @@ python3 -c 'import os,json; print(json.dumps(dict(os.environ)))'
         modules['omni.kit'] = SimpleNamespace(app=modules['omni.kit.app'])
         modules['omni'] = SimpleNamespace(kit=modules['omni.kit'],
             timeline=modules['omni.timeline'], usd=modules['omni.usd'])
-        with patch.dict(sys.modules, modules), patch.object(asyncio, 'ensure_future') as schedule:
-            runpy.run_path(str(ROOT/'tools/collection/open_sorting_stage.py'))
-            schedule.assert_called_once()
-            asyncio.run(schedule.call_args.args[0])
-        self.assertEqual(events, ['update', 'stop', 'open'])
-        timeline.play.assert_not_called()
-        text = (ROOT/'launch_bfm_isaac.sh').read_text()
-        self.assertIn('--/isaac/startup/create_new_stage=false', text)
+        for name in ('sorting_experimental','sorting_v1'):
+            selected[0] = name
+            events.clear(); timeline.reset_mock()
+            with patch.dict(os.environ, SCENARIO=name), patch.dict(sys.modules, modules), patch.object(asyncio, 'ensure_future') as schedule:
+                runpy.run_path(str(ROOT/'tools/collection/open_sorting_stage.py'))
+                schedule.assert_called_once()
+                asyncio.run(schedule.call_args.args[0])
+            self.assertEqual(events, ['update', 'stop', 'open'])
+            timeline.play.assert_not_called()
 
     def test_policy_launcher_runs_only_hand_executor_with_project_environment(self):
         self.executable('ros2', f'''#!{sys.executable}

@@ -6,7 +6,7 @@ Audit completed before implementation. No live Isaac/PhysX execution is claimed.
 
 ## Composition and confirmed cause
 
-The working scene is `models/stages/stage_sorting_v1.usd`. It references
+The working scene is `models/stages/sorting_v1/stage_sorting_v1.usd`. It references
 `models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.usd`, which composes
 `s40_sharpa_two_cameras/payloads/base.usda`, `robot.usda`, `instances.usda`,
 `geometries.usd` and `materials.usda`. The `Physics=physx` variant loads
@@ -120,7 +120,7 @@ without live evidence. Large target jumps and unlimited drives remain risks.
 
 ## Implemented change and V1 preservation
 
-`models/stages/s40_sharpa_collision_v2.usda` is a small independent scene root,
+`models/stages/sorting_experimental/stage_sorting_v2.usda` is a small independent scene root,
 sublayering V1 with relative paths. It selects `Physics=physx` and authors only:
 
 - `prepend apiSchemas=["PhysxArticulationAPI"]` on the existing fixed-base root;
@@ -170,7 +170,7 @@ asset access for full scene/runtime validation. No replacement assets are added.
 ## Required live Isaac validation (not executed here)
 
 1. Start the existing `bash launch_bfm_isaac.sh`. While STOPPED use File > Open
-   to open `models/stages/s40_sharpa_collision_v2.usda`. Do not add it as another
+   to open `models/stages/sorting_experimental/stage_sorting_v2.usda`. Do not add it as another
    reference to the already-open scene. Verify the collection extension attaches
    and prepares one episode. V1 remains independently openable.
 2. Start the usual `bash start_isaac_control.sh` for teleoperation, OR the existing

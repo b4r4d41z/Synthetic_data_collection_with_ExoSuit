@@ -23,8 +23,8 @@ cd /workspace/Synthetic_data_collection_with_ExoSuit
 bash start_isaac_control.sh
 ```
 
-Open `models/stages/stage_sorting_v1.usd` while STOPPED and wait for the
-extension's plan-ready message before PLAY. The existing ROS1/ZMQ/ROS2 bridge
+The selected scene opens automatically while STOPPED. Wait for the extension's
+`[BFM PLAN READY]` message before pressing PLAY. The existing ROS1/ZMQ/ROS2 bridge
 must be running in its deployment; these scripts consume its semantic topics.
 They do not create another bridge or rebuild the workspace.
 
@@ -52,6 +52,75 @@ overrides. Scene defaults and episode-generated descriptors remain authoritative
 Lower-level configuration APIs remain available for debugging outside these
 production scripts. Contract v3, bounded action semantics, cameras, physics and
 task behavior are unchanged.
+
+## Sorting scenarios
+
+Scenario resources and configurations now live together:
+
+```text
+models/stages/
+  sorting_v1/
+    stage_sorting_v1.usd
+    fruit_pool.usda
+    sorting_scene.json
+  sorting_experimental/
+    stage_sorting_v2.usda
+    stage_sorting_v3.usda
+    things_pool.usda
+    sorting_scene_v3.json
+```
+
+`sorting_v1` preserves the original three selectable fruits (avocado, lemon,
+orange), restricted right-side spawn region, parked pomegranate and original
+robot collision configuration. `sorting_experimental` preserves the current
+five-object V3 pool, bidirectional layouts and V2 collision override. Neither
+scenario's randomization or physical settings were changed by this move.
+
+```bash
+# Stable scenario used for the original demonstrations
+SCENARIO=sorting_v1 bash launch_bfm_isaac.sh
+
+# New experimental scenario
+SCENARIO=sorting_experimental bash launch_bfm_isaac.sh
+
+# Backward-compatible default: experimental
+bash launch_bfm_isaac.sh
+
+# Equivalent positional interface
+bash launch_bfm_isaac.sh sorting_v1
+```
+
+Conflicting environment/argument selections and unknown names fail before Isaac
+starts. PLAY remains manual. Run `bash start_isaac_control.sh` in the other
+terminal as before; it does not need the selector. The extension chooses the
+configuration from the opened stage using the shared registry in
+`isaac_eff_control/scenarios.py`. Its existing episode descriptor now carries
+the active configuration and task parameters to the recorder. The recorder
+verifies the configuration hash against its installation and refuses mismatches.
+Thus a separate terminal cannot accidentally record legacy metadata for V3.
+
+Experimental V2 still sublayers the stable V1 through a relative reference;
+V3 adds its own things pool. Parking cradles also reference the stable fruit
+pool. Robot/object meshes and textures remain shared under `models/robots` and
+`models/addons`. Shared randomizer/lifecycle code remains in the collection
+extension; the JSON `randomization.scenario` selects its existing behavior.
+All stage entry paths have moved to the directories above. Replay and rollout
+launchers remain unchanged and continue using the existing ROS interfaces.
+
+After applying the migration, rebuild only the affected ROS Python package:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+cd exo2isaacsim
+colcon build --packages-select isaac_eff_control --symlink-install
+cd ..
+```
+
+Restart Isaac and collection processes. Configurations install under
+`share/isaac_eff_control/scenarios/<scenario>/`; source checkouts use the canonical
+JSON files above. To add a future scenario, add its directory/configuration,
+register its fixed entry in `SCENARIOS`, add its config to `setup.py` data files,
+and test selection, composition and episode metadata. Do not copy common assets.
 
 ## ExoSuit Control
 

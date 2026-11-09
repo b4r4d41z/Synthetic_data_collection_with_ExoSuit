@@ -41,7 +41,7 @@ class SuccessTests(unittest.TestCase):
 
     def test_actual_four_assets_and_rotated_container(self):
         from pxr import Usd, Gf
-        stage=Usd.Stage.Open(str(harness.ROOT/'models/stages/stage_sorting_v1.usd'))
+        stage=Usd.Stage.Open(str(harness.ROOT/'models/stages/sorting_v1/stage_sorting_v1.usd'))
         sizes=[]
         for name in ('avocado','lemon1','orange2'):
             config=dict(object_prim_path='/World/Task/Fruits/'+name,container_prim_path='/World/container_b04')
@@ -76,7 +76,7 @@ class SuccessTests(unittest.TestCase):
         self.assertEqual(len(set(sizes)),3)
 
     def test_near_half_spawn(self):
-        config=json.loads((harness.ROOT/'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/sorting_scene.json').read_text())
+        config=json.loads((harness.ROOT/'models/stages/sorting_v1/sorting_scene.json').read_text())
         r=config['randomization']['object_spawn_region']
         self.assertAlmostEqual(r['x_max']-r['x_min'],(1.1-.95)/2)
         robot=.622416973

@@ -58,7 +58,7 @@ class HandSymmetryTests(unittest.TestCase):
     def test_composed_joint_limits_drives_frames_and_graph_are_mirrored(self):
         from pxr import Gf, Usd, UsdPhysics
         root = '/World/s40_sharpa_two_cameras'
-        stage = Usd.Stage.OpenMasked(str(ROOT/'models/stages/stage_sorting_v1.usd'),
+        stage = Usd.Stage.OpenMasked(str(ROOT/'models/stages/sorting_v1/stage_sorting_v1.usd'),
                                     Usd.StagePopulationMask([root]))
         stage.SetEditTarget(stage.GetSessionLayer())
         stage.GetPrimAtPath(root).GetVariantSet('Physics').SetVariantSelection('physx')

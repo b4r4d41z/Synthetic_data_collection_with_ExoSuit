@@ -130,7 +130,10 @@ STATE_VECTORS = {
 
 
 def scene_config_default():
-    return os.getenv("BFM_SCENE_CONFIG", str(Path(__file__).with_name("sorting_scene.json")))
+    from .scenarios import scenario
+    # Standalone nodes retain legacy defaults until the active episode arrives.
+    # SCENARIO belongs to the Isaac launcher, not independently started ROS nodes.
+    return os.getenv("BFM_SCENE_CONFIG") or str(scenario("sorting_v1")["config"])
 
 
 def validate_state_parameters(state):
@@ -181,7 +184,9 @@ def scene_configuration(path):
     """Keep versioned, configured provenance separate from live verification."""
     content = Path(path).expanduser().read_bytes()
     data = json.loads(content)
-    return {"file": str(path), "sha256": hashlib.sha256(content).hexdigest(),
+    from .scenarios import SCENARIOS, scenario
+    name = next((n for n in SCENARIOS if scenario(n)["scene"] == data.get("scene")), None)
+    return {"scenario": name, "file": str(path), "sha256": hashlib.sha256(content).hexdigest(),
             "scene": data.get("scene"), "provenance": data.get("provenance", {}),
             "randomization": data.get("randomization"),
             "runtime_verified": False}

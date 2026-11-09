@@ -115,11 +115,11 @@ class CollectionExtension(omni.ext.IExt):
 
         carb.log_info(
             "BFM collection loaded; "
-            "open stage_sorting_v1.usd with simulation stopped"
+            "open a registered sorting scene with simulation stopped"
         )
 
         print(
-            "[BFM] Open stage_sorting_v1.usd and keep simulation stopped.",
+            "[BFM] Open the selected sorting scene and keep simulation stopped.",
             flush=True,
         )
 
@@ -188,22 +188,15 @@ class CollectionExtension(omni.ext.IExt):
         ):
             return
 
-        # Other scenes/robot-only USDs are completely outside this extension.
-        expected = {
-            (self.repository / "models/stages" / name).resolve()
-            for name in ("stage_sorting_v1.usd", "s40_sharpa_collision_v2.usda",
-                         "stage_sorting_v2.usda", "stage_sorting_v3.usda")
-        }
-
+        # Resolve scene and configuration together from the shared registry.
+        from isaac_eff_control.scenarios import scenario_for_stage
         root_real_path = stage.GetRootLayer().realPath
-
         if not root_real_path:
             return
-
-        if Path(root_real_path).resolve() not in expected:
-            return
-
         try:
+            selected = scenario_for_stage(root_real_path, self.repository)
+            if selected is None:
+                return
             if not self.timeline.is_stopped():
                 raise RuntimeError(
                     "Stop simulation before enabling BFM collection "
@@ -211,13 +204,10 @@ class CollectionExtension(omni.ext.IExt):
                 )
 
             from isaac_eff_control.bfm_contract import (
-                scene_config_default,
                 state_defaults,
             )
 
-            path = scene_config_default()
-            if Path(root_real_path).name == "stage_sorting_v3.usda":
-                path = str(Path(path).with_name("sorting_scene_v3.json"))
+            path = str(selected["config"])
 
             data = load_configuration(
                 path,
@@ -281,7 +271,7 @@ class CollectionExtension(omni.ext.IExt):
         if episode is None:
             return
         scene = Path(self.stage.GetRootLayer().realPath).resolve()
-        if scene == (self.repository / "models/stages/s40_sharpa_collision_v2.usda").resolve():
+        if scene == (self.repository / "models/stages/sorting_experimental/stage_sorting_v2.usda").resolve():
             import hashlib
             # Existing episode serialization carries this into MCAP/episode.json.
             # Keep the base V1 configuration provenance and identify its override.
@@ -290,9 +280,9 @@ class CollectionExtension(omni.ext.IExt):
                 "sha256": hashlib.sha256(scene.read_bytes()).hexdigest(),
                 "self_collisions": True,
             }
-        if scene == (self.repository / "models/stages/stage_sorting_v3.usda").resolve():
-            from isaac_eff_control.bfm_contract import scene_configuration
-            episode["scene_configuration"] = scene_configuration(self.config_path)
+        from isaac_eff_control.bfm_contract import scene_configuration
+        episode["scene_configuration"] = scene_configuration(self.config_path)
+        episode["state_parameters"] = dict(self.parameters, object_prim_path=episode["object_prim_path"])
         self.episode_channel.publish("prepared", episode)
         print(
             "[BFM] Episode plan prepared:\n"

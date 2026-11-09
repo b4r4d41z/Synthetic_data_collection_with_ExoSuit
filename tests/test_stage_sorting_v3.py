@@ -16,14 +16,14 @@ from test_physics_object_pool import LiveBody, module as pool_module
 
 ROOT = collection.ROOT
 runtime = collection.runtime
-CONFIG = ROOT/'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/sorting_scene_v3.json'
+CONFIG = ROOT/'models/stages/sorting_experimental/sorting_scene_v3.json'
 TABLE = [[(0,3,.75),(2,3,.75),(2,5,.75)], [(0,3,.75),(2,5,.75),(0,5,.75)]]
-sys.path.insert(0, str(CONFIG.parent.parent))
+sys.path.insert(0, str(ROOT/'exo2isaacsim/src/isaac_eff_control'))
 
 
 class SortingV3Tests(unittest.TestCase):
     def setUp(self):
-        self.stage = Usd.Stage.Open(str(ROOT/'models/stages/stage_sorting_v3.usda'))
+        self.stage = Usd.Stage.Open(str(ROOT/'models/stages/sorting_experimental/stage_sorting_v3.usda'))
         self.data = runtime.load_configuration(CONFIG, ROOT)
         self.data['randomization']['seed'] = 7
         self.support = patch.object(runtime, 'tabletop_triangles', return_value=TABLE)
@@ -185,7 +185,7 @@ class SortingV3Tests(unittest.TestCase):
         self.assertNotEqual(self.planner.last_episode['episode_id'], episode['episode_id'])
 
     def test_v2_composition_unchanged_outside_replaced_pool(self):
-        v2 = Usd.Stage.Open(str(ROOT/'models/stages/stage_sorting_v2.usda'))
+        v2 = Usd.Stage.Open(str(ROOT/'models/stages/sorting_experimental/stage_sorting_v2.usda'))
         for p in v2.Traverse():
             if str(p.GetPath()).startswith(('/World/Task/Fruits','/World/Task/Parking')):continue
             other = self.stage.GetPrimAtPath(p.GetPath())
@@ -225,5 +225,5 @@ class SortingV3Tests(unittest.TestCase):
                 self.assertEqual(ext.parameters['object_prim_path'], '/World/Task/Things/apple_02')
                 episode=ext.lifecycle.randomizer.last_episode
                 self.assertEqual(episode['scenario'], 'things_v3')
-                self.assertEqual(episode['scene_configuration']['scene'], 'models/stages/stage_sorting_v3.usda')
+                self.assertEqual(episode['scene_configuration']['scene'], 'models/stages/sorting_experimental/stage_sorting_v3.usda')
                 ext._detach()

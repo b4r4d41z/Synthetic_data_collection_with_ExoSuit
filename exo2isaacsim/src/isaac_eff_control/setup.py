@@ -9,11 +9,13 @@ setup(
     package_data={
         package_name: [
             'camera_metadata.json',
-            'sorting_scene.json',
-            'sorting_scene_v3.json',
         ]
     },
     data_files=[
+        ('share/' + package_name + '/scenarios/sorting_v1',
+         ['../../../models/stages/sorting_v1/sorting_scene.json']),
+        ('share/' + package_name + '/scenarios/sorting_experimental',
+         ['../../../models/stages/sorting_experimental/sorting_scene_v3.json']),
         (
             'share/' + package_name + '/model',
             [

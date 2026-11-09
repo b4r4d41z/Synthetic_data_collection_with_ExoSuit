@@ -336,10 +336,27 @@ class SimRecorder(Node):
         for name, topic in CAMERA_TOPICS.items():
             if not isinstance(cameras[name], dict) or cameras[name].get("topic") != topic:
                 raise ValueError(f"Camera metadata topic does not match {name}: {topic}")
+        state = {key: self.get_parameter(key).value for key in self._state_parameter_names}
+        configuration = self._scene_configuration
+        episode = (self._episode_status or {}).get("episode") or {}
+        active = episode.get("scene_configuration")
+        if self.get_parameter("bfm_collection_mode").value and active is not None:
+            if not isinstance(active, dict) or not isinstance(episode.get("state_parameters"), dict):
+                raise ValueError("Active scenario is missing its runtime task parameters")
+            # Another terminal need not inherit SCENARIO. The Isaac process
+            # supplies the authoritative prepared configuration and parameters.
+            from .scenarios import scenario
+            from .bfm_contract import validate_state_parameters
+            local = scene_configuration(scenario(active.get("scenario"))["config"])
+            if any(active.get(k) != local.get(k) for k in ("sha256", "scene", "provenance", "randomization")):
+                raise ValueError("Active scenario differs from installed configuration; rebuild isaac_eff_control")
+            state = validate_state_parameters(episode["state_parameters"])
+            if (state["object_prim_path"] != episode.get("object_prim_path")
+                    or state["container_prim_path"] != episode.get("container_prim_path")):
+                raise ValueError("Active scenario parameters disagree with episode roles")
+            configuration = active
         bfm = collection_metadata(
-            self.get_parameter("bfm_collection_mode").value,
-            {key: self.get_parameter(key).value for key in self._state_parameter_names},
-            self._scene_configuration,
+            self.get_parameter("bfm_collection_mode").value, state, configuration,
         )
         if bfm["enabled"]:
             if self._episode_status is None or self._episode_status["phase"] != "playing":

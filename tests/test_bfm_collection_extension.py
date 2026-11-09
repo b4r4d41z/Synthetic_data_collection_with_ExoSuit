@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG = ROOT / "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/sorting_scene.json"
+CONFIG = ROOT / "models/stages/sorting_v1/sorting_scene.json"
 MODULE = ROOT / "exts/bfm_collection/bfm_collection/scene_randomizer.py"
 spec = importlib.util.spec_from_file_location("bfm_scene_randomizer_test", MODULE)
 runtime = importlib.util.module_from_spec(spec)
@@ -151,7 +151,7 @@ class CompositionTests(unittest.TestCase):
         mesh.CreateFaceVertexCountsAttr([4])
         mesh.CreateFaceVertexIndicesAttr([0,1,2,3])
         UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
-        self.stage.GetRootLayer().subLayerPaths.append(str(ROOT / "models/stages/fruit_pool.usda"))
+        self.stage.GetRootLayer().subLayerPaths.append(str(ROOT / "models/stages/sorting_v1/fruit_pool.usda"))
         self.container_before = self.stage.GetRootLayer().ExportToString()
         self.randomizer = runtime.SceneRandomizer(self.stage, self.data, ROOT)
         self.addCleanup(self.randomizer.close)
@@ -433,19 +433,22 @@ class AdapterTests(unittest.TestCase):
             self.assertLess(pop.call_args.kwargs["order"], 0)
             # Exercise real attachment/lifecycle with fake Kit and ROS services.
             stage = Mock()
-            stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/stage_sorting_v1.usd")
+            stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/sorting_v1/stage_sorting_v1.usd")
             contract = ModuleType("isaac_eff_control.bfm_contract")
             channel_module = ModuleType("isaac_eff_control.bfm_episode")
             channel_module.EpisodeChannel = Mock()
             channel_module.EpisodeChannel.return_value.quiescent = True
             sys.modules["isaac_eff_control.bfm_episode"] = channel_module
             self.addCleanup(sys.modules.pop, "isaac_eff_control.bfm_episode", None)
+            from isaac_eff_control.bfm_contract import scene_configuration
+            contract.scene_configuration = scene_configuration
             contract.scene_config_default = lambda: str(CONFIG)
             contract.state_defaults = lambda _: runtime.load_configuration(CONFIG, ROOT)["parameters"]
             r = Mock()
             def compose():
                 self.assertTrue(timeline.is_stopped())
-                return dict(asset="lemon1.usd", position=[1,4,.8], yaw=0,
+                return dict(asset="lemon1.usd", object_prim_path="/World/Task/Fruits/lemon1",
+                            container_prim_path="/World/container_b04", position=[1,4,.8], yaw=0,
                             container_position=[1,4.4,.75], container_offset=[0,0,0])
             r.randomize.side_effect = compose
             with patch.dict(sys.modules, {"isaac_eff_control.bfm_contract": contract}), \
@@ -484,11 +487,11 @@ class AdapterTests(unittest.TestCase):
                 extension._detach()
                 r.close.assert_called_once()
                 # V2 has the same lifecycle and adds only its override identity.
-                stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/s40_sharpa_collision_v2.usda")
+                stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/sorting_experimental/stage_sorting_v2.usda")
                 extension._update(None)
                 self.assertEqual(extension.lifecycle.state, "prepared")
                 metadata = extension.episode_channel.publish.call_args.args[1]["physics_scene_override"]
-                self.assertEqual(metadata["layer"], "models/stages/s40_sharpa_collision_v2.usda")
+                self.assertEqual(metadata["layer"], "models/stages/sorting_experimental/stage_sorting_v2.usda")
                 import hashlib
                 self.assertEqual(metadata["sha256"], hashlib.sha256((ROOT/metadata["layer"]).read_bytes()).hexdigest())
                 self.assertTrue(metadata["self_collisions"])

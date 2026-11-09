@@ -60,7 +60,7 @@ def fixture(frontend='numpy', scale=1.):
     stage=Usd.Stage.CreateInMemory()
     UsdGeom.SetStageMetersPerUnit(stage,scale); UsdGeom.SetStageUpAxis(stage,'Z')
     UsdGeom.Xform.Define(stage,'/World')
-    stage.GetRootLayer().subLayerPaths.append(str(ROOT/'models/stages/fruit_pool.usda'))
+    stage.GetRootLayer().subLayerPaths.append(str(ROOT/'models/stages/sorting_v1/fruit_pool.usda'))
     prim=UsdGeom.Xform.Define(stage,'/World/container_b04').GetPrim()
     UsdPhysics.RigidBodyAPI.Apply(prim)
     cube=UsdGeom.Cube.Define(stage,'/World/container_b04/Collision')
@@ -173,7 +173,7 @@ class FruitContactCompositionTests(unittest.TestCase):
         import hashlib
         import json
         import math
-        asset = ROOT / 'models/stages/fruit_pool.usda'
+        asset = ROOT / 'models/stages/sorting_v1/fruit_pool.usda'
         stage = Usd.Stage.Open(str(asset))
         self.assertEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.)
         expected = {f'/World/Task/Fruits/{n}': count for n, count in
@@ -204,11 +204,11 @@ class FruitContactCompositionTests(unittest.TestCase):
         for p in stage.Traverse():
             if str(p.GetPath()).startswith('/World/Task/Parking'):
                 self.assertFalse(UsdShade.MaterialBindingAPI(p).ComputeBoundMaterial('physics')[0])
-        config = json.loads((ROOT / 'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/sorting_scene.json').read_text())
+        config = json.loads((ROOT / 'models/stages/sorting_v1/sorting_scene.json').read_text())
         self.assertEqual(config['provenance']['fruit_pool_sha256'], hashlib.sha256(asset.read_bytes()).hexdigest())
 
     def test_authored_contact_opinions_are_an_exact_whitelist_not_a_runtime_mutator(self):
-        layer = Sdf.Layer.FindOrOpen(str(ROOT / 'models/stages/fruit_pool.usda'))
+        layer = Sdf.Layer.FindOrOpen(str(ROOT / 'models/stages/sorting_v1/fruit_pool.usda'))
         targets = []
         def inspect(path):
             attribute = layer.GetAttributeAtPath(path)

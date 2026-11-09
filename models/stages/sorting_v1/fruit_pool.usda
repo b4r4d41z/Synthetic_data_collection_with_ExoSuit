@@ -28,7 +28,7 @@ def "World"
             }
 
             def Xform "avocado" (
-                prepend references = @../addons/objects/fruits_veggies/avocado.usd@
+                prepend references = @../../addons/objects/fruits_veggies/avocado.usd@
             )
             {
                 vector3f physics:angularVelocity = (0, 0, 0)
@@ -50,7 +50,7 @@ def "World"
             }
 
             def Xform "lemon1" (
-                prepend references = @../addons/objects/fruits_veggies/lemon1.usd@
+                prepend references = @../../addons/objects/fruits_veggies/lemon1.usd@
             )
             {
                 vector3f physics:angularVelocity = (0, 0, 0)
@@ -72,7 +72,7 @@ def "World"
             }
 
             def Xform "pomegranate" (
-                prepend references = @../addons/objects/fruits_veggies/pomegranate.usd@
+                prepend references = @../../addons/objects/fruits_veggies/pomegranate.usd@
             )
             {
                 vector3f physics:angularVelocity = (0, 0, 0)
@@ -94,7 +94,7 @@ def "World"
             }
 
             def Xform "orange2" (
-                prepend references = @../addons/objects/fruits_veggies/orange2.usd@
+                prepend references = @../../addons/objects/fruits_veggies/orange2.usd@
             )
             {
                 vector3f physics:angularVelocity = (0, 0, 0)

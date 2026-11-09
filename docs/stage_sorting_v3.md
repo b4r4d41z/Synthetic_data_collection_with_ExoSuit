@@ -2,7 +2,7 @@
 
 Baseline: `main`, `d4f666eac0ea939dedfa526c2f0a8863e49fb52e`.
 
-Open `models/stages/stage_sorting_v3.usda` as a stage. It directly sublayers
+Open `models/stages/sorting_experimental/stage_sorting_v3.usda` as a stage. It directly sublayers
 `stage_sorting_v2.usda` and adds `things_pool.usda`. V2, V1, `fruit_pool.usda`,
 all source assets, the robot, cameras, graphs and table remain unchanged.
 Only V3's initial composition disables the inherited fruit bodies/cradles.
@@ -85,7 +85,7 @@ bash launch_bfm_isaac.sh
 ```
 
 The launcher still opens V2. While STOPPED, use File > Open to open
-`models/stages/stage_sorting_v3.usda`. Start the unchanged
+`models/stages/sorting_experimental/stage_sorting_v3.usda`. Start the unchanged
 `bash start_isaac_control.sh` in the second terminal. Confirm `[BFM PLAN READY]`,
 then PLAY manually. Expect `things pool resolved: 3/3; container resolved: 1`
 and `reset verified`. Inspect the authoritative layout/identity/pose metadata:

@@ -28,7 +28,7 @@ def "World"
 
             def Xform "apple_02" (
                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
-                prepend references = @../addons/objects/objaverse/apple_02.usd@
+                prepend references = @../../addons/objects/objaverse/apple_02.usd@
             )
             {
                 rel material:binding:physics = </World/Task/Things/ThingContact> (
@@ -407,7 +407,7 @@ def "World"
 
             def Xform "lunchbag" (
                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
-                prepend references = @../addons/objects/objaverse/lunchbag.usd@
+                prepend references = @../../addons/objects/objaverse/lunchbag.usd@
             )
             {
                 rel material:binding:physics = </World/Task/Things/ThingContact> (
@@ -786,7 +786,7 @@ def "World"
 
             def Xform "ketchup_bottle" (
                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
-                prepend references = @../addons/objects/hope/ketchup_bottle.usd@
+                prepend references = @../../addons/objects/hope/ketchup_bottle.usd@
             )
             {
                 rel material:binding:physics = </World/Task/Things/ThingContact> (
@@ -811,7 +811,7 @@ def "World"
 
             # Reused V2 fruits, excluding lemon and pomegranate.
             def Xform "avocado" (
-                prepend references = @../addons/objects/fruits_veggies/avocado.usd@
+                prepend references = @../../addons/objects/fruits_veggies/avocado.usd@
             )
             {
                 vector3f physics:angularVelocity = (0, 0, 0)
@@ -833,7 +833,7 @@ def "World"
             }
 
             def Xform "orange2" (
-                prepend references = @../addons/objects/fruits_veggies/orange2.usd@
+                prepend references = @../../addons/objects/fruits_veggies/orange2.usd@
             )
             {
                 vector3f physics:angularVelocity = (0, 0, 0)
@@ -870,19 +870,19 @@ def "World"
         def Xform "ThingsParking"
         {
             def "apple_02" (
-                prepend references = @fruit_pool.usda@</World/Task/Parking/avocado>
+                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/avocado>
             )
             {
             }
 
             def "lunchbag" (
-                prepend references = @fruit_pool.usda@</World/Task/Parking/lemon1>
+                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/lemon1>
             )
             {
             }
 
             def "ketchup_bottle" (
-                prepend references = @fruit_pool.usda@</World/Task/Parking/pomegranate>
+                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/pomegranate>
             )
             {
             }
@@ -890,13 +890,13 @@ def "World"
             # Additional distinct parking supports at x=106 m and x=108 m.
             # Reuse already validated static cradle geometry from fruit_pool.usda.
             def "avocado" (
-                prepend references = @fruit_pool.usda@</World/Task/Parking/orange2>
+                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/orange2>
             )
             {
             }
 
             def Xform "orange2" (
-                prepend references = @fruit_pool.usda@</World/Task/Parking/orange2>
+                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/orange2>
             )
             {
                 double3 xformOp:translate = (2, 0, 0)
