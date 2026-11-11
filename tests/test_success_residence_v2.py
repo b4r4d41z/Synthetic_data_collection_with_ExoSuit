@@ -152,7 +152,7 @@ class ResidenceTests(unittest.TestCase):
 class MeshTests(unittest.TestCase):
     def test_real_mesh_avoids_empty_box_corners_and_uses_container_frame(self):
         from pxr import Gf, Usd
-        stage = Usd.Stage.Open(str(harness.ROOT/'models/stages/sorting_v1/stage_sorting_v1.usd'))
+        stage = Usd.Stage.Open(str(harness.ROOT/'models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd'))
         config = dict(object_prim_path='/World/Task/Fruits/lemon1',
                       container_prim_path='/World/container_b04')
         live = LiveFruitSuccess(stage, config, 'geometry-test')

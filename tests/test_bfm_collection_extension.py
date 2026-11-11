@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG = ROOT / "models/stages/sorting_v1/sorting_scene.json"
+CONFIG = ROOT / "models/stages/v1_manipulation_one_side_right/sorting_scene.json"
 MODULE = ROOT / "exts/bfm_collection/bfm_collection/scene_randomizer.py"
 spec = importlib.util.spec_from_file_location("bfm_scene_randomizer_test", MODULE)
 runtime = importlib.util.module_from_spec(spec)
@@ -151,7 +151,7 @@ class CompositionTests(unittest.TestCase):
         mesh.CreateFaceVertexCountsAttr([4])
         mesh.CreateFaceVertexIndicesAttr([0,1,2,3])
         UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
-        self.stage.GetRootLayer().subLayerPaths.append(str(ROOT / "models/stages/sorting_v1/fruit_pool.usda"))
+        self.stage.GetRootLayer().subLayerPaths.append(str(ROOT / "models/stages/v1_manipulation_one_side_right/fruit_pool.usda"))
         self.container_before = self.stage.GetRootLayer().ExportToString()
         self.randomizer = runtime.SceneRandomizer(self.stage, self.data, ROOT)
         self.addCleanup(self.randomizer.close)
@@ -433,7 +433,7 @@ class AdapterTests(unittest.TestCase):
             self.assertLess(pop.call_args.kwargs["order"], 0)
             # Exercise real attachment/lifecycle with fake Kit and ROS services.
             stage = Mock()
-            stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/sorting_v1/stage_sorting_v1.usd")
+            stage.GetRootLayer.return_value.realPath = str(ROOT / "models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd")
             contract = ModuleType("isaac_eff_control.bfm_contract")
             channel_module = ModuleType("isaac_eff_control.bfm_episode")
             channel_module.EpisodeChannel = Mock()

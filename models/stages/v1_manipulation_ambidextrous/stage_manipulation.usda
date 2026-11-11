@@ -1,0 +1,22 @@
+#usda 1.0
+# Stable V1 robot/environment; reuse only the experimental object pool.
+# No experimental robot physics, collision or saved articulation-state layer.
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+    timeCodesPerSecond = 60
+    subLayers = [
+        @../sorting_experimental/things_pool.usda@,
+        @../v1_manipulation_one_side_right/stage_sorting_v1.usd@
+    ]
+)
+
+over "World"
+{
+    over "Task"
+    {
+        over "Fruits" (active = false) {}
+        over "Parking" (active = false) {}
+    }
+}

@@ -6,7 +6,7 @@ Audit completed before implementation. No live Isaac/PhysX execution is claimed.
 
 ## Composition and confirmed cause
 
-The working scene is `models/stages/sorting_v1/stage_sorting_v1.usd`. It references
+The working scene is `models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd`. It references
 `models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.usd`, which composes
 `s40_sharpa_two_cameras/payloads/base.usda`, `robot.usda`, `instances.usda`,
 `geometries.usd` and `materials.usda`. The `Physics=physx` variant loads

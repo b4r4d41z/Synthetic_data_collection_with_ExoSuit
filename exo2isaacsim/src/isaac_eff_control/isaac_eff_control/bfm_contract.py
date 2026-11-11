@@ -138,7 +138,7 @@ def scene_config_default():
     from .scenarios import scenario
     # Standalone nodes retain legacy defaults until the active episode arrives.
     # SCENARIO belongs to the Isaac launcher, not independently started ROS nodes.
-    return os.getenv("BFM_SCENE_CONFIG") or str(scenario("sorting_v1")["config"])
+    return os.getenv("BFM_SCENE_CONFIG") or str(scenario("v1_manipulation_one_side_right")["config"])
 
 
 def validate_state_parameters(state):

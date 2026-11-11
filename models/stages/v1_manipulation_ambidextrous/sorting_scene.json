@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "scene": "models/stages/sorting_v1/stage_sorting_v1.usd",
+  "scene": "models/stages/v1_manipulation_ambidextrous/stage_manipulation.usda",
   "parameters": {
     "state_frame": "world",
     "reference_prim_path": "/",
     "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-    "object_prim_path": "/World/Task/Fruits/avocado",
+    "object_prim_path": "/World/Task/Things/apple_02",
     "container_prim_path": "/World/container_b04",
     "goal_local_center": [
       -0.08494214117424082,
@@ -27,8 +27,7 @@
     "articulation_prim_path": "/World/s40_sharpa_two_cameras/fix_base_joint"
   },
   "provenance": {
-    "baseline_commit": "f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2",
-    "scene_sha256": "fedb95257970030e379df1b316bb453b4644c0516864feee83e28a08cc221755",
+    "baseline_commit": "c7408e7c276b9f515f1f912064eaf211ff570e8b",
     "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
     "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
     "robot_root": "/World/s40_sharpa_two_cameras",
@@ -55,13 +54,12 @@
     "safety_margin_m": 0.003,
     "quaternion_convention": "xyzw; local goal axes relative to container body",
     "method": "Original fixed goal OBB retained: measured container interior, historical 39 mm clearance plus 3 mm margin and support-based floor bound. No fruit-specific goal recalibration in the randomized runtime.",
-    "object_position_semantics": "Live PhysX center of mass and linear velocity of the episode-selected fruit pool rigid body (episode.object_prim_path).",
+    "object_position_semantics": "Live PhysX center of mass and linear velocity of the episode-selected thing pool rigid body (episode.object_prim_path).",
     "runtime_verified": false,
     "floor_contact_tolerance_m": 0.003,
     "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
     "minimum_support_radius_m": 0.03426520788759943,
-    "fruit_pool_asset": "models/stages/sorting_v1/fruit_pool.usda",
-    "fruit_pool_sha256": "c124051af4f0ba190b079d7bcdc790064fcd4b53da15b5cd17d28308dc0be62d",
+    "fruit_pool_asset": "models/stages/sorting_experimental/things_pool.usda",
     "success_detector": {
       "method": "collision_mesh_residence_latched_v2",
       "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
@@ -74,12 +72,17 @@
       "success_semantics": "episode_success_once; latched until episode/physics reset or simulation-time rollback; independent of terminal",
       "velocity_gate": false,
       "runtime_verified": false
-    }
+    },
+    "fruit_pool_sha256": "60c4f48b93d1bba47b8f8a29dea28f91861d63d6a339e7132a585db9744cd74c",
+    "scene_sha256": "ecdbff2746156a895965d566a48ae7998627547f934ad8dd4de200ca9aa6304d",
+    "object_pool_normalization": "References source meshes/textures without edits. Apple/lunchbag child body promoted to pool root with COM/principal axes transformed and mass/inertia preserved; ketchup body retained. Zero initial velocities, gravity, same fruit contact material/margins and static parking cradles."
   },
   "randomization": {
     "object_assets": [
+      "models/addons/objects/objaverse/apple_02.usd",
+      "models/addons/objects/objaverse/lunchbag.usd",
+      "models/addons/objects/hope/ketchup_bottle.usd",
       "models/addons/objects/fruits_veggies/avocado.usd",
-      "models/addons/objects/fruits_veggies/lemon1.usd",
       "models/addons/objects/fruits_veggies/orange2.usd"
     ],
     "object_spawn_region": {
@@ -104,7 +107,7 @@
     "obstacle_margin_m": 0.03,
     "surface_tolerance_m": 0.002,
     "placement_provenance": {
-      "baseline_commit": "e2350a71fa6ef9f14adc83e6cf349e27e076b783",
+      "baseline_commit": "d4f666eac0ea939dedfa526c2f0a8863e49fb52e",
       "reference_object_xy_m": [
         1.023983120918274,
         4.038509845733643
@@ -113,17 +116,21 @@
         1.0898085832595825,
         4.441446304321289
       ],
-      "method": "Nearer X half (0.95..1.025) of the original 0.95..1.10 by 3.99..4.12 rectangle; robot base world XY=(0.622417,4.214689). A 7.5 x 13 cm candidate rectangle around the previously placed fruit, on the right-hand side. Bounds are candidates, not certified table limits: the external table payload is unavailable on the host. Every sampled footprint plus 25 mm edge margin must pass live composed tabletop collision-mesh support checks and 30 mm container/robot collider AABB exclusion before Play. Z is measured from horizontal table triangles and the selected fruit minimum bound, with 5 mm settling clearance.",
-      "container_method": "Translation only: +/-60 mm around template origin (1.08980858, 4.44144630, 0.74999952) m. This is a requested 120 x 120 mm candidate offset region around the known valid pose, not a certified safe region; all support and collision checks remain mandatory. Preserve template rotation and Z. Reject unless footprint plus 25 mm margin is supported at the original height and clears robot colliders by 30 mm. Place fruit against the new container bounds. External table support still requires Isaac runtime validation.",
+      "method": "V3: right region is the V2 object rectangle; left region is the V2 container footprint centre plus its existing offset bounds. Swap roles randomly. Both footprints retain all support and clearance checks.",
+      "container_method": "V3: choose a random footprint centre in the role-assigned existing region (left: template collision footprint centre +/-60 mm; right: existing object rectangle). Translate from the captured template; preserve its rotation and Z. Independently sample the object in the other region. Both footprints plus 25 mm edge margin must be supported; reject robot/environment collisions and object/container overlap with 30 mm obstacle clearance. External table support still requires Isaac runtime validation.",
       "table_geometry_host_verified": false,
       "isaac_runtime_verified": false
     },
     "pool_assets": [
+      "models/addons/objects/objaverse/apple_02.usd",
+      "models/addons/objects/objaverse/lunchbag.usd",
+      "models/addons/objects/hope/ketchup_bottle.usd",
       "models/addons/objects/fruits_veggies/avocado.usd",
-      "models/addons/objects/fruits_veggies/lemon1.usd",
-      "models/addons/objects/fruits_veggies/pomegranate.usd",
       "models/addons/objects/fruits_veggies/orange2.usd"
     ],
-    "collection_objects_note": "Avocado, lemon and orange only; pomegranate remains preloaded and always parked, never selected."
+    "collection_objects_note": "V3 only: apple_02, lunchbag, ketchup_bottle, avocado, orange2; all bodies loaded before simulation.",
+    "scenario": "things_v3",
+    "pool_path": "/World/Task/Things",
+    "parking_path": "/World/Task/ThingsParking"
   }
 }

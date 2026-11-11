@@ -129,7 +129,7 @@ python3 -c 'import os,json; print(json.dumps(dict(os.environ)))'
         modules['omni.kit'] = SimpleNamespace(app=modules['omni.kit.app'])
         modules['omni'] = SimpleNamespace(kit=modules['omni.kit'],
             timeline=modules['omni.timeline'], usd=modules['omni.usd'])
-        for name in ('sorting_experimental','sorting_v1'):
+        for name in ('sorting_experimental','v1_manipulation_one_side_right','v1_manipulation_ambidextrous'):
             selected[0] = name
             events.clear(); timeline.reset_mock()
             with patch.dict(os.environ, SCENARIO=name), patch.dict(sys.modules, modules), patch.object(asyncio, 'ensure_future') as schedule:

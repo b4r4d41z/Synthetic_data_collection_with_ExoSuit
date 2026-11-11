@@ -870,19 +870,19 @@ def "World"
         def Xform "ThingsParking"
         {
             def "apple_02" (
-                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/avocado>
+                prepend references = @../v1_manipulation_one_side_right/fruit_pool.usda@</World/Task/Parking/avocado>
             )
             {
             }
 
             def "lunchbag" (
-                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/lemon1>
+                prepend references = @../v1_manipulation_one_side_right/fruit_pool.usda@</World/Task/Parking/lemon1>
             )
             {
             }
 
             def "ketchup_bottle" (
-                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/pomegranate>
+                prepend references = @../v1_manipulation_one_side_right/fruit_pool.usda@</World/Task/Parking/pomegranate>
             )
             {
             }
@@ -890,13 +890,13 @@ def "World"
             # Additional distinct parking supports at x=106 m and x=108 m.
             # Reuse already validated static cradle geometry from fruit_pool.usda.
             def "avocado" (
-                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/orange2>
+                prepend references = @../v1_manipulation_one_side_right/fruit_pool.usda@</World/Task/Parking/orange2>
             )
             {
             }
 
             def Xform "orange2" (
-                prepend references = @../sorting_v1/fruit_pool.usda@</World/Task/Parking/orange2>
+                prepend references = @../v1_manipulation_one_side_right/fruit_pool.usda@</World/Task/Parking/orange2>
             )
             {
                 double3 xformOp:translate = (2, 0, 0)

@@ -59,9 +59,12 @@ Scenario resources and configurations now live together:
 
 ```text
 models/stages/
-  sorting_v1/
+  v1_manipulation_one_side_right/
     stage_sorting_v1.usd
     fruit_pool.usda
+    sorting_scene.json
+  v1_manipulation_ambidextrous/
+    stage_manipulation.usda
     sorting_scene.json
   sorting_experimental/
     stage_sorting_v2.usda
@@ -70,7 +73,7 @@ models/stages/
     sorting_scene_v3.json
 ```
 
-`sorting_v1` preserves the original three selectable fruits (avocado, lemon,
+`v1_manipulation_one_side_right` preserves the original three selectable fruits (avocado, lemon,
 orange), restricted right-side spawn region, parked pomegranate and original
 robot collision configuration. `sorting_experimental` preserves the current
 five-object V3 pool, bidirectional layouts and V2 collision override. Neither
@@ -78,7 +81,7 @@ scenario's randomization or physical settings were changed by this move.
 
 ```bash
 # Stable scenario used for the original demonstrations
-SCENARIO=sorting_v1 bash launch_bfm_isaac.sh
+SCENARIO=v1_manipulation_one_side_right bash launch_bfm_isaac.sh
 
 # New experimental scenario
 SCENARIO=sorting_experimental bash launch_bfm_isaac.sh
@@ -87,7 +90,7 @@ SCENARIO=sorting_experimental bash launch_bfm_isaac.sh
 bash launch_bfm_isaac.sh
 
 # Equivalent positional interface
-bash launch_bfm_isaac.sh sorting_v1
+bash launch_bfm_isaac.sh v1_manipulation_one_side_right
 ```
 
 Conflicting environment/argument selections and unknown names fail before Isaac
@@ -99,13 +102,27 @@ the active configuration and task parameters to the recorder. The recorder
 verifies the configuration hash against its installation and refuses mismatches.
 Thus a separate terminal cannot accidentally record legacy metadata for V3.
 
-Experimental V2 still sublayers the stable V1 through a relative reference;
-V3 adds its own things pool. Parking cradles also reference the stable fruit
-pool. Robot/object meshes and textures remain shared under `models/robots` and
-`models/addons`. Shared randomizer/lifecycle code remains in the collection
-extension; the JSON `randomization.scenario` selects its existing behavior.
-All stage entry paths have moved to the directories above. Replay and rollout
-launchers remain unchanged and continue using the existing ROS interfaces.
+`v1_manipulation_ambidextrous` sublayers the stable V1 stage and the existing
+experimental `things_pool.usda`; it does not load experimental robot physics,
+collision overrides or saved articulation state. Its configuration reuses the
+unchanged `things_v3` planner: A/B side selection, independent randomized object
+and container positions, yaw, support, clearance and obstacle rejection.
+The five upstream objects are apple_02, lunchbag, ketchup_bottle, avocado, orange2.
+
+```bash
+SCENARIO=v1_manipulation_ambidextrous bash launch_bfm_isaac.sh
+# Equivalent positional selector:
+bash launch_bfm_isaac.sh v1_manipulation_ambidextrous
+```
+
+There are exactly three scenario directories. The old `sorting_v1` directory
+and selector are removed, without compatibility aliases or symlinks. Experimental
+V2 and pool parking references now point directly to the renamed stable resources;
+only those paths and the affected pool checksum change. Composition order and
+experimental behavior remain unchanged. Shared meshes/textures remain under
+`models/robots` and `models/addons`. The stable USD and fruit pool are byte-identical
+moves. Controllers, cameras, task outcomes, collection lifecycle and randomization
+code are unchanged. The default launch remains `sorting_experimental`.
 
 After applying the migration, rebuild only the affected ROS Python package:
 

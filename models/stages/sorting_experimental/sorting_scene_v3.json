@@ -73,7 +73,7 @@
       "velocity_gate": false,
       "runtime_verified": false
     },
-    "fruit_pool_sha256": "e3dfafb6966748e472c5ed6857a7b779294bddeaffa95ed5bd5a1e7f8f44de09",
+    "fruit_pool_sha256": "60c4f48b93d1bba47b8f8a29dea28f91861d63d6a339e7132a585db9744cd74c",
     "scene_sha256": "108a7eb666d9c5824a35d4db5157b997855a0c8a35afda6d9ae08af7a63a8985",
     "object_pool_normalization": "References source meshes/textures without edits. Apple/lunchbag child body promoted to pool root with COM/principal axes transformed and mass/inertia preserved; ketchup body retained. Zero initial velocities, gravity, same fruit contact material/margins and static parking cradles."
   },

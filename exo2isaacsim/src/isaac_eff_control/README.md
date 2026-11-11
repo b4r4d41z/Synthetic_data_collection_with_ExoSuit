@@ -407,8 +407,8 @@ rosbag2/MCAP recorded-message timestamp, not a shared header clock.
 ### Moving sorting goal: scene contract
 
 The measured state uses the packaged
-[sorting_scene.json](../../../models/stages/sorting_v1/sorting_scene.json). It was measured from
-`models/stages/sorting_v1/stage_sorting_v1.usd` composed at commit
+[sorting_scene.json](../../../models/stages/v1_manipulation_one_side_right/sorting_scene.json). It was measured from
+`models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd` composed at commit
 `f6f8dbd4c8aa96a41fa388e71dd8ea4b849d3eb2`, including referenced assets and
 scene-level child transforms. Exact runtime paths are:
 
@@ -422,7 +422,7 @@ container:  /World/container_b04
 reference:  /                         (state_frame = world)
 ```
 
-The stage loads `models/stages/sorting_v1/fruit_pool.usda` before simulation. Each fruit
+The stage loads `models/stages/v1_manipulation_one_side_right/fruit_pool.usda` before simulation. Each fruit
 default prim is referenced once at its stable physical path. The selected fruit
 and the existing container have RigidBodyAPI in the composed stage.
 Both EEFs are physical palm bodies, not visual meshes. They have
@@ -671,7 +671,7 @@ For low-level debugging with a custom Kit invocation, source the overlay and
 use the same extension arguments and DDS settings. See the
 [normal launch instructions](../../../README.md#normal-collection-launch).
 
-Open `models/stages/sorting_v1/stage_sorting_v1.usd` **with simulation stopped**. The
+Open `models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd` **with simulation stopped**. The
 extension activates only for this exact repository stage, not robot-only or
 other stages. Start the external stack in a separate terminal:
 

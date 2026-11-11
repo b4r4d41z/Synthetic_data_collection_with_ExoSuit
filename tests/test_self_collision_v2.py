@@ -8,7 +8,7 @@ from pxr import Usd, UsdGeom, UsdPhysics
 ROOT = Path(__file__).resolve().parents[1]
 ROBOT = '/World/s40_sharpa_two_cameras'
 ARTICULATION = ROBOT + '/fix_base_joint'
-V1 = ROOT/'models/stages/sorting_v1/stage_sorting_v1.usd'
+V1 = ROOT/'models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd'
 V2 = ROOT/'models/stages/sorting_experimental/stage_sorting_v2.usda'
 
 

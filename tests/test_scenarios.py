@@ -50,19 +50,19 @@ class SelectorTests(unittest.TestCase):
 
     def test_unknown_paths_empty_names_and_conflicting_selectors_fail(self):
         for arg,env in (('unknown',None),('../sorting_v1',None),('',None),
-                        ('sorting_v1','sorting_experimental')):
+                        ('v1_manipulation_one_side_right','sorting_experimental')):
             result=self.launch(arg,env)
             self.assertNotEqual(result.returncode,0)
             self.assertNotIn('Starting Isaac Sim',result.stdout)
-        self.assertIn('conflicts',self.launch('sorting_v1','sorting_experimental').stderr)
+        self.assertIn('conflicts',self.launch('v1_manipulation_one_side_right','sorting_experimental').stderr)
 
     def test_missing_or_mismatched_configuration_fails_before_isaac(self):
-        config=scenario('sorting_v1',self.root)['config']
+        config=scenario('v1_manipulation_one_side_right',self.root)['config']
         content=json.loads(config.read_text());content['scene']='wrong_scene.usd'
         config.write_text(json.dumps(content))
-        self.assertIn('mismatch',self.launch('sorting_v1').stderr)
+        self.assertIn('mismatch',self.launch('v1_manipulation_one_side_right').stderr)
         config.unlink()
-        self.assertIn('Missing scenario configuration',self.launch('sorting_v1').stderr)
+        self.assertIn('Missing scenario configuration',self.launch('v1_manipulation_one_side_right').stderr)
 
 
 class RegistryTests(unittest.TestCase):
@@ -74,7 +74,7 @@ class RegistryTests(unittest.TestCase):
             self.assertIsNone(scenario_for_stage(ROOT/'unregistered'/entry['stage'].name,ROOT))
             data=json.loads(entry['config'].read_text())
             self.assertEqual(data['scene'],entry['scene'])
-        stable=json.loads(scenario('sorting_v1',ROOT)['config'].read_text())['randomization']
+        stable=json.loads(scenario('v1_manipulation_one_side_right',ROOT)['config'].read_text())['randomization']
         self.assertEqual({Path(p).name for p in stable['object_assets']},{'avocado.usd','lemon1.usd','orange2.usd'})
         self.assertEqual(stable['object_spawn_region'],dict(x_min=.95,x_max=1.025,y_min=3.99,y_max=4.12))
         experimental=json.loads(scenario('sorting_experimental',ROOT)['config'].read_text())['randomization']
@@ -101,7 +101,7 @@ class RecorderScenarioTests(unittest.TestCase):
 
     def test_active_episode_controls_metadata_without_shared_shell_environment(self):
         self.overrides['bfm_collection_mode']=True
-        with patch.dict(os.environ,{'SCENARIO':'sorting_v1'}):
+        with patch.dict(os.environ,{'SCENARIO':'v1_manipulation_one_side_right'}):
             node=self.recorder.SimRecorder()
         for name in SCENARIOS:
             entry=scenario(name,ROOT)
@@ -144,7 +144,7 @@ class CompositionTests(unittest.TestCase):
             body=stage.GetPrimAtPath('/World/s40_sharpa_two_cameras')
             # The stable layer intentionally keeps its original unsaved variant;
             # select PhysX only in the test session for topology comparison.
-            if name=='sorting_v1':
+            if name!='sorting_experimental':
                 self.assertEqual(body.GetVariantSet('Physics').GetVariantSelection(),'')
                 with Usd.EditContext(stage,stage.GetSessionLayer()):
                     body.GetVariantSet('Physics').SetVariantSelection('physx')
@@ -154,4 +154,6 @@ class CompositionTests(unittest.TestCase):
             self.assertEqual(sum(p.HasAPI(UsdPhysics.CollisionAPI) and
                                  UsdPhysics.CollisionAPI(p).GetCollisionEnabledAttr().Get() for p in prims),127)
             self.assertEqual(stage.GetRootLayer().subLayerPaths,
-                             ['fruit_pool.usda'] if name=='sorting_v1' else ['things_pool.usda','stage_sorting_v2.usda'])
+                             (['fruit_pool.usda'] if name=='v1_manipulation_one_side_right' else
+                              ['../sorting_experimental/things_pool.usda','../v1_manipulation_one_side_right/stage_sorting_v1.usd']
+                              if name=='v1_manipulation_ambidextrous' else ['things_pool.usda','stage_sorting_v2.usda']))

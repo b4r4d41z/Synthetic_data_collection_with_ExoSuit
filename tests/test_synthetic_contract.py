@@ -178,7 +178,7 @@ class GraphContractTests(unittest.TestCase):
     def test_camera_configuration_and_clock_stay_in_session_layer(self):
         from pxr import Usd, UsdGeom
         from isaac_eff_control.collection_graph import CAMERA_FRAMES, configure_collection_graph, GRAPH_ROOT
-        stage = Usd.Stage.Open(str(ROOT/'models/stages/sorting_v1/stage_sorting_v1.usd'))
+        stage = Usd.Stage.Open(str(ROOT/'models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd'))
         original = stage.GetRootLayer().ExportToString()
         before = {str(a.GetPath()):(a.Get(),tuple(a.GetConnections()))
                   for p in stage.Traverse() for a in p.GetAttributes()}
@@ -241,7 +241,7 @@ class CameraRuntimeTests(unittest.TestCase):
         from pxr import Usd
         import isaac_eff_control.collection_graph as graph
         self.graph = graph
-        self.stage = Usd.Stage.Open(str(ROOT/'models/stages/sorting_v1/stage_sorting_v1.usd'))
+        self.stage = Usd.Stage.Open(str(ROOT/'models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd'))
         self.real_set_camera_rate = graph._set_camera_rate
         self.authoring = sensor_authoring(graph)
         self.authoring.__enter__()

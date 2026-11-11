@@ -956,7 +956,7 @@ class RecordingPipelineTests(unittest.TestCase):
         from pxr import Usd, UsdPhysics
         from isaac_eff_control.bfm_contract import arm_target_processing
         limits = arm_target_processing()["joint_limits"]
-        stage = Usd.Stage.Open(str(ROOT / "models/stages/sorting_v1/stage_sorting_v1.usd"))
+        stage = Usd.Stage.Open(str(ROOT / "models/stages/v1_manipulation_one_side_right/stage_sorting_v1.usd"))
         stage.SetEditTarget(stage.GetSessionLayer())
         stage.GetPrimAtPath("/World/s40_sharpa_two_cameras").GetVariantSet("Physics").SetVariantSelection("physx")
         found = set()
