@@ -3,6 +3,11 @@
 set -euo pipefail
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROJECT_DIR/tools/collection/environment.bash"
-# BFM_COLLECTION_MODE=1 selects /bfm/command/hand_target in eff_control_node.
-# External BFM owns arm targets and /bfm/action; only execute hands here.
-exec ros2 run isaac_eff_control eff_control_node
+# External policy owns only /bfm/action; same executor as collection.
+ros2 run isaac_eff_control bfm_action_executor_node &
+EXECUTOR_PID=$!
+HAND_PID=''
+trap 'kill -INT "$EXECUTOR_PID" ${HAND_PID:+"$HAND_PID"} 2>/dev/null || true; wait || true' EXIT
+ros2 run isaac_eff_control eff_control_node &
+HAND_PID=$!
+wait -n "$EXECUTOR_PID" "$HAND_PID"

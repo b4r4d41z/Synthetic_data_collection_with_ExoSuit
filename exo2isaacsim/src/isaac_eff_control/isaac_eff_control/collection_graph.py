@@ -131,6 +131,7 @@ def configure_collection_graph(stage):
     clock = stage.GetPrimAtPath(graph + '/ros2_publish_clock')
     if clock.GetAttribute('node:type').Get() != 'isaacsim.ros2.bridge.ROS2PublishClock':
         raise ValueError('Expected the existing /clock publisher')
+    configure_physics_timestep(stage)
     configure_camera_publishers(stage)
     configure_physics_clock(stage)
 
@@ -220,3 +221,16 @@ def configure_physics_clock(stage):
             raise RuntimeError(f'BFM physics clock setup failed: {error}') from error
     print('[BFM CLOCK] runtime pipeline verified ONDEMAND; /clock physics publisher ready', flush=True)
     return graph
+
+
+def configure_physics_timestep(stage):
+    """Existing PhysxSchema timestep attribute, session-only before PLAY."""
+    from pxr import Usd, UsdPhysics, PhysxSchema
+    scenes = [p for p in stage.Traverse() if p.IsA(UsdPhysics.Scene)]
+    if len(scenes) != 1:
+        raise RuntimeError('BFM v4 requires one existing PhysicsScene')
+    with Usd.EditContext(stage, stage.GetSessionLayer()):
+        api = PhysxSchema.PhysxSceneAPI.Apply(scenes[0])
+        api.CreateTimeStepsPerSecondAttr().Set(300)
+    if api.GetTimeStepsPerSecondAttr().Get() != 300:
+        raise RuntimeError('BFM physics timestep override failed')

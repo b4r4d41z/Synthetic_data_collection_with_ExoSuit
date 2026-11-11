@@ -59,11 +59,11 @@ print('%1')
         titles = [c[-1] for c in calls if c[0] == 'select-pane' and '-T' in c]
         self.assertEqual(titles[:3], ['ARM / JOINTS', 'HAND / GRIPPERS', 'RECORDING'])
         splits = [c for c in calls if c[0] == 'split-window']
-        self.assertEqual([c[1] for c in splits], ['-h', '-h', '-v'])
+        self.assertEqual([c[1] for c in splits], ['-h', '-h', '-v', '-v'])
         self.assertIn(['select-layout', '-t', 'isaac_control:main', 'even-horizontal'], calls)
         self.assertTrue(any(c[0] == 'new-window' and 'backend' in c for c in calls))
         commands = [c[-2] for c in calls if c[0] == 'send-keys']
-        for node in ('arm_control_node', 'eff_control_node', 'sim_recorder_node', 'bfm_action_gateway_node'):
+        for node in ('arm_control_node', 'eff_control_node', 'sim_recorder_node', 'bfm_action_gateway_node', 'bfm_action_executor_node'):
             self.assertEqual(sum(node in c for c in commands), 1)
         self.assertIn(['select-window', '-t', 'isaac_control:main'], calls)
         text = (ROOT/'start_isaac_control.sh').read_text()
@@ -139,7 +139,7 @@ python3 -c 'import os,json; print(json.dumps(dict(os.environ)))'
             self.assertEqual(events, ['update', 'stop', 'open'])
             timeline.play.assert_not_called()
 
-    def test_policy_launcher_runs_only_hand_executor_with_project_environment(self):
+    def test_policy_launcher_runs_common_executor_and_hands_with_project_environment(self):
         self.executable('ros2', f'''#!{sys.executable}
 import json, os, sys
 print(json.dumps(dict(args=sys.argv[1:], mode=os.environ['BFM_COLLECTION_MODE'],
@@ -148,8 +148,11 @@ print(json.dumps(dict(args=sys.argv[1:], mode=os.environ['BFM_COLLECTION_MODE'],
         self.env['BFM_COLLECTION_MODE'] = '0'
         result = self.run_script('start_bfm_policy_control.sh')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(json.loads(result.stdout), dict(
-            args=['run', 'isaac_eff_control', 'eff_control_node'], mode='1', domain='0'))
+        calls = [json.loads(line) for line in result.stdout.splitlines()]
+        self.assertEqual({tuple(c['args']) for c in calls}, {
+            ('run', 'isaac_eff_control', 'eff_control_node'),
+            ('run', 'isaac_eff_control', 'bfm_action_executor_node')})
+        self.assertTrue(all(c['mode']=='1' and c['domain']=='0' for c in calls))
         self.assertFalse(self.log.exists())  # No tmux collection workers.
         self.setup.unlink()
         self.assertNotEqual(self.run_script('start_bfm_policy_control.sh').returncode, 0)

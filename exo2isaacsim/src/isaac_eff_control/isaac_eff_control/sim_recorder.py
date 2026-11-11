@@ -49,6 +49,7 @@ DEFAULT_TOPICS = [
     "/left_hand_joint_command",
     "/right_hand_joint_command",
     "/bfm/action",
+    "/bfm/execution_status",
     "/bfm/state",
     "/bfm/source/arm_joint_target_rad",
     "/bfm/command/hand_target",
@@ -136,6 +137,10 @@ class SimRecorder(Node):
             depth=1,
         )
         if self.get_parameter("bfm_collection_mode").value:
+            # v4 cannot omit execution evidence through a custom topic override.
+            for required in DEFAULT_TOPICS:
+                if required not in self.topics:
+                    self.topics.append(required)
             from dynamic_biped.msg import BfmState
             from std_msgs.msg import String
             self._episode_string = String
@@ -372,6 +377,8 @@ class SimRecorder(Node):
             "end_reason": None,
             "success": None,
             "recording_code": recording_code_provenance(__file__),
+            "executor_code": recording_code_provenance(
+                str(Path(__file__).with_name('bfm_action_executor.py'))),
             "clock_domains": CLOCK_DOMAINS,
             "created_at": datetime.now().astimezone().isoformat(),
             "time": {

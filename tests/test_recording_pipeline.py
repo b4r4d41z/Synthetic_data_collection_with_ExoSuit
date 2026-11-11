@@ -199,6 +199,7 @@ class RecordingPipelineTests(unittest.TestCase):
             "/left_hand_joint_command",
             "/right_hand_joint_command",
             "/bfm/action",
+            "/bfm/execution_status",
             "/bfm/state",
             "/bfm/source/arm_joint_target_rad",
             "/bfm/command/hand_target",
@@ -615,7 +616,21 @@ class RecordingPipelineTests(unittest.TestCase):
         self.overrides["bfm_collection_mode"] = True
         module = load_module("test_bfm_gateway",
             "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_action_gateway.py")
-        return module, module.BfmActionGateway()
+        gateway = module.BfmActionGateway()
+        gateway.count_publishers = lambda topic: 1
+        gateway.playing = True
+        return module, gateway
+
+    def decision_arm(self, gateway):
+        action = gateway.action_pub.publish.call_args.args[0]
+        return SimpleNamespace(name=action.left_arm_joint_names+action.right_arm_joint_names,
+                               position=action.left_arm_target+action.right_arm_target,
+                               header=action.header)
+
+    def decision_hand(self, gateway):
+        action = gateway.action_pub.publish.call_args.args[0]
+        return SimpleNamespace(left_hand_position=action.left_hand_target,
+                               right_hand_position=action.right_hand_target, header=action.header)
 
     def arm_source(self):
         message = Message()
@@ -676,7 +691,7 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway.arm_callback(mapped)
         gateway.hand_callback(self.hand_source())
         gateway.policy_tick()
-        executed = gateway.arm_pub.publish.call_args.args[0]
+        executed = self.decision_arm(gateway)
         action = gateway.action_pub.publish.call_args.args[0]
         by_name = dict(zip(executed.name, executed.position))
         expected = [math.radians(dict(zip(source.name, source.position))[f"zarm_l{i}_joint"])
@@ -699,8 +714,8 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway.arm_callback(self.arm_source())
         gateway.policy_tick()
         gateway.action_pub.publish.assert_not_called()
-        gateway.arm_pub.publish.assert_called_once()
-        gateway.hand_pub.publish.assert_not_called()
+        self.assertNotIn("/robot_arm_joint_command", gateway.publishers)
+        self.assertNotIn("/bfm/command/hand_target", gateway.publishers)
         self.assertTrue(gateway.logger.warning.called)
         gateway.hand_callback(self.hand_source())
         gateway.action_pub.publish.assert_not_called()
@@ -713,7 +728,8 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(fields, [["std_msgs/Header", "header"],
             ["string[7]", "left_arm_joint_names"], ["float64[7]", "left_arm_target"],
             ["float64[6]", "left_hand_target"], ["string[7]", "right_arm_joint_names"],
-            ["float64[7]", "right_arm_target"], ["float64[6]", "right_hand_target"]])
+            ["float64[7]", "right_arm_target"], ["float64[6]", "right_hand_target"],
+            ["string", "producer_session_id"], ["uint64", "action_id"]])
         from isaac_eff_control.bfm_contract import LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, ARM_JOINTS, collection_metadata, state_defaults
         self.assertEqual(LEFT_ARM_JOINTS, tuple(f"zarm_l{i}_joint" for i in range(1,8)))
         self.assertEqual(RIGHT_ARM_JOINTS, tuple(f"zarm_r{i}_joint" for i in range(1,8)))
@@ -749,22 +765,22 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(sum(len(getattr(action, key)) for key in (
             "left_arm_target", "left_hand_target", "right_arm_target", "right_hand_target")), 26)
         self.assertEqual(action.right_hand_target, [0, 100, 42, 44, 61, 60])
-        executed_hand = gateway.hand_pub.publish.call_args.args[0]
-        executed_arm = gateway.arm_pub.publish.call_args.args[0]
+        executed_hand = self.decision_hand(gateway)
+        executed_arm = self.decision_arm(gateway)
         self.assertEqual(executed_hand.right_hand_position, action.right_hand_target)
         self.assertEqual(executed_hand.left_hand_position, action.left_hand_target)
-        self.assertEqual(executed_arm.position, arm.position)
-        self.assertEqual(executed_arm.header.stamp.sec, 1234)
-        self.assertEqual(executed_hand.header.stamp.sec, 1792639761)
+        self.assertEqual(dict(zip(executed_arm.name,executed_arm.position)), dict(zip(arm.name,arm.position)))
+        self.assertEqual(arm.header.stamp.sec, 1234)
+        self.assertEqual(hand.header.stamp.sec, 1792639761)
 
     def test_high_rate_sources_change_only_the_next_policy_snapshot(self):
         _, gateway = self.make_gateway()
         gateway.arm_callback(self.arm_source())
         gateway.hand_callback(self.hand_source())
-        self.assertEqual(gateway.policy_clock.period_ns, 100_000_000)
+        self.assertEqual(gateway.policy_clock.hz, 15)
         self.assertEqual(gateway.timers, [])
         gateway.policy_tick()
-        first = gateway.hand_pub.publish.call_args.args[0]
+        first = self.decision_hand(gateway)
         arm = self.arm_source()
         hand = self.hand_source()
         for value in (10, 20, 30, 40):
@@ -778,8 +794,8 @@ class RecordingPipelineTests(unittest.TestCase):
         hand.right_hand_position[0] = 99
         hand.left_hand_position[0] = 99
         gateway.action_pub.publish.assert_called_once()
-        self.assertEqual(gateway.arm_pub.publish.call_count, 5)
-        self.assertEqual(gateway.hand_pub.publish.call_count, 5)
+        self.assertNotIn("/robot_arm_joint_command", gateway.publishers)
+        self.assertNotIn("/bfm/command/hand_target", gateway.publishers)
         self.assertEqual(first.right_hand_position, [0, 100, 42, 44, 61, 60])
         gateway.policy_tick()
         action = gateway.action_pub.publish.call_args.args[0]
@@ -798,14 +814,14 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway.arm_callback(self.arm_source())
         gateway.hand_callback(self.hand_source([80] * 6))
         gateway.policy_tick()
-        hand.hand_callback(gateway.hand_pub.publish.call_args.args[0])
+        hand.hand_callback(self.decision_hand(gateway))
         for _ in range(5):
             gateway.hand_callback(self.hand_source([10] * 6))
             hand.timer_callback()
             self.assertEqual(hand.target_right_values, [80] * 6)
         gateway.action_pub.publish.assert_called_once()
         self.assertEqual(hand.pub_right.publish.call_count, 5)
-        self.assertEqual(hand.timer.period, .02)
+        self.assertEqual(hand.sim_clock.hz, 50)
 
     def test_gateway_rejects_invalid_arm_and_hand_sources(self):
         _, gateway = self.make_gateway()
@@ -859,10 +875,9 @@ class RecordingPipelineTests(unittest.TestCase):
                 gateway.arm_callback(arm)
                 for _ in range(2):  # Held requests must not be clipped in the buffer.
                     gateway.policy_tick()
-                    held = gateway.arm_pub.publish.call_args.args[0]
+                    held = self.decision_arm(gateway)
                     action = gateway.action_pub.publish.call_args.args[0]
-                    self.assertEqual(held.name, arm.name)
-                    self.assertEqual(held.position, expected)
+                    self.assertEqual(dict(zip(held.name, held.position)), dict(zip(arm.name, expected)))
                     self.assertEqual(arm.position, requested)
                     self.assertEqual(gateway.arm.position, requested)
                     by_name = dict(zip(held.name, held.position))
@@ -890,7 +905,7 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway.arm_callback(source)
         gateway.hand_callback(self.hand_source())
         gateway.policy_tick()
-        held = gateway.arm_pub.publish.call_args.args[0]
+        held = self.decision_arm(gateway)
         values = dict(zip(held.name, held.position))
         self.assertEqual(source.position, [math.pi/2] * 14)
         self.assertEqual(request.position, [90.] * 14)
@@ -907,7 +922,7 @@ class RecordingPipelineTests(unittest.TestCase):
                     for j in ET.fromstring(content).findall("./worldbody//joint")
                     if j.get("name", "").startswith("zarm_")}
         metadata = collection_metadata(True, state_defaults())
-        self.assertEqual(metadata["contract_version"], 3)
+        self.assertEqual(metadata["contract_version"], 4)
         self.assertEqual(metadata["action_dim"], 26)
         processing = metadata["arm_target_processing"]
         self.assertIs(processing["clamping_enabled"], True)
@@ -933,7 +948,7 @@ class RecordingPipelineTests(unittest.TestCase):
             episode_id="bounded-test", object_prim_path="/World/Task/Fruits/lemon1")))))
         node.recording_callback(Bool(True))
         saved = json.loads((node._episode_path / "episode.json").read_text())["bfm"]
-        self.assertEqual(saved["contract_version"], 3)
+        self.assertEqual(saved["contract_version"], 4)
         self.assertEqual(saved["arm_target_processing"], processing)
 
     @unittest.skipUnless(importlib.util.find_spec("pxr"), "Requires OpenUSD")
@@ -1057,7 +1072,7 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(metadata["camera_configuration"], snapshot["provenance"])
         bfm = metadata["bfm"]
         self.assertTrue(bfm["enabled"])
-        self.assertEqual((bfm["policy_hz"], bfm["policy_dt"], bfm["action_dim"]), (10, .1, 26))
+        self.assertEqual((bfm["policy_hz"], bfm["policy_dt"], bfm["action_dim"]), (15, 1/15, 26))
         self.assertEqual(bfm["action_semantics"]["right_arm"]["unit"], "rad")
         self.assertEqual(bfm["action_semantics"]["right_hand"]["range"], [0, 100])
         self.assertEqual(bfm["action_semantics"]["right_hand"]["value_order"],

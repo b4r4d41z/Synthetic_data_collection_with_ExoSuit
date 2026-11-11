@@ -1,4 +1,4 @@
-# One absolute high-level decision held until the next 10 Hz policy tick.
+# One absolute high-level decision held until the next 15 Hz policy tick.
 # header.stamp uses the selected Isaac /clock simulation-time sample. Cross-topic synchronization uses
 # rosbag2/MCAP recorded-message timestamps, not a universal header clock.
 std_msgs/Header header
@@ -13,3 +13,7 @@ float64[6] left_hand_target
 string[7] right_arm_joint_names
 float64[7] right_arm_target
 float64[6] right_hand_target
+
+# v4 identity: IDs remain monotonic across simulation resets.
+string producer_session_id
+uint64 action_id

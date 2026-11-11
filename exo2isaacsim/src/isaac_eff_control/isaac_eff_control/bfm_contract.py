@@ -10,7 +10,11 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 
-POLICY_HZ = 10.0
+CONTRACT_VERSION = 4
+ARM_CONTROL_HZ = 100.0
+HAND_CONTROL_HZ = 50.0
+PHYSICS_HZ = 300.0
+POLICY_HZ = 15.0
 POLICY_DT = 1.0 / POLICY_HZ
 LEFT_ARM_JOINTS = (
     "zarm_l1_joint", "zarm_l2_joint", "zarm_l3_joint", "zarm_l4_joint",
@@ -41,8 +45,9 @@ CLOCK_DOMAINS = {
     "camera_image.header.stamp": "Isaac ROS2CameraHelper simulation time (default useSystemTime=false); render cadence unchanged",
     "raw_bridge.header.stamp": "source-native ExoSuit/ROS1 time, preserved by bridge",
     "/bfm/source/arm_joint_target_rad.header.stamp": "arm node ROS clock (system unless use_sim_time); conversion time",
-    "held_arm_and_hand.header.stamp": "preserved input header, not application time",
-    "finger_joint_command.header.stamp": "hand node ROS clock (system unless use_sim_time); interpolation generation",
+    "held_arm_and_hand.header.stamp": "executor simulation time, not physical attainment",
+    "/bfm/execution_status.header.stamp": "executor simulation time at acceptance/rejection",
+    "finger_joint_command.header.stamp": "simulation time in BFM; system time in legacy mode",
     "success_evaluation.evaluated_at": "system_wall_time ISO8601 with offset",
     "success_evaluation.state_age_sec": "recorder local monotonic receive age; not simulation elapsed time",
     "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
@@ -97,13 +102,13 @@ def arm_target_processing():
         "controller_topic": HELD_ARM_TOPIC,
         "controller_semantics": "bounded absolute joint-position target",
         "canonical_action_topic": ACTION_TOPIC,
-        "canonical_arm_semantics": "same bounded targets as controller command",
+        "canonical_arm_semantics": "bounded high-level target for common executor",
         "joint_limits": {name: list(bounds) for name, bounds in limits},
         "bounds_source": ARM_MODEL_PATH, "bounds_source_sha256": digest,
         "model_revision": "sha256:" + digest,
-        "boundary": "BfmActionGateway.arm_callback before high-rate controller publication",
-        "controller_cadence": "validated source callback rate",
-        "canonical_action_cadence": "0.1 simulation seconds; latest bounded target snapshot",
+        "boundary": "gateway clamps; common executor validates",
+        "controller_cadence": "100 Hz simulation-time trajectory",
+        "canonical_action_cadence": "15 Hz simulation-time decisions",
     }
 
 
@@ -200,12 +205,14 @@ def collection_metadata(enabled, state, configuration=None):
         "policy_hz": POLICY_HZ,
         "policy_dt": POLICY_DT,
         "policy_clock": {
-            "domain": "isaac_simulation", "topic": "/clock", "period_ns": 100_000_000,
-            "trigger": "physics_step", "scheduler": "integer_nanosecond_deadlines",
+            "domain": "isaac_simulation", "topic": "/clock",
+            "period_ns_numerator": 1_000_000_000, "period_ns_denominator": 15,
+            "trigger": "physics_step", "scheduler": "rational_integer_deadlines_1ns_quantization_tolerance",
             "quantization": "first physics clock sample at or after deadline",
             "on_backward_jump": "rebase_without_tick", "on_missed_deadlines": "one_current_tick_no_burst",
         },
-        "contract_version": 3,
+        "contract_version": CONTRACT_VERSION,
+        "execution": executor_metadata(),
         "action_dim": 26,
         "arm_target_processing": arm_target_processing(),
         "action_group_order": list(ACTION_GROUP_ORDER),
@@ -263,3 +270,16 @@ def collection_metadata(enabled, state, configuration=None):
             "runtime_verified": False,
         },
     }
+
+
+def executor_metadata():
+    content = Path(__file__).with_name('bfm_executor_config.json').read_bytes()
+    return {"configuration": json.loads(content),
+            "controller_config_sha256": hashlib.sha256(content).hexdigest(),
+            "entry_topic": ACTION_TOPIC, "status_topic": "/bfm/execution_status",
+            "acknowledgement": "executor acceptance, not physical attainment",
+            "identity": ["producer_session_id", "action_id"],
+            "clock": "Isaac simulation /clock",
+            "runtime_evidence": "recorded execution_status; never reconstructed",
+            "hand_quantization": "nearest integer, ties to even (existing message representation)",
+            "fault_behavior": "inhibit arm output, reset commanded velocity, require fresh measurement and new action"}

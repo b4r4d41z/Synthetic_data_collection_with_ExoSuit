@@ -1,24 +1,26 @@
-"""Integer simulation-clock deadlines; no wall timer and no catch-up bursts."""
-
+"""Rational simulation deadlines; no rounding drift or catch-up bursts."""
 
 class SimPolicyClock:
-    period_ns = 100_000_000
-
-    def __init__(self):
-        self.last_ns = None
-        self.next_ns = None
+    def __init__(self, hz=15):
+        if type(hz) is not int or hz <= 0:
+            raise ValueError('Expected positive integer Hz')
+        self.hz = hz
+        self.last_ns = self.origin = None
+        self.index = 1
 
     def advance(self, now_ns):
-        if now_ns < 0:
-            raise ValueError('Simulation clock must be nonnegative')
+        if type(now_ns) is not int or now_ns < 0:
+            raise ValueError('Expected nonnegative integer simulation ns')
         if self.last_ns is None or now_ns < self.last_ns:
-            self.last_ns = now_ns
-            self.next_ns = now_ns + self.period_ns
+            self.last_ns = self.origin = now_ns
+            self.index = 1
+            return False
+        if now_ns == self.last_ns:
             return False
         self.last_ns = now_ns
-        if now_ns < self.next_ns:
+        # ROS time conversion can floor a rational physics instant by one ns.
+        reached = (now_ns - self.origin + 1) * self.hz // 1_000_000_000
+        if reached < self.index:
             return False
-        # Retain the integer grid without cumulative float drift. If transport
-        # missed multiple deadlines, forward one current decision, never a burst.
-        self.next_ns += ((now_ns - self.next_ns) // self.period_ns + 1) * self.period_ns
+        self.index = reached + 1
         return True

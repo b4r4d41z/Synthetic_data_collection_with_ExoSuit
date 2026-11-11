@@ -48,6 +48,8 @@ start_worker "$PANE_ARM" arm_control_node
 start_worker "$PANE_HAND" eff_control_node
 start_worker "$PANE_RECORDER" sim_recorder_node
 start_worker "$PANE_GATEWAY" bfm_action_gateway_node
+PANE_EXECUTOR=$(tmux split-window -v -t "$PANE_GATEWAY" -P -F '#{pane_id}')
+start_worker "$PANE_EXECUTOR" bfm_action_executor_node
 printf -v LOG_COMMAND 'exec tail -F -- %q' "$PROJECT_DIR/records/rosbag2.log"
 tmux send-keys -t "$PANE_LOG" "$LOG_COMMAND" C-m
 tmux select-window -t "$SESSION:main"

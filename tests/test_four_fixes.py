@@ -103,8 +103,8 @@ class ControlTests(unittest.TestCase):
         clock(0)
         for i in range(10):
             arm.position=[i/100]*14; g.arm_callback(arm); g.hand_callback(hand)
-        self.assertEqual(g.arm_pub.publish.call_count,10)
-        self.assertEqual(g.hand_pub.publish.call_count,10)
+        self.assertNotIn("/robot_arm_joint_command",g.publishers)
+        self.assertNotIn("/bfm/command/hand_target",g.publishers)
         g.action_pub.publish.assert_not_called()
         clock(100_000_000)
         first=g.action_pub.publish.call_args.args[0]
@@ -112,6 +112,6 @@ class ControlTests(unittest.TestCase):
         clock(200_000_000)
         second=g.action_pub.publish.call_args.args[0]
         self.assertEqual(second.header.stamp.nanosec-first.header.stamp.nanosec,100_000_000)
-        commanded=dict(zip(g.arm_pub.publish.call_args.args[0].name,g.arm_pub.publish.call_args.args[0].position))
+        commanded=dict(zip(second.left_arm_joint_names+second.right_arm_joint_names,second.left_arm_target+second.right_arm_target))
         self.assertEqual(second.left_arm_target,[commanded[n] for n in second.left_arm_joint_names])
         self.assertEqual(sum(len(getattr(second,k)) for k in ('left_arm_target','left_hand_target','right_arm_target','right_hand_target')),26)

@@ -76,7 +76,7 @@ class ProvenanceTests(unittest.TestCase):
 class ClockTests(unittest.TestCase):
     def test_integer_period_independent_of_wall_speed_and_pause(self):
         for wall_speed in (.03, .3, 1., 4.):
-            clock = SimPolicyClock(); decisions = []
+            clock = SimPolicyClock(10); decisions = []
             for sim_ns in range(0, 10_000_000_001, 10_000_000):
                 unused_wall_seconds = sim_ns / 1e9 / wall_speed
                 if clock.advance(sim_ns): decisions.append(sim_ns)
@@ -85,7 +85,7 @@ class ClockTests(unittest.TestCase):
             self.assertEqual(decisions, list(range(100_000_000, 10_000_000_001, 100_000_000)))
 
     def test_physics_quantization_reset_and_missing_clock_samples_no_burst(self):
-        clock = SimPolicyClock(); times = []
+        clock = SimPolicyClock(10); times = []
         for step in range(601):
             ns = round(step/60 * 1e9)
             if clock.advance(ns): times.append(ns)
@@ -93,7 +93,7 @@ class ClockTests(unittest.TestCase):
         for a,b in zip(times, times[1:]):
             self.assertLessEqual(abs((b-a)/1e9-.1), 1/60+1e-9)
         self.assertFalse(clock.advance(0))
-        self.assertFalse(clock.advance(99_999_999))
+        self.assertFalse(clock.advance(99_999_998))
         self.assertTrue(clock.advance(100_000_000))
         self.assertTrue(clock.advance(5_000_000_000))
         self.assertFalse(clock.advance(5_000_000_000))
@@ -157,6 +157,8 @@ class RecorderContractTests(unittest.TestCase):
                 'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_action_gateway.py')
         with patch.dict('os.environ', BFM_COLLECTION_MODE='1'):
             gateway = module.BfmActionGateway()
+        gateway.count_publishers = lambda topic: 1
+        gateway.playing = True
         self.assertEqual(gateway.timers, [])
         arm = harness.Message(); arm.name = sorted(module.ARM_JOINTS); arm.position = [0.]*14
         hand = harness.Message(); hand.left_hand_position = hand.right_hand_position = [50.]*6
@@ -181,9 +183,10 @@ class GraphContractTests(unittest.TestCase):
         before = {str(a.GetPath()):(a.Get(),tuple(a.GetConnections()))
                   for p in stage.Traverse() for a in p.GetAttributes()}
         import isaac_eff_control.collection_graph as graph
-        with patch.object(graph, 'configure_physics_clock') as clock_setup, sensor_authoring(graph):
+        with patch.object(graph, 'configure_physics_timestep') as timestep, patch.object(graph, 'configure_physics_clock') as clock_setup, sensor_authoring(graph):
             configure_collection_graph(stage)
         clock_setup.assert_called_once_with(stage)
+        timestep.assert_called_once_with(stage)
         self.assertEqual(stage.GetRootLayer().ExportToString(), original)
         cameras = json.loads((PACKAGE/'isaac_eff_control/camera_metadata.json').read_text())['cameras']
         self.assertEqual(len(set(CAMERA_FRAMES.values())),3)

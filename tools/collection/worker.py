@@ -8,7 +8,7 @@ import sys
 def main():
     name = sys.argv[1]
     role = {"arm_control_node": "ARM", "eff_control_node": "HAND",
-            "sim_recorder_node": "REC", "bfm_action_gateway_node": "GATEWAY"}[name]
+            "sim_recorder_node": "REC", "bfm_action_gateway_node": "GATEWAY", "bfm_action_executor_node": "EXECUTOR"}[name]
 
     def report_error(message):
         print(message, flush=True)

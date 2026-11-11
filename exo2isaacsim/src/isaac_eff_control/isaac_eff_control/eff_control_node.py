@@ -2,13 +2,17 @@
 
 import math
 import os
+import json
+from std_msgs.msg import String
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 
 from dynamic_biped.msg import RobotHandPosition
 from sensor_msgs.msg import JointState
+from rosgraph_msgs.msg import Clock
+from .sim_policy_clock import SimPolicyClock
 
 from .flow_status import FlowStatus
 
@@ -193,10 +197,40 @@ class IsaacEffControlNode(Node):
             ],
         }
 
-        self.timer = self.create_timer(
-            1.0 / PUBLISH_HZ,
-            self.timer_callback,
-        )
+        if BFM_COLLECTION_MODE:
+            self.sim_clock = SimPolicyClock(50)
+            self.sim_stamp = None
+            self.sim_playing = False
+            self.sim_boundary = None
+            self.create_subscription(String, '/bfm/episode', self.episode_callback,
+                QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
+                           durability=DurabilityPolicy.TRANSIENT_LOCAL))
+            self.create_subscription(Clock, '/clock', self.clock_callback,
+                QoSProfile(depth=1000, reliability=ReliabilityPolicy.BEST_EFFORT))
+        else:
+            self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback)
+
+    def episode_callback(self, msg):
+        event = json.loads(msg.data)
+        if 'phase' not in event:
+            return
+        if event.get('boundary_id') != self.sim_boundary or event['phase'] in ('stopped', 'failed', 'closed'):
+            self.target_left_values = [0.0] * 6
+            self.current_left_values = [0.0] * 6
+            self.target_right_values = [0.0] * 6
+            self.current_right_values = [0.0] * 6
+            self.sim_clock = SimPolicyClock(50)
+        self.sim_boundary = event.get('boundary_id')
+        self.sim_playing = event['phase'] == 'playing'
+
+    def clock_callback(self, msg):
+        self.sim_stamp = msg.clock
+        ns = msg.clock.sec * 1_000_000_000 + msg.clock.nanosec
+        if self.sim_clock.last_ns is not None and ns < self.sim_clock.last_ns:
+            self.target_left_values = self.current_left_values = [0.0] * 6
+            self.target_right_values = self.current_right_values = [0.0] * 6
+        if self.sim_clock.advance(ns) and self.sim_playing:
+            self.timer_callback()
 
     def observe_hand(self, msg):
         values = list(msg.left_hand_position) + list(msg.right_hand_position)
@@ -297,7 +331,8 @@ class IsaacEffControlNode(Node):
 
     def make_joint_state_msg(self, names, positions):
         joint_msg = JointState()
-        joint_msg.header.stamp = self.get_clock().now().to_msg()
+        joint_msg.header.stamp = (self.sim_stamp if BFM_COLLECTION_MODE
+                                  else self.get_clock().now().to_msg())
         joint_msg.name = names
         joint_msg.position = positions
         return joint_msg
