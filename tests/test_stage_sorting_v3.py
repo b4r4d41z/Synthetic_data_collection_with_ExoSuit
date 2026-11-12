@@ -22,6 +22,7 @@ sys.path.insert(0, str(ROOT/'exo2isaacsim/src/isaac_eff_control'))
 
 
 class SortingV3Tests(unittest.TestCase):
+    object_names = ('apple_02','lunchbag','ketchup_bottle','avocado','orange2')
     def setUp(self):
         self.stage = Usd.Stage.Open(str(ROOT/'models/stages/sorting_experimental/stage_sorting_v3.usda'))
         self.data = runtime.load_configuration(CONFIG, ROOT)
@@ -33,8 +34,8 @@ class SortingV3Tests(unittest.TestCase):
     def test_five_preloaded_bodies_geometry_mass_and_textures(self):
         bodies = list(self.planner.pool.values())
         self.assertEqual(set(bodies), {f'/World/Task/Things/{name}' for name in
-                                      ('apple_02','lunchbag','ketchup_bottle','avocado','orange2')})
-        self.assertEqual(len({tuple(p) for p in self.planner.parking.values()}), 5)
+                                      self.object_names})
+        self.assertEqual(len({tuple(p) for p in self.planner.parking.values()}), len(self.object_names))
         active = [str(p.GetPath()) for p in self.stage.Traverse()
                   if p.HasAPI(UsdPhysics.RigidBodyAPI) and str(p.GetPath()).startswith('/World/Task/')]
         self.assertEqual(set(active), set(bodies))
@@ -99,12 +100,12 @@ class SortingV3Tests(unittest.TestCase):
                 self.assertAlmostEqual(low[2], .755)
                 self.assertAlmostEqual(boxlo[2], .75, places=5)
                 self.assertFalse(runtime.overlaps(low,high,boxlo,boxhi,.03))
-                self.assertEqual(len(episode['body_poses']), 6)
+                self.assertEqual(len(episode['body_poses']), len(self.object_names)+1)
                 self.assertEqual(episode['object_prim_path'], '/World/Task/Things/'+Path(episode['asset']).stem)
                 self.assertEqual(set(episode['parking_positions']),
                                  set(self.planner.pool.values()) - {episode['object_prim_path']})
         self.assertEqual(observed, {(layout, name+'.usd') for layout in ('A','B')
-                                    for name in ('apple_02','lunchbag','ketchup_bottle','avocado','orange2')})
+                                    for name in self.object_names})
         self.assertGreater(len(positions), 200); self.assertGreater(len(boxes), 200)
 
     def test_seed_reproducibility_and_v2_region_definitions(self):
@@ -174,8 +175,8 @@ class SortingV3Tests(unittest.TestCase):
         log = Mock()
         pool = pool_module.PhysicsObjectPool(self.stage, episode, log=log)
         pool.bind(view); pool.apply_episode(); pool.verify_episode()
-        self.assertEqual(len(pool.bodies), 6)
-        log.assert_any_call('[BFM PHYSX] things pool resolved: 5/5; container resolved: 1')
+        self.assertEqual(len(pool.bodies), len(self.object_names)+1)
+        log.assert_any_call(f'[BFM PHYSX] things pool resolved: {len(self.object_names)}/{len(self.object_names)}; container resolved: 1')
         self.assertTrue(pool.parking_settled())
         for path, actor in actors.items():
             np.testing.assert_allclose(actor.pose[0], episode['body_poses'][path], atol=1e-5)

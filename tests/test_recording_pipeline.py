@@ -88,10 +88,13 @@ def ros_stubs(overrides):
             self.subscriptions[topic] = subscription
             return subscription
 
-        def create_timer(self, period, callback):
-            timer = SimpleNamespace(period=period, callback=callback)
+        def create_timer(self, period, callback, **kwargs):
+            timer = SimpleNamespace(period=period, callback=callback, **kwargs)
             self.timers.append(timer)
             return timer
+
+        def count_publishers(self, topic):
+            return 1
 
         def get_logger(self):
             return self.logger
@@ -106,13 +109,15 @@ def ros_stubs(overrides):
 
     modules = {
         name: ModuleType(name) for name in (
-            "rclpy", "rclpy.node", "rclpy.qos", "rclpy.executors",
+            "rclpy", "rclpy.node", "rclpy.qos", "rclpy.executors", "rclpy.clock", "rclpy.clock_type",
             "rospy", "zmq", "std_msgs", "std_msgs.msg",
             "sensor_msgs", "sensor_msgs.msg", "dynamic_biped", "dynamic_biped.msg",
             "rosgraph_msgs", "rosgraph_msgs.msg",
         )
     }
     modules["rclpy.node"].Node = Node
+    modules["rclpy.clock"].Clock = SimpleNamespace
+    modules["rclpy.clock_type"].ClockType = SimpleNamespace(STEADY_TIME="steady_wall")
     for name in ("init", "spin", "shutdown", "try_shutdown", "ok"):
         setattr(modules["rclpy"], name, Mock(return_value=True))
     modules["rclpy.executors"].ExternalShutdownException = type(
@@ -199,7 +204,6 @@ class RecordingPipelineTests(unittest.TestCase):
             "/left_hand_joint_command",
             "/right_hand_joint_command",
             "/bfm/action",
-            "/bfm/execution_status",
             "/bfm/state",
             "/bfm/source/arm_joint_target_rad",
             "/bfm/command/hand_target",
@@ -385,11 +389,12 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertIn(hand_module.HAND_INPUT_TOPIC, bridge.publishers)
         self.assertEqual(len(bridge.publishers), 3)  # No duplicate alias publishers.
         raw = Message()
-        raw.name, raw.position = ["zarm_l4_joint"], [-30.0]
+        raw.name = [f"zarm_{side}{i}_joint" for side in "lr" for i in range(1,8)]
+        raw.position = [-30.0 if name == "zarm_l4_joint" else 0.0 for name in raw.name]
         arm.arm_callback(raw)
         converted = arm.pub.publish.call_args.args[0]
-        self.assertEqual(converted.name, ["zarm_r4_joint"])
-        self.assertAlmostEqual(converted.position[0], -0.5235987755982988)
+        self.assertEqual(len(converted.name), 14)
+        self.assertAlmostEqual(dict(zip(converted.name,converted.position))["zarm_r4_joint"], -0.5235987755982988)
         self.assertIn("/robot_arm_joint_command", arm.publishers)
         self.assertIn("/left_hand_joint_command", hand.publishers)
         self.assertIn("/right_hand_joint_command", hand.publishers)
@@ -665,7 +670,7 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(hand_module.PUBLISH_HZ, 50.)
         self.assertFalse(self.recorder.SimRecorder().episode_metadata()["bfm"]["enabled"])
 
-    def test_bfm_routing_reuses_mapping_and_cannot_bypass_hold_via_output_override(self):
+    def test_bfm_routing_reuses_mapping_and_direct_control_is_independent(self):
         with patch.dict(os.environ, {"BFM_COLLECTION_MODE": "1", "ARM_OUTPUT_TOPIC": "/bypass"}):
             arm_module = load_module("test_bfm_arm",
                 "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/arm_control_node.py")
@@ -673,21 +678,16 @@ class RecordingPipelineTests(unittest.TestCase):
                 "exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py")
         arm, hand = arm_module.ArmControlNode(), hand_module.IsaacEffControlNode()
         self.assertIn("/bfm/source/arm_joint_target_rad", arm.publishers)
-        self.assertNotIn("/robot_arm_joint_command", arm.publishers)
+        self.assertIn("/robot_arm_joint_command", arm.publishers)
         self.assertNotIn("/bypass", arm.publishers)
-        self.assertIn("/bfm/command/hand_target", hand.subscriptions)
-        self.assertEqual(hand.subscriptions["/bfm/command/hand_target"].qos.reliability,
-                         "reliable")
-        # The extra raw subscription is status-only, never a control callback.
-        self.assertEqual(hand.subscriptions["/robot/command/hand_target"].callback,
-                         hand.observe_hand)
-        self.assertNotEqual(hand.subscriptions["/robot/command/hand_target"].callback,
-                            hand.hand_callback)
+        self.assertIn("/robot/command/hand_target", hand.subscriptions)
+        self.assertEqual(hand.subscriptions["/robot/command/hand_target"].callback, hand.hand_callback)
+        self.assertIn("/bfm/command/hand_target", hand.publishers)
         _, gateway = self.make_gateway()
         source = self.arm_source()
         raw_positions = list(source.position)
         arm.arm_callback(source)
-        mapped = arm.pub.publish.call_args.args[0]
+        mapped = arm.source_pub.publish.call_args.args[0]
         gateway.arm_callback(mapped)
         gateway.hand_callback(self.hand_source())
         gateway.policy_tick()
@@ -814,14 +814,17 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway.arm_callback(self.arm_source())
         gateway.hand_callback(self.hand_source([80] * 6))
         gateway.policy_tick()
-        hand.hand_callback(self.decision_hand(gateway))
+        hand.hand_callback(self.hand_source([80]*6))
         for _ in range(5):
-            gateway.hand_callback(self.hand_source([10] * 6))
+            raw = self.hand_source([10]*6)
+            gateway.hand_callback(raw)
+            hand.hand_callback(raw)
             hand.timer_callback()
-            self.assertEqual(hand.target_right_values, [80] * 6)
+            self.assertEqual(hand.target_right_values, [10]*6)
         gateway.action_pub.publish.assert_called_once()
         self.assertEqual(hand.pub_right.publish.call_count, 5)
-        self.assertEqual(hand.sim_clock.hz, 50)
+        self.assertEqual(hand.timer.period, .02)
+        self.assertEqual(hand.timer.clock.clock_type, "steady_wall")
 
     def test_gateway_rejects_invalid_arm_and_hand_sources(self):
         _, gateway = self.make_gateway()
@@ -900,7 +903,7 @@ class RecordingPipelineTests(unittest.TestCase):
         request = self.arm_source()
         request.position = [90.] * 14
         node.arm_callback(request)
-        source = node.pub.publish.call_args.args[0]
+        source = node.source_pub.publish.call_args.args[0]
         _, gateway = self.make_gateway()
         gateway.arm_callback(source)
         gateway.hand_callback(self.hand_source())

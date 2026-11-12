@@ -49,7 +49,6 @@ DEFAULT_TOPICS = [
     "/left_hand_joint_command",
     "/right_hand_joint_command",
     "/bfm/action",
-    "/bfm/execution_status",
     "/bfm/state",
     "/bfm/source/arm_joint_target_rad",
     "/bfm/command/hand_target",
@@ -124,7 +123,7 @@ class SimRecorder(Node):
         self._outcome_identity = None
         self._outcome_frame = None
         self._outcome_state = None
-        self._outcome_error = "No valid BFM state received during recording"
+        self._outcome_error = "No valid /bfm/success diagnostic received during recording"
         self._pending_outcome = None
         self._stop_failed = False
         self._rec_status = None
@@ -377,8 +376,6 @@ class SimRecorder(Node):
             "end_reason": None,
             "success": None,
             "recording_code": recording_code_provenance(__file__),
-            "executor_code": recording_code_provenance(
-                str(Path(__file__).with_name('bfm_action_executor.py'))),
             "clock_domains": CLOCK_DOMAINS,
             "created_at": datetime.now().astimezone().isoformat(),
             "time": {
@@ -435,7 +432,7 @@ class SimRecorder(Node):
                                       if metadata["bfm"]["enabled"] else None)
             self._outcome_frame = metadata["bfm"]["task_state"]["frame"]
             self._outcome_state = None
-            self._outcome_error = "No valid BFM state received during recording"
+            self._outcome_error = "No valid /bfm/success diagnostic received during recording"
         except (OSError, ValueError) as error:
             self._stop_failed = True
             self.recording_status("ERROR")

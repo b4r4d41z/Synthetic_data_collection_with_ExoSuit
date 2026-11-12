@@ -8,23 +8,14 @@
   "result_schema_version": 1,
   "terminal": false,
   "end_reason": "user_stop",
-  "success": null,
+  "success": true,
   "recording_code": {
     "repository": "https://github.com/b4r4d41z/Synthetic_data_collection_with_ExoSuit",
     "status": "available",
-    "commit_sha": "c7408e7c276b9f515f1f912064eaf211ff570e8b",
+    "commit_sha": "16737dccabde9fd327986e53d71eede7978ca01a",
     "dirty": true,
-    "dirty_sha256": "6149660c1e9937a49ec4c84e3c24f7a02016f7540f72d51050bac21ef968d07f",
-    "executing_module_sha256": "e9cb6efe78be1c7978d8b670db96c273987033ed0d263cc0e822ad2e177bad40",
-    "dirty_digest_format": "sha256-length-prefixed-head-diff-and-sorted-untracked-v1"
-  },
-  "executor_code": {
-    "repository": "https://github.com/b4r4d41z/Synthetic_data_collection_with_ExoSuit",
-    "status": "available",
-    "commit_sha": "c7408e7c276b9f515f1f912064eaf211ff570e8b",
-    "dirty": true,
-    "dirty_sha256": "6149660c1e9937a49ec4c84e3c24f7a02016f7540f72d51050bac21ef968d07f",
-    "executing_module_sha256": "2a7a475baf8eb18a6e2a5933c44da94e3ac66fc857614db9bd96511a4c9ec3a3",
+    "dirty_sha256": "24e3af848be7d0109ddf73b0e0a86f5b84eb17d40868e1c4e997c66f29c95d3a",
+    "executing_module_sha256": "2c60546b73f9f456cde3ed08324bb981511a7f614cd84f92d73ad68ef0220b1a",
     "dirty_digest_format": "sha256-length-prefixed-head-diff-and-sorted-untracked-v1"
   },
   "clock_domains": {
@@ -33,20 +24,20 @@
     "synchronization": "mcap_log_time (unchanged); headers are not a universal clock",
     "/clock.clock": "IsaacReadSimulationTime simulation time, published on physics steps; existing resetOnStop default",
     "/bfm/action.header.stamp": "selected /clock sample; decision generation, not measured controller application",
-    "/bfm/state.header.stamp": "Isaac timeline.get_current_time at native physics callback; may have a different epoch from /clock",
+    "/bfm/state.header.stamp": "SimulationManager completed physics simulation time at Kit post-update; separate epoch from /clock if reset policies differ",
     "/robot/state/joint_states.header.stamp": "IsaacReadSimulationTime via saved graph; sensorTime is separately the joint sensor simulation time",
     "camera_image.header.stamp": "Isaac ROS2CameraHelper simulation time (default useSystemTime=false); render cadence unchanged",
     "raw_bridge.header.stamp": "source-native ExoSuit/ROS1 time, preserved by bridge",
     "/bfm/source/arm_joint_target_rad.header.stamp": "arm node ROS clock (system unless use_sim_time); conversion time",
-    "held_arm_and_hand.header.stamp": "executor simulation time, not physical attainment",
-    "/bfm/execution_status.header.stamp": "executor simulation time at acceptance/rejection",
-    "finger_joint_command.header.stamp": "simulation time in BFM; system time in legacy mode",
+    "held_arm.header.stamp": "mapper ROS clock in teleoperation; copied policy decision header in policy mode; not physical attainment",
+    "held_hand.header.stamp": "source-native header in teleoperation; policy decision header in policy mode",
+    "finger_joint_command.header.stamp": "node ROS clock at wall-scheduled publication, not physical attainment",
     "success_evaluation.evaluated_at": "system_wall_time ISO8601 with offset",
     "success_evaluation.state_age_sec": "recorder local monotonic receive age; not simulation elapsed time",
     "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
     "controller_application_time": "not measured by action/source headers; use measured state for response analysis"
   },
-  "created_at": "2026-11-11T10:47:20.662848+00:00",
+  "created_at": "2026-11-12T05:38:16.512203+00:00",
   "time": {
     "synchronization_source": "rosbag_record_timestamp",
     "header_stamp": "source_native"
@@ -67,7 +58,6 @@
       "/left_hand_joint_command",
       "/right_hand_joint_command",
       "/bfm/action",
-      "/bfm/execution_status",
       "/bfm/state",
       "/bfm/source/arm_joint_target_rad",
       "/bfm/command/hand_target",
@@ -233,64 +223,17 @@
       "on_missed_deadlines": "one_current_tick_no_burst"
     },
     "contract_version": 4,
-    "execution": {
-      "configuration": {
-        "schema_version": 1,
-        "algorithm": "bounded_velocity_acceleration_position_v1",
-        "policy_hz": 15,
-        "arm_control_hz": 100,
-        "hand_control_hz": 50,
-        "physics_hz": 300,
-        "response_time": 0.2,
-        "max_velocity": [
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.0
-        ],
-        "max_acceleration": [
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0
-        ],
-        "source_timeout_wall_sec": 0.5,
-        "measurement_timeout_sim_sec": 0.1,
-        "measurement_timeout_wall_sec": 0.5,
-        "action_max_age_sim_sec": 0.2
-      },
-      "controller_config_sha256": "1e15c23beb0f7682cb6b1f740ac23e5ab3876b11b70f14144316a3f958eae3a2",
-      "entry_topic": "/bfm/action",
-      "status_topic": "/bfm/execution_status",
-      "acknowledgement": "executor acceptance, not physical attainment",
-      "identity": [
-        "producer_session_id",
-        "action_id"
-      ],
-      "clock": "Isaac simulation /clock",
-      "runtime_evidence": "recorded execution_status; never reconstructed",
-      "hand_quantization": "nearest integer, ties to even (existing message representation)",
-      "fault_behavior": "inhibit arm output, reset commanded velocity, require fresh measurement and new action"
+    "control_architecture": "decoupled_teleoperation_v1",
+    "action_role": "sampled_operator_target_not_execution_acknowledgement",
+    "control": {
+      "arm": "direct mapped bounded targets at source rate; no added trajectory generator",
+      "hand_hz": 50.0,
+      "hand_clock": "steady_wall_time",
+      "physics_hz": 300.0,
+      "execution_acknowledgements": false,
+      "sampling_independent_of_control": true,
+      "source_freshness": "no command watchdog; latest valid snapshot may repeat; inspect full-rate source streams",
+      "downstream_compatibility": "requires decoupled v4 converter; incompatible with executor-based v4 acceptance joins"
     },
     "action_dim": 26,
     "arm_target_processing": {
@@ -302,7 +245,7 @@
       "controller_topic": "/robot_arm_joint_command",
       "controller_semantics": "bounded absolute joint-position target",
       "canonical_action_topic": "/bfm/action",
-      "canonical_arm_semantics": "bounded high-level target for common executor",
+      "canonical_arm_semantics": "sampled bounded operator target; not execution evidence",
       "joint_limits": {
         "zarm_l1_joint": [
           -2.61799,
@@ -364,9 +307,9 @@
       "bounds_source": "models/robots/s40_sharpa/assembly/s40_sharpa_two_cameras.xml",
       "bounds_source_sha256": "4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
       "model_revision": "sha256:4ac4549699cd3de774b676d2acaf9d0f35f1c2b041587ed7f44b535f80e43dcf",
-      "boundary": "gateway clamps; common executor validates",
-      "controller_cadence": "100 Hz simulation-time trajectory",
-      "canonical_action_cadence": "15 Hz simulation-time decisions"
+      "boundary": "arm mapper clamps direct controller commands; passive sampler applies the same bounds",
+      "controller_cadence": "validated source callback rate; independent of BFM sampling",
+      "canonical_action_cadence": "15 Hz simulation-time passive snapshots"
     },
     "action_group_order": [
       "left_arm",
@@ -506,7 +449,7 @@
       },
       "reference_prim_path": "/",
       "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-      "object_prim_path": "/World/Task/Things/avocado",
+      "object_prim_path": "/World/Task/Things/orange2",
       "container_prim_path": "/World/container_b04",
       "goal_local_center": [
         -0.08494214117424082,
@@ -530,10 +473,10 @@
       "scene_configuration": {
         "scenario": "v1_manipulation_ambidextrous",
         "file": "/workspace/Synthetic_data_collection_with_ExoSuit/models/stages/v1_manipulation_ambidextrous/sorting_scene.json",
-        "sha256": "d0c08e7b7047a26a2dbe8ad79b666084206a332b8a5e9ce2aa061464d03e012d",
+        "sha256": "a96dcf947043f7113fff2b04427160d3f6a0dcae5523397be8c2cb66620a2791",
         "scene": "models/stages/v1_manipulation_ambidextrous/stage_manipulation.usda",
         "provenance": {
-          "baseline_commit": "c7408e7c276b9f515f1f912064eaf211ff570e8b",
+          "baseline_commit": "16737dccabde9fd327986e53d71eede7978ca01a",
           "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
           "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
           "robot_root": "/World/s40_sharpa_two_cameras",
@@ -565,7 +508,7 @@
           "floor_contact_tolerance_m": 0.003,
           "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
           "minimum_support_radius_m": 0.03426520788759943,
-          "fruit_pool_asset": "models/stages/sorting_experimental/things_pool.usda",
+          "fruit_pool_asset": "models/stages/v1_manipulation_ambidextrous/things_pool.usda",
           "success_detector": {
             "method": "collision_mesh_residence_latched_v2",
             "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
@@ -579,17 +522,16 @@
             "velocity_gate": false,
             "runtime_verified": false
           },
-          "fruit_pool_sha256": "60c4f48b93d1bba47b8f8a29dea28f91861d63d6a339e7132a585db9744cd74c",
-          "scene_sha256": "ecdbff2746156a895965d566a48ae7998627547f934ad8dd4de200ca9aa6304d",
-          "object_pool_normalization": "References source meshes/textures without edits. Apple/lunchbag child body promoted to pool root with COM/principal axes transformed and mass/inertia preserved; ketchup body retained. Zero initial velocities, gravity, same fruit contact material/margins and static parking cradles."
+          "fruit_pool_sha256": "77a28cc64552aff695c2543db07c6c6b05ccc2aef2780535c4e7a8479a101df2",
+          "scene_sha256": "be2aa83b15d4d22366b5ad4e43ab75dccd89732562ab50293ecda804ce66ee3c",
+          "object_pool_normalization": "Scenario-local definitions reuse existing lemon/orange bodies and lunchbag/ketchup body promotion; preserve source mass/inertia, geometry and contact profile. Static parking cradles; no per-episode topology changes."
         },
         "randomization": {
           "object_assets": [
-            "models/addons/objects/objaverse/apple_02.usd",
+            "models/addons/objects/fruits_veggies/lemon1.usd",
+            "models/addons/objects/fruits_veggies/orange2.usd",
             "models/addons/objects/objaverse/lunchbag.usd",
-            "models/addons/objects/hope/ketchup_bottle.usd",
-            "models/addons/objects/fruits_veggies/avocado.usd",
-            "models/addons/objects/fruits_veggies/orange2.usd"
+            "models/addons/objects/hope/ketchup_bottle.usd"
           ],
           "object_spawn_region": {
             "x_min": 0.95,
@@ -628,14 +570,13 @@
             "isaac_runtime_verified": false
           },
           "pool_assets": [
-            "models/addons/objects/objaverse/apple_02.usd",
+            "models/addons/objects/fruits_veggies/lemon1.usd",
+            "models/addons/objects/fruits_veggies/orange2.usd",
             "models/addons/objects/objaverse/lunchbag.usd",
-            "models/addons/objects/hope/ketchup_bottle.usd",
-            "models/addons/objects/fruits_veggies/avocado.usd",
-            "models/addons/objects/fruits_veggies/orange2.usd"
+            "models/addons/objects/hope/ketchup_bottle.usd"
           ],
-          "collection_objects_note": "V3 only: apple_02, lunchbag, ketchup_bottle, avocado, orange2; all bodies loaded before simulation.",
-          "scenario": "things_v3",
+          "collection_objects_note": "Ambidextrous V4 only: lemon1, orange2, lunchbag, ketchup_bottle; all four bodies loaded before simulation.",
+          "scenario": "ambidextrous_v4",
           "pool_path": "/World/Task/Things",
           "parking_path": "/World/Task/ThingsParking"
         },
@@ -644,34 +585,43 @@
       "runtime_verified": false
     },
     "episode": {
-      "episode_id": "676fbca80ecb4de0948153e1d0874a6b",
-      "asset": "avocado.usd",
-      "asset_path": "models/addons/objects/fruits_veggies/avocado.usd",
-      "object_prim_path": "/World/Task/Things/avocado",
+      "episode_id": "a2198fd797ab46f4a7459ce306583c4a",
+      "asset": "orange2.usd",
+      "asset_path": "models/addons/objects/fruits_veggies/orange2.usd",
+      "object_prim_path": "/World/Task/Things/orange2",
       "position": [
-        0.9931331839246783,
-        4.076923959251309,
-        0.7548251751228595
+        0.9767729417427782,
+        4.442942455020007,
+        0.7550595041790376
       ],
-      "yaw": -2.872040217277019,
+      "yaw": 0.15805681217065892,
       "orientation_xyzw": [
-        -0.0,
-        -0.0,
-        -0.9909314252608926,
-        0.13436856191243549
+        0.0,
+        0.0,
+        0.078946169930048,
+        0.9968788804330123
       ],
       "body_poses": {
-        "/World/Task/Things/apple_02": [
+        "/World/Task/Things/lemon1": [
           100.0,
           100.0,
-          1.9813579304440883,
+          1.9288761094165965,
           0.0,
           0.0,
           0.0,
           1.0
         ],
+        "/World/Task/Things/orange2": [
+          0.9767729417427782,
+          4.442942455020007,
+          0.7550595041790376,
+          0.0,
+          0.0,
+          0.078946169930048,
+          0.9968788804330123
+        ],
         "/World/Task/Things/lunchbag": [
-          102.0,
+          104.0,
           100.0,
           2.0024999986588954,
           0.0,
@@ -680,7 +630,7 @@
           1.0
         ],
         "/World/Task/Things/ketchup_bottle": [
-          104.0,
+          106.0,
           100.0,
           2.0043039034307,
           0.0,
@@ -688,27 +638,9 @@
           0.0,
           1.0
         ],
-        "/World/Task/Things/avocado": [
-          0.9931331839246783,
-          4.076923959251309,
-          0.7548251751228595,
-          -0.0,
-          -0.0,
-          -0.9909314252608926,
-          0.13436856191243549
-        ],
-        "/World/Task/Things/orange2": [
-          108.0,
-          100.0,
-          1.9300598623693803,
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
         "/World/container_b04": [
-          1.1303124940777889,
-          4.487789889918022,
+          1.1095979063238444,
+          4.113863305186163,
           0.7499995231628418,
           0.0,
           0.0,
@@ -717,36 +649,31 @@
         ]
       },
       "parking_positions": {
-        "/World/Task/Things/apple_02": [
+        "/World/Task/Things/lemon1": [
           100.0,
           100.0,
-          1.9813579304440883
+          1.9288761094165965
         ],
         "/World/Task/Things/lunchbag": [
-          102.0,
+          104.0,
           100.0,
           2.0024999986588954
         ],
         "/World/Task/Things/ketchup_bottle": [
-          104.0,
+          106.0,
           100.0,
           2.0043039034307
-        ],
-        "/World/Task/Things/orange2": [
-          108.0,
-          100.0,
-          1.9300598623693803
         ]
       },
       "container_prim_path": "/World/container_b04",
       "container_position": [
-        1.1303124940777889,
-        4.487789889918022,
+        1.1095979063238444,
+        4.113863305186163,
         0.7499995231628418
       ],
       "container_offset": [
-        0.04050391081820637,
-        0.04634358559673313,
+        0.019789323064261843,
+        -0.32758299913512623,
         0.0
       ],
       "container_transform": [
@@ -769,14 +696,14 @@
           0.0
         ],
         [
-          1.1303124940777889,
-          4.487789889918022,
+          1.1095979063238444,
+          4.113863305186163,
           0.7499995231628418,
           1.0
         ]
       ],
-      "scenario": "things_v3",
-      "layout": "A",
+      "scenario": "ambidextrous_v4",
+      "layout": "B",
       "placement_regions": {
         "right": {
           "x_min": 0.95,
@@ -794,10 +721,10 @@
       "scene_configuration": {
         "scenario": "v1_manipulation_ambidextrous",
         "file": "/workspace/Synthetic_data_collection_with_ExoSuit/models/stages/v1_manipulation_ambidextrous/sorting_scene.json",
-        "sha256": "d0c08e7b7047a26a2dbe8ad79b666084206a332b8a5e9ce2aa061464d03e012d",
+        "sha256": "a96dcf947043f7113fff2b04427160d3f6a0dcae5523397be8c2cb66620a2791",
         "scene": "models/stages/v1_manipulation_ambidextrous/stage_manipulation.usda",
         "provenance": {
-          "baseline_commit": "c7408e7c276b9f515f1f912064eaf211ff570e8b",
+          "baseline_commit": "16737dccabde9fd327986e53d71eede7978ca01a",
           "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
           "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
           "robot_root": "/World/s40_sharpa_two_cameras",
@@ -829,7 +756,7 @@
           "floor_contact_tolerance_m": 0.003,
           "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
           "minimum_support_radius_m": 0.03426520788759943,
-          "fruit_pool_asset": "models/stages/sorting_experimental/things_pool.usda",
+          "fruit_pool_asset": "models/stages/v1_manipulation_ambidextrous/things_pool.usda",
           "success_detector": {
             "method": "collision_mesh_residence_latched_v2",
             "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
@@ -843,17 +770,16 @@
             "velocity_gate": false,
             "runtime_verified": false
           },
-          "fruit_pool_sha256": "60c4f48b93d1bba47b8f8a29dea28f91861d63d6a339e7132a585db9744cd74c",
-          "scene_sha256": "ecdbff2746156a895965d566a48ae7998627547f934ad8dd4de200ca9aa6304d",
-          "object_pool_normalization": "References source meshes/textures without edits. Apple/lunchbag child body promoted to pool root with COM/principal axes transformed and mass/inertia preserved; ketchup body retained. Zero initial velocities, gravity, same fruit contact material/margins and static parking cradles."
+          "fruit_pool_sha256": "77a28cc64552aff695c2543db07c6c6b05ccc2aef2780535c4e7a8479a101df2",
+          "scene_sha256": "be2aa83b15d4d22366b5ad4e43ab75dccd89732562ab50293ecda804ce66ee3c",
+          "object_pool_normalization": "Scenario-local definitions reuse existing lemon/orange bodies and lunchbag/ketchup body promotion; preserve source mass/inertia, geometry and contact profile. Static parking cradles; no per-episode topology changes."
         },
         "randomization": {
           "object_assets": [
-            "models/addons/objects/objaverse/apple_02.usd",
+            "models/addons/objects/fruits_veggies/lemon1.usd",
+            "models/addons/objects/fruits_veggies/orange2.usd",
             "models/addons/objects/objaverse/lunchbag.usd",
-            "models/addons/objects/hope/ketchup_bottle.usd",
-            "models/addons/objects/fruits_veggies/avocado.usd",
-            "models/addons/objects/fruits_veggies/orange2.usd"
+            "models/addons/objects/hope/ketchup_bottle.usd"
           ],
           "object_spawn_region": {
             "x_min": 0.95,
@@ -892,14 +818,13 @@
             "isaac_runtime_verified": false
           },
           "pool_assets": [
-            "models/addons/objects/objaverse/apple_02.usd",
+            "models/addons/objects/fruits_veggies/lemon1.usd",
+            "models/addons/objects/fruits_veggies/orange2.usd",
             "models/addons/objects/objaverse/lunchbag.usd",
-            "models/addons/objects/hope/ketchup_bottle.usd",
-            "models/addons/objects/fruits_veggies/avocado.usd",
-            "models/addons/objects/fruits_veggies/orange2.usd"
+            "models/addons/objects/hope/ketchup_bottle.usd"
           ],
-          "collection_objects_note": "V3 only: apple_02, lunchbag, ketchup_bottle, avocado, orange2; all bodies loaded before simulation.",
-          "scenario": "things_v3",
+          "collection_objects_note": "Ambidextrous V4 only: lemon1, orange2, lunchbag, ketchup_bottle; all four bodies loaded before simulation.",
+          "scenario": "ambidextrous_v4",
           "pool_path": "/World/Task/Things",
           "parking_path": "/World/Task/ThingsParking"
         },
@@ -909,7 +834,7 @@
         "state_frame": "world",
         "reference_prim_path": "/",
         "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-        "object_prim_path": "/World/Task/Things/avocado",
+        "object_prim_path": "/World/Task/Things/orange2",
         "container_prim_path": "/World/container_b04",
         "goal_local_center": [
           -0.08494214117424082,
@@ -934,10 +859,160 @@
   },
   "success_evaluation": {
     "method": "collision_mesh_residence_latched_v2",
-    "episode_id": "676fbca80ecb4de0948153e1d0874a6b",
-    "object_prim_path": "/World/Task/Things/avocado",
-    "evaluated_at": "2026-11-11T10:47:36.696591+00:00",
-    "review_required": true,
-    "reason": "No valid BFM state received during recording"
+    "episode_id": "a2198fd797ab46f4a7459ce306583c4a",
+    "object_prim_path": "/World/Task/Things/orange2",
+    "evaluated_at": "2026-11-12T05:39:04.653539+00:00",
+    "success": true,
+    "speed_norms_linear_angular_fruit_container": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "collision_bound_body_min": [
+      -0.035910919308662415,
+      -0.035911254584789276,
+      -5.986162432236597e-05
+    ],
+    "collision_bound_body_max": [
+      0.03591092303395271,
+      0.035911258310079575,
+      0.07345886528491974
+    ],
+    "interior_floor_polygon": [
+      [
+        -0.2619564324607093,
+        -0.12285222113132477
+      ],
+      [
+        -0.2619129061688621,
+        -0.12456691265106201
+      ],
+      [
+        -0.2615723848332603,
+        -0.12556666135787964
+      ],
+      [
+        -0.2610906451930244,
+        -0.12622356414794922
+      ],
+      [
+        -0.2603930324305732,
+        -0.12675374746322632
+      ],
+      [
+        -0.2593475222577293,
+        -0.12711037695407867
+      ],
+      [
+        -0.25767397284404825,
+        -0.12713168561458588
+      ],
+      [
+        0.08778969049556662,
+        -0.12713174521923065
+      ],
+      [
+        0.08946323990924765,
+        -0.12711043655872345
+      ],
+      [
+        0.09050875008209158,
+        -0.1267538070678711
+      ],
+      [
+        0.09120636284454275,
+        -0.126223623752594
+      ],
+      [
+        0.09168810248477866,
+        -0.12556672096252441
+      ],
+      [
+        0.09202862382038046,
+        -0.12456697225570679
+      ],
+      [
+        0.09207215011222769,
+        -0.12285227328538895
+      ],
+      [
+        0.09207217991455008,
+        0.12285222113132477
+      ],
+      [
+        0.09202865362270285,
+        0.12456691265106201
+      ],
+      [
+        0.09168814718826224,
+        0.12556666135787964
+      ],
+      [
+        0.09120640754802634,
+        0.12622356414794922
+      ],
+      [
+        0.09050879478557516,
+        0.12675374746322632
+      ],
+      [
+        0.08946326971157004,
+        0.12711037695407867
+      ],
+      [
+        0.0877897351990502,
+        0.12713168561458588
+      ],
+      [
+        -0.25767394304172586,
+        0.12713174521923065
+      ],
+      [
+        -0.2593474775542457,
+        0.12711043655872345
+      ],
+      [
+        -0.2603930026282508,
+        0.1267538070678711
+      ],
+      [
+        -0.261090615390702,
+        0.126223623752594
+      ],
+      [
+        -0.2615723550309379,
+        0.12556672096252441
+      ],
+      [
+        -0.2619128614653785,
+        0.12456697225570679
+      ],
+      [
+        -0.26195638775722574,
+        0.12285227328538895
+      ]
+    ],
+    "interior_floor": 0.010474557988345623,
+    "interior_ceiling": 0.1179291307926178,
+    "contained": true,
+    "stable": true,
+    "measurement_valid": true,
+    "stable_duration_sim_sec": 1.05,
+    "simulation_seconds": 16.073333333333334,
+    "sample_interval_sim_sec": 0.016666666,
+    "collision_vertices_tested": 10408,
+    "floor_clearance_m": -0.002489641119203606,
+    "rim_clearance_m": 0.037046274429701403,
+    "side_clearance_m": 0.06592057464850078,
+    "required_dwell_sim_sec": 0.3,
+    "velocity_gate": false,
+    "stability_semantics": "sampled_container_residence",
+    "success_semantics": "episode_success_once",
+    "success_latched": true,
+    "first_success_sim_sec": 15.323333333,
+    "clock_domain": "isaac_physics_simulation_time",
+    "state_age_sec": 0.045930300000691204,
+    "review_required": false
   }
 }

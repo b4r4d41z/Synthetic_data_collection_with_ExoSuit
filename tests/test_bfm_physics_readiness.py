@@ -19,6 +19,7 @@ class PhysicsReadinessTests(GoalTestBase):
             if parent in self.modules:
                 setattr(self.modules[parent], child, self.modules[name])
         self.app, self.timeline, self.manager = Mock(), Mock(), Mock()
+        self.manager.get_simulation_time.side_effect = lambda: self.timeline.get_current_time()
         self.manager.get_physics_simulation_view.return_value = None
         self.modules['isaacsim.core.simulation_manager'].SimulationManager = self.manager
         self.timeline.is_playing.return_value = True
@@ -222,7 +223,7 @@ class PhysicsReadinessTests(GoalTestBase):
         self.assertEqual(self.node.publisher.publish.call_count,published)
         self.assertTrue(all(b.writes == ['pose','velocity'] for b in bodies.values()))
 
-    def test_success_uses_physics_time_without_changing_state_timestamp_or_views(self):
+    def test_frozen_timeline_does_not_suppress_measured_state_or_success(self):
         from isaac_eff_control.fruit_success import SettledContainment
         from test_four_fixes import corners
         detector = SettledContainment([(-.16,-.11),(.16,-.11),(.16,.11),(-.16,.11)], .011, .118)
@@ -235,14 +236,19 @@ class PhysicsReadinessTests(GoalTestBase):
         self.ready()
         sampler = self.node.sampler
         import json
+        self.manager.get_simulation_time.side_effect = None
         for index, seconds in enumerate((0., 0., .12, .22, .31)):
-            self.timeline.get_current_time.return_value = index + 1.
+            self.timeline.get_current_time.return_value = 0.  # Frozen/looping USD time.
             self.manager.get_simulation_time.return_value = seconds
             self.update(None)
             diagnostic = json.loads(self.node.success_publisher.publish.call_args.args[0].data)
             self.assertEqual(diagnostic['simulation_seconds'], seconds)
             self.assertEqual(diagnostic['success'], seconds >= .3)
-            self.assertEqual(self.node.publisher.publish.call_args.args[0].header.stamp.sec, index+1)
+            message = self.node.publisher.publish.call_args.args[0]
+            self.assertEqual(message.header.stamp.sec, 0)
+            self.assertEqual(message.header.stamp.nanosec, round(seconds*1e9))
+        self.assertEqual(self.node.publisher.publish.call_count, 4)
+        self.assertEqual(self.node.success_publisher.publish.call_count, 4)
         self.assertIs(self.node.sampler, sampler)
         self.assertIsNotNone(detector.first_success_ns)
         self.timeline.is_playing.return_value = False

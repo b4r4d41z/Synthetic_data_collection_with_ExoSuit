@@ -1,0 +1,702 @@
+#usda 1.0
+# Ambidextrous-only persistent four-object pool. Individual source assets remain unchanged.
+# Existing body promotion, mass/inertia, collider margins and contact profile are preserved.
+# Static cradles copied from the validated fruit pool; no other pool is referenced.
+(
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def "World"
+{
+    def "Task"
+    {
+        def Xform "Things"
+        {
+            def Material "ThingContact" (
+                prepend apiSchemas = ["PhysicsMaterialAPI", "PhysxMaterialAPI"]
+            )
+            {
+                float physics:dynamicFriction = 0.5
+                float physics:restitution = 0
+                float physics:staticFriction = 0.6
+                token physxMaterial:frictionCombineMode = "average"
+                token physxMaterial:restitutionCombineMode = "average"
+            }
+
+            def Xform "lemon1" (
+                prepend references = @../../addons/objects/fruits_veggies/lemon1.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (100, 100, 1.9288761094165965, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "lemon_01_inst"
+                {
+                    over "Lemon_01" (
+                        prepend apiSchemas = ["PhysxCollisionAPI"]
+                    )
+                    {
+                        rel material:binding:physics = </World/Task/Things/ThingContact>
+                        float physxCollision:contactOffset = 0.002
+                        float physxCollision:restOffset = 0
+                    }
+                }
+            }
+
+            def Xform "orange2" (
+                prepend references = @../../addons/objects/fruits_veggies/orange2.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (102, 100, 1.9300598623693803, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "orange_02_inst"
+                {
+                    over "Orange_02"
+                    {
+                        over "OrangeSkin" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            rel material:binding:physics = </World/Task/Things/ThingContact>
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                        }
+
+                        over "OrangeStem" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            rel material:binding:physics = </World/Task/Things/ThingContact>
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                        }
+                    }
+                }
+            }
+
+            def Xform "lunchbag" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
+                prepend references = @../../addons/objects/objaverse/lunchbag.usd@
+            )
+            {
+                rel material:binding:physics = </World/Task/Things/ThingContact> (
+                    bindMaterialAs = "strongerThanDescendants"
+                )
+                vector3f physics:angularVelocity = (0, 0, 0)
+                point3f physics:centerOfMass = (0.001969667, -0.001700441, -0.04081409)
+                float3 physics:diagonalInertia = (0.00013862748, 0.00021226858, 0.00013848131)
+                float physics:mass = 0.28446978
+                quatf physics:principalAxes = (0.9998764, 0.015699565, -0.0006531631, 0.00067293295)
+                vector3f physics:velocity = (0, 0, 0)
+                bool physxRigidBody:disableGravity = 0
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (104, 100, 2.0024999986588954, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "Geometry"
+                {
+                    over "more_bagged_food_7_model_normalized_0_vis" (
+                        delete apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        over "more_bagged_food_7_tn__model_normalized_collision_0_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_0_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_10_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_10_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_11_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_11_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_12_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_12_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_13_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_13_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_14_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_14_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_15_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_15_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_16_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_16_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_17_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_17_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_18_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_18_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_19_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_19_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_1_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_1_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_20_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_20_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_21_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_21_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_22_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_22_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_23_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_23_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_24_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_24_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_25_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_25_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_26_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_26_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_27_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_27_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_28_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_28_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_29_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_29_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_2_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_2_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_30_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_30_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_31_coll_wp0"
+                        {
+                            over "tn__model_normalized_collision_31_coll_wp0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_3_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_3_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_4_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_4_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_5_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_5_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_6_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_6_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_7_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_7_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_8_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_8_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+
+                        over "more_bagged_food_7_tn__model_normalized_collision_9_coll_go0"
+                        {
+                            over "tn__model_normalized_collision_9_coll_go0" (
+                                prepend apiSchemas = ["PhysxCollisionAPI"]
+                            )
+                            {
+                                float physxCollision:contactOffset = 0.002
+                                float physxCollision:restOffset = 0
+                            }
+                        }
+                    }
+                }
+            }
+
+            def Xform "ketchup_bottle" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI", "PhysxRigidBodyAPI", "MaterialBindingAPI"]
+                prepend references = @../../addons/objects/hope/ketchup_bottle.usd@
+            )
+            {
+                rel material:binding:physics = </World/Task/Things/ThingContact> (
+                    bindMaterialAs = "strongerThanDescendants"
+                )
+                vector3f physics:angularVelocity = (0, 0, 0)
+                float physics:mass = 0.5
+                vector3f physics:velocity = (0, 0, 0)
+                bool physxRigidBody:disableGravity = 0
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (106, 100, 2.0043039034307, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "obj_000011_Mesh" (
+                    prepend apiSchemas = ["PhysxCollisionAPI"]
+                )
+                {
+                    float physxCollision:contactOffset = 0.002
+                    float physxCollision:restOffset = 0
+                }
+            }
+        }
+
+        def Xform "ThingsParking"
+        {
+            def "lemon1"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (100, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (99.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (100.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (100, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (100, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+
+            def "orange2"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (102, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (101.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (102.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (102, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (102, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+
+            def "lunchbag"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (104, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (103.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (104.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (104, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (104, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+
+            def "ketchup_bottle"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (106, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (105.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (106.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (106, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (106, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+        }
+    }
+}

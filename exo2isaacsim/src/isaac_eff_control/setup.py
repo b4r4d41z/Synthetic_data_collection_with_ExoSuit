@@ -9,7 +9,6 @@ setup(
     package_data={
         package_name: [
             'camera_metadata.json',
-            'bfm_executor_config.json',
         ]
     },
     data_files=[
@@ -47,7 +46,7 @@ setup(
             'arm_control_node = isaac_eff_control.arm_control_node:main',
             'sim_recorder_node = isaac_eff_control.sim_recorder:main',
             'bfm_action_gateway_node = isaac_eff_control.bfm_action_gateway:main',
-            'bfm_action_executor_node = isaac_eff_control.bfm_action_executor:main',
+            'bfm_policy_bridge_node = isaac_eff_control.bfm_policy_bridge:main',
         ],
     },
 )

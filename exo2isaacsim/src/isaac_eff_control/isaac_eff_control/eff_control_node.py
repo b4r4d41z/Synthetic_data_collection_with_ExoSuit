@@ -2,17 +2,16 @@
 
 import math
 import os
-import json
-from std_msgs.msg import String
+from copy import deepcopy
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+from rclpy.clock import Clock as ROSClock
+from rclpy.clock_type import ClockType
 
 from dynamic_biped.msg import RobotHandPosition
 from sensor_msgs.msg import JointState
-from rosgraph_msgs.msg import Clock
-from .sim_policy_clock import SimPolicyClock
 
 from .flow_status import FlowStatus
 
@@ -20,8 +19,7 @@ from .bfm_contract import HELD_HAND_TOPIC, collection_enabled
 
 
 BFM_COLLECTION_MODE = collection_enabled()
-HAND_INPUT_TOPIC = (HELD_HAND_TOPIC if BFM_COLLECTION_MODE else
-                    os.getenv("HAND_INPUT_TOPIC", "/robot/command/hand_target"))
+HAND_INPUT_TOPIC = os.getenv("HAND_INPUT_TOPIC", "/robot/command/hand_target")
 
 PUBLISH_HZ = 50.0
 
@@ -78,7 +76,7 @@ class IsaacEffControlNode(Node):
         input_qos = QoSProfile(
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
-            reliability=(ReliabilityPolicy.RELIABLE if BFM_COLLECTION_MODE else
+            reliability=(ReliabilityPolicy.RELIABLE if HAND_INPUT_TOPIC == HELD_HAND_TOPIC else
                          ReliabilityPolicy.BEST_EFFORT),
         )
 
@@ -111,13 +109,9 @@ class IsaacEffControlNode(Node):
 
         self.flow = FlowStatus(self.get_logger(), 'HAND')
         self.flow_timer = self.create_timer(0.2, self.flow.check)
-        if BFM_COLLECTION_MODE:
-            # Held targets keep arriving after bridge input stops. Observe raw
-            # input separately for status only; do not alter interpolation.
-            self.flow_subscription = self.create_subscription(
-                RobotHandPosition, '/robot/command/hand_target', self.observe_hand,
-                QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1,
-                           reliability=ReliabilityPolicy.BEST_EFFORT))
+        # Full-rate validated logical controller targets, separate from samples.
+        self.logical_pub = (self.create_publisher(RobotHandPosition, HELD_HAND_TOPIC, input_qos)
+                            if BFM_COLLECTION_MODE and HAND_INPUT_TOPIC != HELD_HAND_TOPIC else None)
 
         self.target_left_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.current_left_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -197,58 +191,23 @@ class IsaacEffControlNode(Node):
             ],
         }
 
-        if BFM_COLLECTION_MODE:
-            self.sim_clock = SimPolicyClock(50)
-            self.sim_stamp = None
-            self.sim_playing = False
-            self.sim_boundary = None
-            self.create_subscription(String, '/bfm/episode', self.episode_callback,
-                QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
-                           durability=DurabilityPolicy.TRANSIENT_LOCAL))
-            self.create_subscription(Clock, '/clock', self.clock_callback,
-                QoSProfile(depth=1000, reliability=ReliabilityPolicy.BEST_EFFORT))
-        else:
-            self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback)
-
-    def episode_callback(self, msg):
-        event = json.loads(msg.data)
-        if 'phase' not in event:
-            return
-        if event.get('boundary_id') != self.sim_boundary or event['phase'] in ('stopped', 'failed', 'closed'):
-            self.target_left_values = [0.0] * 6
-            self.current_left_values = [0.0] * 6
-            self.target_right_values = [0.0] * 6
-            self.current_right_values = [0.0] * 6
-            self.sim_clock = SimPolicyClock(50)
-        self.sim_boundary = event.get('boundary_id')
-        self.sim_playing = event['phase'] == 'playing'
-
-    def clock_callback(self, msg):
-        self.sim_stamp = msg.clock
-        ns = msg.clock.sec * 1_000_000_000 + msg.clock.nanosec
-        if self.sim_clock.last_ns is not None and ns < self.sim_clock.last_ns:
-            self.target_left_values = self.current_left_values = [0.0] * 6
-            self.target_right_values = self.current_right_values = [0.0] * 6
-        if self.sim_clock.advance(ns) and self.sim_playing:
-            self.timer_callback()
-
-    def observe_hand(self, msg):
-        values = list(msg.left_hand_position) + list(msg.right_hand_position)
-        valid = (len(msg.left_hand_position) == len(msg.right_hand_position) == 6
-                 and all(math.isfinite(v) for v in values))
-        self.flow.receive(valid)
+        # Explicit steady clock: even use_sim_time=true cannot throttle fingers.
+        self.wall_clock = ROSClock(clock_type=ClockType.STEADY_TIME)
+        self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback,
+                                       clock=self.wall_clock)
 
     def hand_callback(self, msg):
-        if not BFM_COLLECTION_MODE:
-            self.observe_hand(msg)
-        left_values = list(msg.left_hand_position)
-        right_values = list(msg.right_hand_position)
-
-        for i in range(min(6, len(left_values))):
-            self.target_left_values[i] = clamp(float(left_values[i]), 0.0, 100.0)
-
-        for i in range(min(6, len(right_values))):
-            self.target_right_values[i] = clamp(float(right_values[i]), 0.0, 100.0)
+        values = list(msg.left_hand_position) + list(msg.right_hand_position)
+        valid = (len(msg.left_hand_position) == len(msg.right_hand_position) == 6
+                 and all(math.isfinite(v) and 0 <= v <= 100 for v in values))
+        self.flow.receive(valid)
+        if not valid:
+            self.get_logger().warning('Rejected hand input: need six finite logical values in 0..100 per side')
+            return
+        self.target_left_values = [float(v) for v in msg.left_hand_position]
+        self.target_right_values = [float(v) for v in msg.right_hand_position]
+        if self.logical_pub is not None:
+            self.logical_pub.publish(deepcopy(msg))
 
     def update_current_left_values(self):
         dt = 1.0 / PUBLISH_HZ
@@ -331,8 +290,7 @@ class IsaacEffControlNode(Node):
 
     def make_joint_state_msg(self, names, positions):
         joint_msg = JointState()
-        joint_msg.header.stamp = (self.sim_stamp if BFM_COLLECTION_MODE
-                                  else self.get_clock().now().to_msg())
+        joint_msg.header.stamp = self.get_clock().now().to_msg()
         joint_msg.name = names
         joint_msg.position = positions
         return joint_msg

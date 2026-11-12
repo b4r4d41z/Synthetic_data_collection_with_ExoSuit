@@ -11,7 +11,6 @@ import xml.etree.ElementTree as ET
 
 
 CONTRACT_VERSION = 4
-ARM_CONTROL_HZ = 100.0
 HAND_CONTROL_HZ = 50.0
 PHYSICS_HZ = 300.0
 POLICY_HZ = 15.0
@@ -40,14 +39,14 @@ CLOCK_DOMAINS = {
     "synchronization": "mcap_log_time (unchanged); headers are not a universal clock",
     "/clock.clock": "IsaacReadSimulationTime simulation time, published on physics steps; existing resetOnStop default",
     "/bfm/action.header.stamp": "selected /clock sample; decision generation, not measured controller application",
-    "/bfm/state.header.stamp": "Isaac timeline.get_current_time at native physics callback; may have a different epoch from /clock",
+    "/bfm/state.header.stamp": "SimulationManager completed physics simulation time at Kit post-update; separate epoch from /clock if reset policies differ",
     "/robot/state/joint_states.header.stamp": "IsaacReadSimulationTime via saved graph; sensorTime is separately the joint sensor simulation time",
     "camera_image.header.stamp": "Isaac ROS2CameraHelper simulation time (default useSystemTime=false); render cadence unchanged",
     "raw_bridge.header.stamp": "source-native ExoSuit/ROS1 time, preserved by bridge",
     "/bfm/source/arm_joint_target_rad.header.stamp": "arm node ROS clock (system unless use_sim_time); conversion time",
-    "held_arm_and_hand.header.stamp": "executor simulation time, not physical attainment",
-    "/bfm/execution_status.header.stamp": "executor simulation time at acceptance/rejection",
-    "finger_joint_command.header.stamp": "simulation time in BFM; system time in legacy mode",
+    "held_arm.header.stamp": "mapper ROS clock in teleoperation; copied policy decision header in policy mode; not physical attainment",
+    "held_hand.header.stamp": "source-native header in teleoperation; policy decision header in policy mode",
+    "finger_joint_command.header.stamp": "node ROS clock at wall-scheduled publication, not physical attainment",
     "success_evaluation.evaluated_at": "system_wall_time ISO8601 with offset",
     "success_evaluation.state_age_sec": "recorder local monotonic receive age; not simulation elapsed time",
     "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
@@ -102,13 +101,13 @@ def arm_target_processing():
         "controller_topic": HELD_ARM_TOPIC,
         "controller_semantics": "bounded absolute joint-position target",
         "canonical_action_topic": ACTION_TOPIC,
-        "canonical_arm_semantics": "bounded high-level target for common executor",
+        "canonical_arm_semantics": "sampled bounded operator target; not execution evidence",
         "joint_limits": {name: list(bounds) for name, bounds in limits},
         "bounds_source": ARM_MODEL_PATH, "bounds_source_sha256": digest,
         "model_revision": "sha256:" + digest,
-        "boundary": "gateway clamps; common executor validates",
-        "controller_cadence": "100 Hz simulation-time trajectory",
-        "canonical_action_cadence": "15 Hz simulation-time decisions",
+        "boundary": "arm mapper clamps direct controller commands; passive sampler applies the same bounds",
+        "controller_cadence": "validated source callback rate; independent of BFM sampling",
+        "canonical_action_cadence": "15 Hz simulation-time passive snapshots",
     }
 
 
@@ -212,7 +211,16 @@ def collection_metadata(enabled, state, configuration=None):
             "on_backward_jump": "rebase_without_tick", "on_missed_deadlines": "one_current_tick_no_burst",
         },
         "contract_version": CONTRACT_VERSION,
-        "execution": executor_metadata(),
+        "control_architecture": "decoupled_teleoperation_v1",
+        "action_role": "sampled_operator_target_not_execution_acknowledgement",
+        "control": {
+            "arm": "direct mapped bounded targets at source rate; no added trajectory generator",
+            "hand_hz": HAND_CONTROL_HZ, "hand_clock": "steady_wall_time",
+            "physics_hz": PHYSICS_HZ, "execution_acknowledgements": False,
+            "sampling_independent_of_control": True,
+            "source_freshness": "no command watchdog; latest valid snapshot may repeat; inspect full-rate source streams",
+            "downstream_compatibility": "requires decoupled v4 converter; incompatible with executor-based v4 acceptance joins",
+        },
         "action_dim": 26,
         "arm_target_processing": arm_target_processing(),
         "action_group_order": list(ACTION_GROUP_ORDER),
@@ -270,16 +278,3 @@ def collection_metadata(enabled, state, configuration=None):
             "runtime_verified": False,
         },
     }
-
-
-def executor_metadata():
-    content = Path(__file__).with_name('bfm_executor_config.json').read_bytes()
-    return {"configuration": json.loads(content),
-            "controller_config_sha256": hashlib.sha256(content).hexdigest(),
-            "entry_topic": ACTION_TOPIC, "status_topic": "/bfm/execution_status",
-            "acknowledgement": "executor acceptance, not physical attainment",
-            "identity": ["producer_session_id", "action_id"],
-            "clock": "Isaac simulation /clock",
-            "runtime_evidence": "recorded execution_status; never reconstructed",
-            "hand_quantization": "nearest integer, ties to even (existing message representation)",
-            "fault_behavior": "inhibit arm output, reset commanded velocity, require fresh measurement and new action"}

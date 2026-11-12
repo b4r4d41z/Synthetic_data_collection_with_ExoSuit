@@ -121,7 +121,7 @@ class GoalConfigTests(GoalTestBase):
         self.assertFalse(state["runtime_verified"])
         self.assertTrue(state["configured"])
         self.assertEqual(metadata["bfm"]["action_dim"], 26)
-        self.assertEqual(metadata["bfm"]["policy_hz"], 10)
+        self.assertEqual(metadata["bfm"]["policy_hz"], 15)
         self.assertEqual(metadata["time"], {"synchronization_source": "rosbag_record_timestamp",
                                             "header_stamp": "source_native"})
         self.assertIn("/bfm/state", metadata["recording"]["topics"])

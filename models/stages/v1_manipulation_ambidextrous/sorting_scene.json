@@ -5,7 +5,7 @@
     "state_frame": "world",
     "reference_prim_path": "/",
     "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-    "object_prim_path": "/World/Task/Things/apple_02",
+    "object_prim_path": "/World/Task/Things/lemon1",
     "container_prim_path": "/World/container_b04",
     "goal_local_center": [
       -0.08494214117424082,
@@ -27,7 +27,7 @@
     "articulation_prim_path": "/World/s40_sharpa_two_cameras/fix_base_joint"
   },
   "provenance": {
-    "baseline_commit": "c7408e7c276b9f515f1f912064eaf211ff570e8b",
+    "baseline_commit": "16737dccabde9fd327986e53d71eede7978ca01a",
     "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
     "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
     "robot_root": "/World/s40_sharpa_two_cameras",
@@ -59,7 +59,7 @@
     "floor_contact_tolerance_m": 0.003,
     "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
     "minimum_support_radius_m": 0.03426520788759943,
-    "fruit_pool_asset": "models/stages/sorting_experimental/things_pool.usda",
+    "fruit_pool_asset": "models/stages/v1_manipulation_ambidextrous/things_pool.usda",
     "success_detector": {
       "method": "collision_mesh_residence_latched_v2",
       "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
@@ -73,17 +73,16 @@
       "velocity_gate": false,
       "runtime_verified": false
     },
-    "fruit_pool_sha256": "60c4f48b93d1bba47b8f8a29dea28f91861d63d6a339e7132a585db9744cd74c",
-    "scene_sha256": "ecdbff2746156a895965d566a48ae7998627547f934ad8dd4de200ca9aa6304d",
-    "object_pool_normalization": "References source meshes/textures without edits. Apple/lunchbag child body promoted to pool root with COM/principal axes transformed and mass/inertia preserved; ketchup body retained. Zero initial velocities, gravity, same fruit contact material/margins and static parking cradles."
+    "fruit_pool_sha256": "77a28cc64552aff695c2543db07c6c6b05ccc2aef2780535c4e7a8479a101df2",
+    "scene_sha256": "be2aa83b15d4d22366b5ad4e43ab75dccd89732562ab50293ecda804ce66ee3c",
+    "object_pool_normalization": "Scenario-local definitions reuse existing lemon/orange bodies and lunchbag/ketchup body promotion; preserve source mass/inertia, geometry and contact profile. Static parking cradles; no per-episode topology changes."
   },
   "randomization": {
     "object_assets": [
-      "models/addons/objects/objaverse/apple_02.usd",
+      "models/addons/objects/fruits_veggies/lemon1.usd",
+      "models/addons/objects/fruits_veggies/orange2.usd",
       "models/addons/objects/objaverse/lunchbag.usd",
-      "models/addons/objects/hope/ketchup_bottle.usd",
-      "models/addons/objects/fruits_veggies/avocado.usd",
-      "models/addons/objects/fruits_veggies/orange2.usd"
+      "models/addons/objects/hope/ketchup_bottle.usd"
     ],
     "object_spawn_region": {
       "x_min": 0.95,
@@ -122,14 +121,13 @@
       "isaac_runtime_verified": false
     },
     "pool_assets": [
-      "models/addons/objects/objaverse/apple_02.usd",
+      "models/addons/objects/fruits_veggies/lemon1.usd",
+      "models/addons/objects/fruits_veggies/orange2.usd",
       "models/addons/objects/objaverse/lunchbag.usd",
-      "models/addons/objects/hope/ketchup_bottle.usd",
-      "models/addons/objects/fruits_veggies/avocado.usd",
-      "models/addons/objects/fruits_veggies/orange2.usd"
+      "models/addons/objects/hope/ketchup_bottle.usd"
     ],
-    "collection_objects_note": "V3 only: apple_02, lunchbag, ketchup_bottle, avocado, orange2; all bodies loaded before simulation.",
-    "scenario": "things_v3",
+    "collection_objects_note": "Ambidextrous V4 only: lemon1, orange2, lunchbag, ketchup_bottle; all four bodies loaded before simulation.",
+    "scenario": "ambidextrous_v4",
     "pool_path": "/World/Task/Things",
     "parking_path": "/World/Task/ThingsParking"
   }

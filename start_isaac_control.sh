@@ -4,6 +4,10 @@ PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 command -v tmux >/dev/null || { echo 'ERROR: tmux is not installed' >&2; exit 1; }
 command -v python3 >/dev/null || { echo 'ERROR: python3 is not installed' >&2; exit 1; }
 source "$PROJECT_DIR/tools/collection/environment.bash"
+# Workers retain shared locks after tmux detaches; policy holds an exclusive lock.
+flock -sn "${XDG_RUNTIME_DIR:-/tmp}/synthetic-control-${UID}.lock" true || {
+    echo 'ERROR: policy control is running; stop it before collection' >&2; exit 1;
+}
 SESSION=isaac_control
 if tmux has-session -t "$SESSION" 2>/dev/null; then
     # Workers forward Ctrl-C and stay alive until their nodes finish cleanup.
@@ -48,8 +52,6 @@ start_worker "$PANE_ARM" arm_control_node
 start_worker "$PANE_HAND" eff_control_node
 start_worker "$PANE_RECORDER" sim_recorder_node
 start_worker "$PANE_GATEWAY" bfm_action_gateway_node
-PANE_EXECUTOR=$(tmux split-window -v -t "$PANE_GATEWAY" -P -F '#{pane_id}')
-start_worker "$PANE_EXECUTOR" bfm_action_executor_node
 printf -v LOG_COMMAND 'exec tail -F -- %q' "$PROJECT_DIR/records/rosbag2.log"
 tmux send-keys -t "$PANE_LOG" "$LOG_COMMAND" C-m
 tmux select-window -t "$SESSION:main"

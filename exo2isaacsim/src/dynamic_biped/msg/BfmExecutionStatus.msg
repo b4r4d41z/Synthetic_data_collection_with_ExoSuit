@@ -4,3 +4,4 @@ uint64 action_id
 bool accepted
 string reason
 string controller_config_sha256
+# Deprecated: historical executor-based V4 recordings only. No live endpoints.

@@ -18,8 +18,11 @@ CONTAINER_PATH = "/World/container_b04"
 
 def load_configuration(path, repository):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    v3 = data.get("randomization", {}).get("scenario") == "things_v3"
-    object_path = "/World/Task/Things/apple_02" if v3 else OBJECT_PATH
+    scenario = data.get("randomization", {}).get("scenario")
+    ambidextrous = scenario == "ambidextrous_v4"
+    v3 = scenario in ("things_v3", "ambidextrous_v4")
+    object_path = ("/World/Task/Things/lemon1" if ambidextrous else
+                   "/World/Task/Things/apple_02" if v3 else OBJECT_PATH)
     if (data.get("schema_version") != 1 or data["parameters"]["object_prim_path"] != object_path
             or data["parameters"]["container_prim_path"] != CONTAINER_PATH):
         raise ValueError("Sorting collection requires schema 1 and the configured object pool")
@@ -29,15 +32,18 @@ def load_configuration(path, repository):
     pool = config["pool_assets"]
     expected = ({"apple_02.usd", "lunchbag.usd", "ketchup_bottle.usd", "avocado.usd", "orange2.usd"} if v3
                 else {"avocado.usd", "lemon1.usd", "orange2.usd"})
+    if ambidextrous:
+        expected = {"lemon1.usd", "orange2.usd", "lunchbag.usd", "ketchup_bottle.usd"}
     if v3 and (config.get("pool_path") != "/World/Task/Things"
                or config.get("parking_path") != "/World/Task/ThingsParking"):
         raise ValueError("V3 requires the pre-authored things pool and parking")
-    if (not isinstance(assets, list) or len(assets) != (5 if v3 else 3)
+    if (not isinstance(assets, list) or len(assets) != len(expected)
             or {Path(a).name for a in assets} != expected
-            or not isinstance(pool, list) or len(pool) != (5 if v3 else 4) or len(set(pool)) != len(pool)
+            or not isinstance(pool, list) or len(pool) != (len(expected) if v3 else 4) or len(set(pool)) != len(pool)
             or not set(assets).issubset(pool)
             or {Path(a).name for a in pool} != (expected if v3 else expected | {"pomegranate.usd"})):
-        raise ValueError("V3 requires apple_02/lunchbag/ketchup_bottle/avocado/orange2 in its selection and physical pool" if v3
+        raise ValueError("Ambidextrous V4 requires lemon1/orange2/lunchbag/ketchup_bottle in its local pool" if ambidextrous else
+                         "V3 requires apple_02/lunchbag/ketchup_bottle/avocado/orange2 in its selection and physical pool" if v3
                          else "Select avocado/lemon/orange only; keep all four physical pool assets")
     root = Path(repository).resolve()
     for asset in pool:
@@ -183,7 +189,7 @@ class SceneRandomizer:
                 Usd.TimeCode.Default()) != Gf.Matrix4d(1):
             raise ValueError("Sorting /World must have an identity world transform")
         self.rng = random.Random(self.config["seed"])
-        self.v3 = self.config.get("scenario") == "things_v3"
+        self.v3 = self.config.get("scenario") in ("things_v3", "ambidextrous_v4")
         self.assets = {a: asset_geometry(self.repository / a, allow_child_body=self.v3)
                        for a in self.config["pool_assets"]}
         from pxr import UsdPhysics
@@ -367,7 +373,7 @@ class SceneRandomizer:
                              "container_position": list(container_position), "container_offset": offset,
                              "container_transform": [list(row) for row in transform]}
         if self.v3:
-            self.last_episode.update(scenario="things_v3", layout=layout, placement_regions=regions)
+            self.last_episode.update(scenario=self.config["scenario"], layout=layout, placement_regions=regions)
         return self.last_episode
 
 

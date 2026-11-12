@@ -231,7 +231,7 @@ class IsaacTaskSampler:
 
 
 class BfmTaskStatePublisher(Node):
-    """Publish at native Isaac updates, independently of the 10 Hz policy."""
+    """Publish measured task state at completed physics updates, independently of policy."""
 
     def __init__(self, stage, sampler_factory=IsaacTaskSampler, **kwargs):
         super().__init__("bfm_task_state", **kwargs)
@@ -311,8 +311,8 @@ class BfmTaskStatePublisher(Node):
             import json
             from std_msgs.msg import String
             try:
-                # Only success uses completed physics time. Keep /bfm/state's
-                # existing timestamp and publication contract unchanged.
+                # State and success use completed physics time; a looping USD
+                # timeline must not suppress measured observations or dwell.
                 seconds = (self.success_time_source() if self.success_time_source is not None
                            else simulation_seconds)
                 result = self.success_detector.measure(self.sampler, seconds)
@@ -373,6 +373,7 @@ def start_task_state_publisher(*, episode=None, **parameters):
         stopped = False
         phase = "waiting_for_physics"
         reset_time = None
+        wait_reason = None
 
         def stop(self):
             if self.stopped:
@@ -404,6 +405,11 @@ def start_task_state_publisher(*, episode=None, **parameters):
     handle.node = node  # Inspect sampler.resolved_body_counts after Play in Script Editor.
     handle.object_pool = object_pool
 
+    def report_wait(reason):
+        if reason != handle.wait_reason:
+            node.get_logger().info(f'[BFM STATE] Waiting: {reason}; object={node.config["object_prim_path"]}')
+            handle.wait_reason = reason
+
     def timeline_event(event):
         if not handle.stopped and event.type == int(omni.timeline.TimelineEventType.STOP):
             handle.simulation_view = None
@@ -411,6 +417,7 @@ def start_task_state_publisher(*, episode=None, **parameters):
             node.reset()
             handle.phase = "waiting_for_physics"
             handle.reset_time = None
+            handle.wait_reason = None
             if object_pool is not None:
                 object_pool.release()
         # PAUSE retains the current episode and valid views.
@@ -441,6 +448,7 @@ def start_task_state_publisher(*, episode=None, **parameters):
                             object_pool.release()
                         handle.simulation_view = None
                         handle.reported_ready = False
+                    report_wait('SimulationManager physics view is not ready')
                     return
                 if handle.simulation_view is not None and handle.simulation_view is not view:
                     if object_pool is not None and object_pool.applied:
@@ -448,7 +456,9 @@ def start_task_state_publisher(*, episode=None, **parameters):
                     node.reset()  # Manager rebuilt physics; discard old body views.
                     handle.reported_ready = False
                 handle.simulation_view = view
-                now = timeline.get_current_time()
+                now = SimulationManager.get_simulation_time()
+                if not isinstance(now, (int, float)) or not math.isfinite(now) or now < 0:
+                    raise ValueError(f'Invalid completed PhysX simulation time: {now!r}')
                 if object_pool is not None:
                     if not object_pool.applied:
                         object_pool.bind(view)
@@ -461,22 +471,32 @@ def start_task_state_publisher(*, episode=None, **parameters):
                         # frame countdown, sleep, or arbitrary elapsed-time delay.
                         handle.phase = "settling"
                         return
-                    if now <= handle.reset_time or not object_pool.parking_settled():
+                    if now <= handle.reset_time:
+                        report_wait('a completed physics step after live reset')
+                        return
+                    if not object_pool.parking_settled():
+                        report_wait('parked bodies to settle below 0.005 m/s and 0.005 rad/s')
                         return
                 node.publish_at(now, simulation_view=view,
                                 body_views=object_pool.bodies if object_pool is not None else None)
                 handle.phase = "playing"
+                handle.wait_reason = None
                 if not handle.reported_ready:
                     node.get_logger().info("[BFM] Physics ready. /bfm/state publisher active.")
                     handle.reported_ready = True
             except Exception as error:
+                failed_phase = handle.phase
                 handle.phase = "failed"
                 handle.reported_ready = False
                 node.enabled = False
                 if object_pool is not None:
                     object_pool.release()
                 node.reset()
-                node.get_logger().error(f"Task-state publication disabled: {error}")
+                node.get_logger().error(
+                    f"Task-state publication disabled in {failed_phase}: {type(error).__name__}: {error}; "
+                    f"object={node.config['object_prim_path']}, container={node.config['container_prim_path']}. "
+                    "Check PhysX body resolution/reset, then STOP and reload the scene. "
+                    "No target-derived or zero state will be published.")
     try:
         object_pool = PhysicsObjectPool(stage, episode, log=lambda msg: node.get_logger().info(msg)) if episode is not None else None
         handle.object_pool = object_pool

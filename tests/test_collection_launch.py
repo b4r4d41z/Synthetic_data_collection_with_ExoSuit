@@ -59,11 +59,11 @@ print('%1')
         titles = [c[-1] for c in calls if c[0] == 'select-pane' and '-T' in c]
         self.assertEqual(titles[:3], ['ARM / JOINTS', 'HAND / GRIPPERS', 'RECORDING'])
         splits = [c for c in calls if c[0] == 'split-window']
-        self.assertEqual([c[1] for c in splits], ['-h', '-h', '-v', '-v'])
+        self.assertEqual([c[1] for c in splits], ['-h', '-h', '-v'])
         self.assertIn(['select-layout', '-t', 'isaac_control:main', 'even-horizontal'], calls)
         self.assertTrue(any(c[0] == 'new-window' and 'backend' in c for c in calls))
         commands = [c[-2] for c in calls if c[0] == 'send-keys']
-        for node in ('arm_control_node', 'eff_control_node', 'sim_recorder_node', 'bfm_action_gateway_node', 'bfm_action_executor_node'):
+        for node in ('arm_control_node', 'eff_control_node', 'sim_recorder_node', 'bfm_action_gateway_node'):
             self.assertEqual(sum(node in c for c in commands), 1)
         self.assertIn(['select-window', '-t', 'isaac_control:main'], calls)
         text = (ROOT/'start_isaac_control.sh').read_text()
@@ -139,7 +139,7 @@ python3 -c 'import os,json; print(json.dumps(dict(os.environ)))'
             self.assertEqual(events, ['update', 'stop', 'open'])
             timeline.play.assert_not_called()
 
-    def test_policy_launcher_runs_common_executor_and_hands_with_project_environment(self):
+    def test_policy_launcher_runs_direct_bridge_and_hands_with_project_environment(self):
         self.executable('ros2', f'''#!{sys.executable}
 import json, os, sys
 print(json.dumps(dict(args=sys.argv[1:], mode=os.environ['BFM_COLLECTION_MODE'],
@@ -151,11 +151,28 @@ print(json.dumps(dict(args=sys.argv[1:], mode=os.environ['BFM_COLLECTION_MODE'],
         calls = [json.loads(line) for line in result.stdout.splitlines()]
         self.assertEqual({tuple(c['args']) for c in calls}, {
             ('run', 'isaac_eff_control', 'eff_control_node'),
-            ('run', 'isaac_eff_control', 'bfm_action_executor_node')})
+            ('run', 'isaac_eff_control', 'bfm_policy_bridge_node')})
         self.assertTrue(all(c['mode']=='1' and c['domain']=='0' for c in calls))
         self.assertFalse(self.log.exists())  # No tmux collection workers.
         self.setup.unlink()
         self.assertNotEqual(self.run_script('start_bfm_policy_control.sh').returncode, 0)
+
+    def test_collection_and_policy_launchers_refuse_competing_control_locks(self):
+        import fcntl
+        runtime = self.root/'runtime'; runtime.mkdir()
+        self.env['XDG_RUNTIME_DIR'] = str(runtime)
+        lock = runtime/f'synthetic-control-{os.getuid()}.lock'
+        with lock.open('w') as descriptor:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            for script in ('start_isaac_control.sh','start_bfm_policy_control.sh'):
+                result = self.run_script(script)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('control', result.stderr)
+            self.assertFalse(self.log.exists())
+            fcntl.flock(descriptor, fcntl.LOCK_SH)
+            result = self.run_script('start_bfm_policy_control.sh')
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('already running', result.stderr)
 
     def test_existing_session_is_interrupted_and_preserved_if_not_finished(self):
         self.executable('sleep', '#!/bin/bash\nexit 0\n')
@@ -262,12 +279,12 @@ class StatusTests(unittest.TestCase):
         with patch.dict(os.environ, BFM_COLLECTION_MODE='1'):
             module = harness.load_module('status_held_hand',
                 'exo2isaacsim/src/isaac_eff_control/isaac_eff_control/eff_control_node.py')
-        self.assertEqual(module.HAND_INPUT_TOPIC, '/bfm/command/hand_target')
+        self.assertEqual(module.HAND_INPUT_TOPIC, '/robot/command/hand_target')
         node = module.IsaacEffControlNode()
         msg = harness.Message(); msg.left_hand_position = msg.right_hand_position = [0.]*6
         node.hand_callback(msg)
-        self.assertEqual(node.flow.state, 'WAITING')
-        node.subscriptions['/robot/command/hand_target'].callback(msg)
+        self.assertEqual(node.flow.state, 'ACTIVE')
+        self.assertNotIn('/bfm/command/hand_target', node.subscriptions)
         self.assertEqual(node.flow.state, 'ACTIVE')
         node.timer_callback()
         self.assertEqual(len(node.pub_left.publish.call_args.args[0].position), 16)

@@ -155,5 +155,5 @@ class CompositionTests(unittest.TestCase):
                                  UsdPhysics.CollisionAPI(p).GetCollisionEnabledAttr().Get() for p in prims),127)
             self.assertEqual(stage.GetRootLayer().subLayerPaths,
                              (['fruit_pool.usda'] if name=='v1_manipulation_one_side_right' else
-                              ['../sorting_experimental/things_pool.usda','../v1_manipulation_one_side_right/stage_sorting_v1.usd']
+                              ['things_pool.usda','../v1_manipulation_one_side_right/stage_sorting_v1.usd']
                               if name=='v1_manipulation_ambidextrous' else ['things_pool.usda','stage_sorting_v2.usda']))

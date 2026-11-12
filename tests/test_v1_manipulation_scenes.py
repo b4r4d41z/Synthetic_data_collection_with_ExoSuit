@@ -103,18 +103,28 @@ class PreservationTests(unittest.TestCase):
         current = Usd.Stage.Open(str(EXPERIMENTAL/'stage_sorting_v3.usda'))
         compare_prims(self, baseline, current)
 
-    def test_same_experimental_pool_and_randomization_configuration(self):
+    def test_independent_four_object_pool_preserves_other_randomization_settings(self):
         a = json.loads((AMBI/'sorting_scene.json').read_text())
         b = json.loads((EXPERIMENTAL/'sorting_scene_v3.json').read_text())
-        self.assertEqual(a['randomization'], b['randomization'])
-        self.assertEqual(a['parameters'], b['parameters'])
-        self.assertEqual(a['provenance']['fruit_pool_asset'], b['provenance']['fruit_pool_asset'])
-        self.assertEqual(a['provenance']['fruit_pool_sha256'], b['provenance']['fruit_pool_sha256'])
-        self.assertEqual(a['provenance']['scene_sha256'],
-                         hashlib.sha256((AMBI/'stage_manipulation.usda').read_bytes()).hexdigest())
+        expected = {'lemon1','orange2','lunchbag','ketchup_bottle'}
+        self.assertEqual({Path(x).stem for x in a['randomization']['object_assets']}, expected)
+        self.assertEqual(a['randomization']['object_assets'], a['randomization']['pool_assets'])
+        for key in b['randomization']:
+            if key not in ('object_assets','pool_assets','collection_objects_note','scenario'):
+                self.assertEqual(a['randomization'][key], b['randomization'][key], key)
+        self.assertEqual(a['parameters']['object_prim_path'],'/World/Task/Things/lemon1')
+        for key in b['parameters']:
+            if key != 'object_prim_path': self.assertEqual(a['parameters'][key], b['parameters'][key])
+        self.assertEqual(a['provenance']['fruit_pool_asset'], 'models/stages/'+AMBI.name+'/things_pool.usda')
+        for key, file in [('fruit_pool_sha256','things_pool.usda'),('scene_sha256','stage_manipulation.usda')]:
+            self.assertEqual(a['provenance'][key], hashlib.sha256((AMBI/file).read_bytes()).hexdigest())
+        self.assertNotIn('sorting_experimental', (AMBI/'things_pool.usda').read_text())
+        self.assertIn('@things_pool.usda@', (AMBI/'stage_manipulation.usda').read_text())
+        self.assertGreater(Usd.Stage.Open(str(AMBI/'stage_manipulation.usda')).GetEndTimeCode(), 0)
 
 
 class AmbidextrousTests(unittest.TestCase):
+    object_names = ('lemon1','orange2','lunchbag','ketchup_bottle')
     def setUp(self):
         self.stage = Usd.Stage.Open(str(AMBI/'stage_manipulation.usda'))
         self.data = v3.runtime.load_configuration(AMBI/'sorting_scene.json', ROOT)
@@ -131,10 +141,45 @@ class AmbidextrousTests(unittest.TestCase):
     test_invalid_placements = v3.SortingV3Tests.test_unsupported_and_environment_obstacle_placements_fail_without_changing_plan
     test_reset = v3.SortingV3Tests.test_same_lifecycle_and_live_reset_six_actors_without_usd_edits
 
-    def test_seeded_plans_match_existing_experimental_randomizer(self):
+    def test_local_pool_rejects_extra_missing_and_wrong_object_identities(self):
+        from copy import deepcopy
+        import tempfile
+        for fault in ('missing','duplicate','apple','avocado'):
+            data = deepcopy(self.data)
+            for key in ('object_assets','pool_assets'):
+                assets = data['randomization'][key]
+                if fault == 'missing': assets.pop()
+                elif fault == 'duplicate': assets[-1] = assets[0]
+                elif fault == 'apple': assets[-1] = 'models/addons/objects/objaverse/apple_02.usd'
+                else: assets[-1] = 'models/addons/objects/fruits_veggies/avocado.usd'
+            with self.subTest(fault=fault), tempfile.NamedTemporaryFile(mode='w',suffix='.json') as f:
+                json.dump(data,f);f.flush()
+                with self.assertRaisesRegex(ValueError,'Ambidextrous V4 requires'):
+                    v3.runtime.load_configuration(f.name, ROOT)
+
+    def test_success_binds_each_selected_local_object(self):
+        from isaac_eff_control.fruit_success import LiveFruitSuccess
+        from types import SimpleNamespace
+        class View:
+            def __init__(self, position): self.position = position
+            def get_transforms(self): return [[*self.position,0,0,0,1]]
+            def get_velocities(self): return [[0.]*6]
+        for asset,path in self.planner.pool.items():
+            detector = LiveFruitSuccess(self.stage,dict(object_prim_path=path,
+                container_prim_path='/World/container_b04'),'episode-'+Path(asset).stem)
+            result = detector.measure(SimpleNamespace(views={
+                'object_prim_path': View([100,100,2]),
+                'container_prim_path': View([1,4,.75])}), 1.)
+            self.assertEqual(result['object_prim_path'],path)
+            self.assertEqual(result['episode_id'],'episode-'+Path(asset).stem)
+            self.assertFalse(result['success'])
+            self.assertGreater(len(detector.vertices),3)
+
+    def test_seeded_plans_match_shared_bidirectional_randomizer(self):
         stage = Usd.Stage.Open(str(EXPERIMENTAL/'stage_sorting_v3.usda'))
-        data = v3.runtime.load_configuration(EXPERIMENTAL/'sorting_scene_v3.json', ROOT)
+        data = v3.runtime.load_configuration(AMBI/'sorting_scene.json', ROOT)
         data['randomization']['seed'] = 7
+        stage = Usd.Stage.Open(str(AMBI/'stage_manipulation.usda'))
         other = v3.runtime.SceneRandomizer(stage, data, ROOT)
         for _ in range(30):
             a, b = self.planner.randomize(), other.randomize()

@@ -2,6 +2,7 @@
 
 import os
 import threading
+from time import monotonic
 
 import rclpy
 import zmq
@@ -75,6 +76,10 @@ class Ros2Publisher(Node):
         self.socket.bind(ZMQ_ENDPOINT)
 
         self.running = True
+        self.input_counts = {kind: 0 for kind in ('arm', 'hand', 'recording')}
+        self.input_times = {}
+        self.input_health = {}
+        self.diagnostics_timer = self.create_timer(1.0, self.report_input)
         self.thread = threading.Thread(
             target=self.receive_loop,
             daemon=True,
@@ -92,6 +97,9 @@ class Ros2Publisher(Node):
             try:
                 payload = self.socket.recv_json()
                 kind = payload.get("kind", "hand")
+                if kind in self.input_counts:
+                    self.input_counts[kind] += 1
+                    self.input_times[kind] = monotonic()
 
                 if kind == "hand":
                     self.publish_hand(payload)
@@ -110,6 +118,20 @@ class Ros2Publisher(Node):
                 self.get_logger().error(
                     f"Bridge processing error: {error}"
                 )
+
+    def report_input(self):
+        """Diagnostics only: never drop, gate or synthesize bridge messages."""
+        now = monotonic()
+        for kind, source in (('arm', '/kuavo_arm_traj'), ('hand', '/control_robot_hand_position')):
+            received = self.input_times.get(kind)
+            active = received is not None and now - received <= 1.0
+            if self.input_health.get(kind) != active:
+                self.input_health[kind] = active
+                log = self.get_logger().info if active else self.get_logger().warning
+                log(f'[EXO BRIDGE] {kind} {"ACTIVE" if active else "NO RECENT INPUT"}; '
+                    f'ZMQ received counts={dict(self.input_counts)}. '
+                    f'If idle while the other stream advances, check ROS1 {source} '
+                    'and ros1_receiver before the ROS2 mapper.')
 
     def publish_hand(self, payload):
         left = payload.get("left_hand_position", [])

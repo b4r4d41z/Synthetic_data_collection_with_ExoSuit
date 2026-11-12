@@ -52,7 +52,7 @@ class PhysicsObjectPool:
         count = 6 if episode.get('scenario') == 'things_v3' else 5
         if set(self.targets) != expected or len(expected) != count:
             raise ValueError('Episode must identify five distinct things and one container' if count == 6
-                             else 'Episode must identify four distinct fruits and one container')
+                             else 'Episode must identify four distinct manipulation objects and one container')
         for path, pose in self.targets.items():
             if (len(pose) != 7 or not all(math.isfinite(v) for v in pose)
                     or not math.isclose(math.hypot(*pose[3:]), 1., abs_tol=1e-6)):
@@ -140,7 +140,9 @@ class PhysicsObjectPool:
                              native_tensor(transforms, [0], indices=True))
             bodies[path] = body
         self.simulation_view, self.bodies, self.buffers = simulation_view, bodies, buffers
-        self.log('[BFM PHYSX] things pool resolved: 5/5; container resolved: 1'
+        self.log('[BFM PHYSX] things pool resolved: 4/4; container resolved: 1'
+                 if self.episode.get('scenario') == 'ambidextrous_v4' else
+                 '[BFM PHYSX] things pool resolved: 5/5; container resolved: 1'
                  if self.episode.get('scenario') == 'things_v3' else
                  '[BFM PHYSX] fruit pool resolved: 4/4; container resolved: 1')
 

@@ -35,7 +35,7 @@ def scenario(name, repository=None):
         pool = Path(repository)/data['provenance']['fruit_pool_asset']
         if not pool.is_file():raise ValueError(f'Missing scenario pool: {pool}')
         if name == 'v1_manipulation_ambidextrous':
-            for dependency in ('sorting_experimental/things_pool.usda', 'v1_manipulation_one_side_right/stage_sorting_v1.usd'):
+            for dependency in ('v1_manipulation_ambidextrous/things_pool.usda', 'v1_manipulation_one_side_right/stage_sorting_v1.usd'):
                 if not (Path(repository)/'models/stages'/dependency).is_file():
                     raise ValueError(f'Missing scene dependency: {dependency}')
         if name == 'sorting_experimental':

@@ -1,4 +1,4 @@
-"""15 Hz canonical decisions after arm mapping and before hand interpolation.
+"""Passive 15 Hz samples after arm mapping and before hand interpolation.
 
 Source callbacks only buffer; simulation ticks publish canonical decisions.
 Run with the default single-threaded executor so a tick is one snapshot.
@@ -9,9 +9,7 @@ import math
 import os
 import json
 from std_msgs.msg import String
-import time
 from uuid import uuid4
-from .bfm_contract import executor_metadata
 
 import rclpy
 from rclpy.node import Node
@@ -35,10 +33,8 @@ class BfmActionGateway(Node):
             "bfm_collection_mode", collection_enabled()).value
         self.producer_session_id = uuid4().hex
         self.action_id = 0
-        self.received = {}
         self.playing = False
         self.boundary = None
-        self.source_timeout = executor_metadata()["configuration"]["source_timeout_wall_sec"]
         self.arm = None
         self.hand = None
         if not self.enabled:
@@ -54,7 +50,7 @@ class BfmActionGateway(Node):
             reliability=ReliabilityPolicy.BEST_EFFORT,
         )
         self.action_pub = self.create_publisher(BfmAction, ACTION_TOPIC, reliable)
-        self.create_subscription(JointState, ARM_SOURCE_TOPIC, self.arm_callback, reliable)
+        self.create_subscription(JointState, ARM_SOURCE_TOPIC, self.arm_callback, hand_qos)
         self.create_subscription(
             RobotHandPosition, os.getenv("HAND_INPUT_TOPIC", RAW_HAND_TOPIC),
             self.hand_callback, hand_qos,
@@ -67,7 +63,7 @@ class BfmActionGateway(Node):
                                  QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1000,
                                             reliability=ReliabilityPolicy.BEST_EFFORT))
         self.get_logger().info(
-            "BFM v4: buffered sources -> 15 Hz /bfm/action -> executor"
+            "BFM v4 decoupled: passive 15 Hz /bfm/action; direct control is independent"
         )
 
     def episode_callback(self, msg):
@@ -76,7 +72,6 @@ class BfmActionGateway(Node):
             return
         if event.get('boundary_id') != self.boundary or event['phase'] in ('stopped', 'failed', 'closed'):
             self.arm = self.hand = None
-            self.received.clear()
             self.policy_clock = SimPolicyClock()
         self.boundary = event.get('boundary_id')
         self.playing = event['phase'] == 'playing'
@@ -86,7 +81,6 @@ class BfmActionGateway(Node):
         now = stamp.sec * 1_000_000_000 + stamp.nanosec
         if self.policy_clock.last_ns is not None and now < self.policy_clock.last_ns:
             self.arm = self.hand = None
-            self.received.clear()
         if self.policy_clock.advance(stamp.sec * 1_000_000_000 + stamp.nanosec):
             self.policy_tick(stamp)
 
@@ -101,7 +95,6 @@ class BfmActionGateway(Node):
             )
             return
         self.arm = deepcopy(msg)
-        self.received["arm"] = time.monotonic()
 
     def hand_callback(self, msg):
         values = [*msg.left_hand_position, *msg.right_hand_position]
@@ -114,7 +107,6 @@ class BfmActionGateway(Node):
             )
             return
         self.hand = deepcopy(msg)
-        self.received["hand"] = time.monotonic()
 
     def policy_tick(self, simulation_stamp=None):
         if not self.enabled or not self.playing:
@@ -126,9 +118,6 @@ class BfmActionGateway(Node):
                 f"BFM waiting for valid {' and '.join(missing)} input; no decision forwarded",
                 throttle_duration_sec=2.0,
             )
-            return
-        if any(time.monotonic() - self.received.get(k, -float("inf")) > self.source_timeout
-               for k in ("arm", "hand")):
             return
         if self.count_publishers(ACTION_TOPIC) > 1:
             raise RuntimeError("Competing /bfm/action publisher")
@@ -149,8 +138,8 @@ class BfmActionGateway(Node):
         action.right_arm_joint_names = list(RIGHT_ARM_JOINTS)
         action.right_arm_target = [positions[name] for name in RIGHT_ARM_JOINTS]
         action.right_hand_target = [float(value) for value in hand.right_hand_position]
-        # Only canonical actions enter the common executor.
-        # The decision timestamp is not a controller execution acknowledgement.
+        # Observation of the latest valid operator targets, never a control path
+        # or an acknowledgement. Full-rate source/controller streams are recorded.
         self.action_pub.publish(action)
 
 
