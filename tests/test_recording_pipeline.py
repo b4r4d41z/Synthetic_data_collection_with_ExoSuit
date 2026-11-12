@@ -136,7 +136,7 @@ def ros_stubs(overrides):
     modules["dynamic_biped.msg"].BfmAction = Message
     modules["dynamic_biped.msg"].BfmState = Message
     modules["dynamic_biped.msg"].robotHandPosition = Message
-    for name in ("Subscriber", "loginfo", "logwarn_throttle"):
+    for name in ("Subscriber", "loginfo", "logwarn_throttle", "logerr", "logerr_throttle", "on_shutdown"):
         setattr(modules["rospy"], name, Mock())
     zmq = modules["zmq"]
     zmq.Context = Mock()
@@ -185,6 +185,13 @@ class RecordingPipelineTests(unittest.TestCase):
             patcher = patch.object(module, attribute)
             setattr(self, target, patcher.start())
             self.addCleanup(patcher.stop)
+        # Existing serialization tests do not run workers. Real socket lifecycle
+        # and thread ownership are exercised separately in test_bridge_stability.
+        def worker(**kwargs):
+            thread = Mock()
+            thread.start.side_effect = kwargs['target'].__self__._ready.set
+            return thread
+        self.thread.side_effect = worker
         self.process = Mock(pid=12345)
         self.process.poll.return_value = None
         self.process.wait.return_value = 0
@@ -555,21 +562,19 @@ class RecordingPipelineTests(unittest.TestCase):
     def test_recording_round_trip_uses_existing_socket_and_dispatch(self):
         receiver = self.ros1.Ros1Receiver()
         publisher = self.ros2.Ros2Publisher()
-        socket = receiver.socket
         self.assertEqual(self.modules["rospy"].Subscriber.call_count, 3)
         for enabled in (False, True, False):
             receiver.recording_callback(Bool(enabled))
-        payloads = [c.args[0] for c in socket.send_json.call_args_list]
+        payloads = [receiver.pending.get_nowait() for _ in range(3)]
         self.assertEqual(payloads, [
             {"kind": "recording", "enabled": enabled}
             for enabled in (False, True, False)
         ])
-        publisher.socket.recv_json.side_effect = payloads
-        self.modules["rclpy"].ok.side_effect = [True, True, True, False]
-        publisher.receive_loop()
+        for payload in payloads:
+            publisher.process_payload(payload)
         messages = publisher.recording_publisher.publish.call_args_list
         self.assertEqual([c.args[0].data for c in messages], [False, True, False])
-        self.assertEqual(self.modules["zmq"].Context.instance.call_count, 2)
+        self.modules["zmq"].Context.assert_not_called()  # Sockets exist only in workers.
 
     def test_recording_qos_is_retained_reliable_and_arm_hand_remain_best_effort(self):
         publisher = self.ros2.Ros2Publisher()
@@ -601,14 +606,14 @@ class RecordingPipelineTests(unittest.TestCase):
         msg.left_hand_position = [1, 2, 3, 4, 5, 6]
         msg.right_hand_position = [6, 5, 4, 3, 2, 1]
         receiver.hand_callback(msg)
-        publisher.publish_hand(receiver.socket.send_json.call_args.args[0])
+        publisher.publish_hand(receiver.pending.get_nowait())
         hand = publisher.hand_publisher.publish.call_args.args[0]
         self.assertEqual(hand.left_hand_position, msg.left_hand_position)
         self.assertEqual(hand.right_hand_position, msg.right_hand_position)
         msg.name, msg.position = ["zarm_r4_joint"], [-30.0]
         msg.velocity, msg.effort = [0.2], [1.0]
         receiver.arm_callback(msg)
-        publisher.publish_arm(receiver.socket.send_json.call_args.args[0])
+        publisher.publish_arm(receiver.pending.get_nowait())
         arm = publisher.arm_publisher.publish.call_args.args[0]
         for name in ("name", "position", "velocity", "effort"):
             self.assertEqual(getattr(arm, name), getattr(msg, name))

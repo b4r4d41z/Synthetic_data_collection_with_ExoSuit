@@ -8,13 +8,13 @@
   "result_schema_version": 1,
   "terminal": false,
   "end_reason": "user_stop",
-  "success": false,
+  "success": true,
   "recording_code": {
     "repository": "https://github.com/b4r4d41z/Synthetic_data_collection_with_ExoSuit",
     "status": "available",
-    "commit_sha": "16737dccabde9fd327986e53d71eede7978ca01a",
+    "commit_sha": "50c843270c5532d13a75c606937a8b33ff9cb434",
     "dirty": true,
-    "dirty_sha256": "24e3af848be7d0109ddf73b0e0a86f5b84eb17d40868e1c4e997c66f29c95d3a",
+    "dirty_sha256": "3a8f18350b1bc4fa8a644f3aff9a8f4aa74b22909d8eea58b9ddc61206cd3b61",
     "executing_module_sha256": "2c60546b73f9f456cde3ed08324bb981511a7f614cd84f92d73ad68ef0220b1a",
     "dirty_digest_format": "sha256-length-prefixed-head-diff-and-sorted-untracked-v1"
   },
@@ -37,7 +37,7 @@
     "/bfm/episode": "identity/lifecycle events have no time header; use MCAP log time; recording events add system_wall_time event_wall_time",
     "controller_application_time": "not measured by action/source headers; use measured state for response analysis"
   },
-  "created_at": "2026-11-12T05:57:24.568958+00:00",
+  "created_at": "2026-11-12T07:15:04.167144+00:00",
   "time": {
     "synchronization_source": "rosbag_record_timestamp",
     "header_stamp": "source_native"
@@ -229,7 +229,7 @@
       "arm": "direct mapped bounded targets at source rate; no added trajectory generator",
       "hand_hz": 50.0,
       "hand_clock": "steady_wall_time",
-      "physics_hz": 300.0,
+      "physics_hz": 60,
       "execution_acknowledgements": false,
       "sampling_independent_of_control": true,
       "source_freshness": "no command watchdog; latest valid snapshot may repeat; inspect full-rate source streams",
@@ -449,7 +449,7 @@
       },
       "reference_prim_path": "/",
       "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-      "object_prim_path": "/World/Task/Things/lunchbag",
+      "object_prim_path": "/World/Task/Things/ketchup_bottle",
       "container_prim_path": "/World/container_b04",
       "goal_local_center": [
         -0.08494214117424082,
@@ -585,21 +585,21 @@
       "runtime_verified": false
     },
     "episode": {
-      "episode_id": "6cc1848cd9184d92ba266280ed552e70",
-      "asset": "lunchbag.usd",
-      "asset_path": "models/addons/objects/objaverse/lunchbag.usd",
-      "object_prim_path": "/World/Task/Things/lunchbag",
+      "episode_id": "0ca9927da0484225895e6fbdd06c8840",
+      "asset": "ketchup_bottle.usd",
+      "asset_path": "models/addons/objects/hope/ketchup_bottle.usd",
+      "object_prim_path": "/World/Task/Things/ketchup_bottle",
       "position": [
-        1.014470094073925,
-        4.389531339274613,
-        0.8274996360129149
+        1.0227387398508658,
+        3.9919254105621644,
+        0.8293035355976272
       ],
-      "yaw": 0.6528262609718247,
+      "yaw": -0.6300361098821594,
       "orientation_xyzw": [
-        0.0,
-        0.0,
-        0.32064762072295916,
-        0.9471985553856728
+        -0.0,
+        -0.0,
+        -0.3098336377497049,
+        0.9507907850409493
       ],
       "body_poses": {
         "/World/Task/Things/lemon1": [
@@ -621,26 +621,26 @@
           1.0
         ],
         "/World/Task/Things/lunchbag": [
-          1.014470094073925,
-          4.389531339274613,
-          0.8274996360129149,
-          0.0,
-          0.0,
-          0.32064762072295916,
-          0.9471985553856728
-        ],
-        "/World/Task/Things/ketchup_bottle": [
-          106.0,
+          104.0,
           100.0,
-          2.0043039034307,
+          2.0024999986588954,
           0.0,
           0.0,
           0.0,
           1.0
         ],
+        "/World/Task/Things/ketchup_bottle": [
+          1.0227387398508658,
+          3.9919254105621644,
+          0.8293035355976272,
+          -0.0,
+          -0.0,
+          -0.3098336377497049,
+          0.9507907850409493
+        ],
         "/World/container_b04": [
-          1.107754081048604,
-          4.091989574183601,
+          1.1428329243975308,
+          4.479385398627401,
           0.7499995231628418,
           0.0,
           0.0,
@@ -659,21 +659,21 @@
           100.0,
           1.9300598623693803
         ],
-        "/World/Task/Things/ketchup_bottle": [
-          106.0,
+        "/World/Task/Things/lunchbag": [
+          104.0,
           100.0,
-          2.0043039034307
+          2.0024999986588954
         ]
       },
       "container_prim_path": "/World/container_b04",
       "container_position": [
-        1.107754081048604,
-        4.091989574183601,
+        1.1428329243975308,
+        4.479385398627401,
         0.7499995231628418
       ],
       "container_offset": [
-        0.017945497789021436,
-        -0.3494567301376881,
+        0.053024341137948294,
+        0.037939094306111976,
         0.0
       ],
       "container_transform": [
@@ -696,14 +696,14 @@
           0.0
         ],
         [
-          1.107754081048604,
-          4.091989574183601,
+          1.1428329243975308,
+          4.479385398627401,
           0.7499995231628418,
           1.0
         ]
       ],
       "scenario": "ambidextrous_v4",
-      "layout": "B",
+      "layout": "A",
       "placement_regions": {
         "right": {
           "x_min": 0.95,
@@ -834,7 +834,7 @@
         "state_frame": "world",
         "reference_prim_path": "/",
         "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
-        "object_prim_path": "/World/Task/Things/lunchbag",
+        "object_prim_path": "/World/Task/Things/ketchup_bottle",
         "container_prim_path": "/World/container_b04",
         "goal_local_center": [
           -0.08494214117424082,
@@ -859,10 +859,10 @@
   },
   "success_evaluation": {
     "method": "collision_mesh_residence_latched_v2",
-    "episode_id": "6cc1848cd9184d92ba266280ed552e70",
-    "object_prim_path": "/World/Task/Things/lunchbag",
-    "evaluated_at": "2026-11-12T05:58:11.563510+00:00",
-    "success": false,
+    "episode_id": "0ca9927da0484225895e6fbdd06c8840",
+    "object_prim_path": "/World/Task/Things/ketchup_bottle",
+    "evaluated_at": "2026-11-12T07:15:29.274136+00:00",
+    "success": true,
     "speed_norms_linear_angular_fruit_container": [
       0.0,
       0.0,
@@ -870,14 +870,14 @@
       0.0
     ],
     "collision_bound_body_min": [
-      -0.04967624321579933,
-      -0.026156498119235035,
-      -0.07193871587514877
+      -0.02168409898877144,
+      -0.032256901264190674,
+      -0.07430390268564224
     ],
     "collision_bound_body_max": [
-      0.049734890460968025,
-      0.025892199948430058,
-      0.07247544825077057
+      0.02168409898877144,
+      0.032256901264190674,
+      0.07430390268564224
     ],
     "interior_floor_polygon": [
       [
@@ -995,24 +995,24 @@
     ],
     "interior_floor": 0.010474557988345623,
     "interior_ceiling": 0.1179291307926178,
-    "contained": false,
-    "stable": false,
+    "contained": true,
+    "stable": true,
     "measurement_valid": true,
-    "stable_duration_sim_sec": 0.0,
-    "simulation_seconds": 10.69,
+    "stable_duration_sim_sec": 0.933333333,
+    "simulation_seconds": 23.45,
     "sample_interval_sim_sec": 0.016666667,
-    "collision_vertices_tested": 492,
-    "floor_clearance_m": 5.920681900820068e-06,
-    "rim_clearance_m": -0.03683995152803349,
-    "side_clearance_m": 0.03844178205472316,
+    "collision_vertices_tested": 7770,
+    "floor_clearance_m": -0.00023414150978757,
+    "rim_clearance_m": 0.06331401698654301,
+    "side_clearance_m": 0.03008226147078054,
     "required_dwell_sim_sec": 0.3,
     "velocity_gate": false,
     "stability_semantics": "sampled_container_residence",
     "success_semantics": "episode_success_once",
-    "success_latched": false,
-    "first_success_sim_sec": null,
+    "success_latched": true,
+    "first_success_sim_sec": 22.816666667,
     "clock_domain": "isaac_physics_simulation_time",
-    "state_age_sec": 0.057740692000152194,
+    "state_age_sec": 0.026249951999488985,
     "review_required": false
   }
 }

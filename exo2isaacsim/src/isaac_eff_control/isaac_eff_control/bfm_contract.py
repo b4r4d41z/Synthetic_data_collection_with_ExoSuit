@@ -12,7 +12,8 @@ import xml.etree.ElementTree as ET
 
 CONTRACT_VERSION = 4
 HAND_CONTROL_HZ = 50.0
-PHYSICS_HZ = 300.0
+# PhysX simulation frequency in Hz. Edit only this value, then restart Isaac Sim.
+PHYSICS_HZ = 60.0
 POLICY_HZ = 15.0
 POLICY_DT = 1.0 / POLICY_HZ
 LEFT_ARM_JOINTS = (
@@ -31,6 +32,14 @@ HELD_HAND_TOPIC = "/bfm/command/hand_target"
 ACTION_TOPIC = "/bfm/action"
 STATE_TOPIC = "/bfm/state"
 RAW_HAND_TOPIC = "/robot/command/hand_target"
+
+
+def validated_physics_hz(value):
+    """PhysxSceneAPI.timeStepsPerSecond is a positive signed USD int (Hz)."""
+    if (type(value) not in (int, float) or value <= 0 or value > 2**31 - 1
+            or not math.isfinite(value) or value != int(value)):
+        raise ValueError('PHYSICS_HZ must be a finite positive whole-number Hz value representable as a USD int')
+    return int(value)
 
 
 CLOCK_DOMAINS = {
@@ -216,7 +225,7 @@ def collection_metadata(enabled, state, configuration=None):
         "control": {
             "arm": "direct mapped bounded targets at source rate; no added trajectory generator",
             "hand_hz": HAND_CONTROL_HZ, "hand_clock": "steady_wall_time",
-            "physics_hz": PHYSICS_HZ, "execution_acknowledgements": False,
+            "physics_hz": validated_physics_hz(PHYSICS_HZ), "execution_acknowledgements": False,
             "sampling_independent_of_control": True,
             "source_freshness": "no command watchdog; latest valid snapshot may repeat; inspect full-rate source streams",
             "downstream_compatibility": "requires decoupled v4 converter; incompatible with executor-based v4 acceptance joins",

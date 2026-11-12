@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import threading
 from time import monotonic
 
@@ -70,21 +71,32 @@ class Ros2Publisher(Node):
             recording_qos,
         )
 
-        context = zmq.Context.instance()
-        self.socket = context.socket(zmq.PULL)
-        self.socket.setsockopt(zmq.RCVHWM, 1)
-        self.socket.bind(ZMQ_ENDPOINT)
-
-        self.running = True
+        self._stop = threading.Event()
+        self._ready = threading.Event()
+        self._input_lock = threading.Lock()
+        self._destroyed = False
+        self.receiver_error = None
         self.input_counts = {kind: 0 for kind in ('arm', 'hand', 'recording')}
+        self.forwarded_counts = dict(self.input_counts)
+        self.invalid_counts = dict(self.input_counts)
+        self.decode_errors = 0
+        self.last_processing_error = None
+        self.input_valid = {}
         self.input_times = {}
         self.input_health = {}
+        self._reported_input = {}
+        self._reported_error = None
         self.diagnostics_timer = self.create_timer(1.0, self.report_input)
         self.thread = threading.Thread(
             target=self.receive_loop,
-            daemon=True,
+            name='exo-zmq-receiver',
         )
         self.thread.start()
+        if not self._ready.wait(5.0) or self.receiver_error:
+            self._stop.set()
+            self.thread.join()
+            super().destroy_node()
+            raise RuntimeError(f'Bridge receiver startup failed: {self.receiver_error or "startup timeout"}')
 
         self.get_logger().info(
             f"Publishing hand {ROS2_HAND_TOPIC}, arm {ROS2_ARM_TOPIC}, "
@@ -93,45 +105,96 @@ class Ros2Publisher(Node):
         )
 
     def receive_loop(self):
-        while self.running and rclpy.ok():
-            try:
-                payload = self.socket.recv_json()
-                kind = payload.get("kind", "hand")
-                if kind in self.input_counts:
-                    self.input_counts[kind] += 1
-                    self.input_times[kind] = monotonic()
+        # PUSH/PULL are not thread-safe: this worker owns the entire lifecycle.
+        # The private context never terminates a context used by another node.
+        context = socket = None
+        try:
+            context = zmq.Context()
+            socket = context.socket(zmq.PULL)
+            socket.setsockopt(zmq.RCVHWM, 1)
+            socket.bind(ZMQ_ENDPOINT)
+            self._ready.set()
+            while not self._stop.is_set() and rclpy.ok():
+                if not socket.poll(100, zmq.POLLIN) or self._stop.is_set():
+                    continue
+                try:
+                    self.process_payload(socket.recv_json(flags=zmq.NOBLOCK))
+                except zmq.Again:
+                    continue
+                except (ValueError, TypeError, UnicodeError) as error:
+                    with self._input_lock:
+                        self.decode_errors += 1
+                        self.last_processing_error = str(error)
+        except Exception as error:
+            with self._input_lock:
+                self.receiver_error = str(error)
+        finally:
+            if socket is not None:
+                socket.close(linger=0)
+            if context is not None:
+                context.term()
+            self._ready.set()
 
-                if kind == "hand":
-                    self.publish_hand(payload)
-                elif kind == "arm":
-                    self.publish_arm(payload)
-                elif kind == "recording":
-                    self.publish_recording(payload)
-                else:
-                    self.get_logger().warning(
-                        f"Dropped payload with unknown kind: {kind}"
-                    )
-
-            except zmq.error.ContextTerminated:
-                break
-            except Exception as error:
-                self.get_logger().error(
-                    f"Bridge processing error: {error}"
-                )
+    def process_payload(self, payload):
+        if not isinstance(payload, dict):
+            raise ValueError('Bridge payload must be a JSON object')
+        kind = payload.get('kind', 'hand')
+        if kind not in self.input_counts:
+            raise ValueError(f'Unknown bridge kind: {kind}')
+        with self._input_lock:
+            self.input_counts[kind] += 1
+            self.input_times[kind] = monotonic()
+        try:
+            valid = {'hand': self.publish_hand, 'arm': self.publish_arm,
+                     'recording': self.publish_recording}[kind](payload)
+        except Exception as error:
+            valid = False
+            with self._input_lock:
+                self.last_processing_error = f'{kind}: {error}'
+        with self._input_lock:
+            self.input_valid[kind] = bool(valid)
+            (self.forwarded_counts if valid else self.invalid_counts)[kind] += 1
 
     def report_input(self):
         """Diagnostics only: never drop, gate or synthesize bridge messages."""
         now = monotonic()
+        with self._input_lock:
+            counts, times, valid = dict(self.input_counts), dict(self.input_times), dict(self.input_valid)
+            forwarded, invalid = dict(self.forwarded_counts), dict(self.invalid_counts)
+            error = self.receiver_error or self.last_processing_error
+            decode_errors = self.decode_errors
+        # No socket, ROS publish or logging operation is performed under this lock.
+        try:
+            if error != self._reported_error:
+                self.get_logger().error(f'[EXO BRIDGE] processing/receiver error: {error}; '
+                                        f'decode_errors={decode_errors}; invalid={invalid}')
+                self._reported_error = error
+            self._report_streams(now, counts, times, valid, forwarded, invalid)
+        except Exception as error:
+            # A diagnostic backend failure must not terminate spin/command delivery.
+            try:
+                print(f'[EXO BRIDGE] diagnostic logging failed: {error}', file=sys.stderr)
+            except OSError:
+                pass  # A closed diagnostic stderr must not stop command delivery.
+
+    def _report_streams(self, now, counts, times, valid, forwarded, invalid):
         for kind, source in (('arm', '/kuavo_arm_traj'), ('hand', '/control_robot_hand_position')):
-            received = self.input_times.get(kind)
+            received = times.get(kind)
             active = received is not None and now - received <= 1.0
-            if self.input_health.get(kind) != active:
+            state = (active, valid.get(kind, True))
+            if self._reported_input.get(kind) != state:
                 self.input_health[kind] = active
-                log = self.get_logger().info if active else self.get_logger().warning
-                log(f'[EXO BRIDGE] {kind} {"ACTIVE" if active else "NO RECENT INPUT"}; '
-                    f'ZMQ received counts={dict(self.input_counts)}. '
-                    f'If idle while the other stream advances, check ROS1 {source} '
-                    'and ros1_receiver before the ROS2 mapper.')
+                message = (f'[EXO BRIDGE] {kind} {"ACTIVE" if active else "NO RECENT INPUT"}; '
+                           f'ZMQ received counts={counts}; forwarded={forwarded}; invalid={invalid}; '
+                           f'last_payload_valid={state[1]}. '
+                           f'Inactivity is not proof of bridge failure; check ROS1 {source} '
+                           'and ros1_receiver before the ROS2 mapper.')
+                # Jazzy caches severity by call site: never dynamically select a method.
+                if active and state[1]:
+                    self.get_logger().info(message)
+                else:
+                    self.get_logger().warning(message)
+                self._reported_input[kind] = state
 
     def publish_hand(self, payload):
         left = payload.get("left_hand_position", [])
@@ -141,7 +204,7 @@ class Ros2Publisher(Node):
             self.get_logger().warning(
                 "Dropped hand command with invalid array length"
             )
-            return
+            return False
 
         msg = RobotHandPosition()
 
@@ -157,6 +220,7 @@ class Ros2Publisher(Node):
         ]
 
         self.hand_publisher.publish(msg)
+        return True
 
     def publish_arm(self, payload):
         msg = JointState()
@@ -183,9 +247,10 @@ class Ros2Publisher(Node):
                 f"Dropped arm command: names={len(msg.name)} "
                 f"positions={len(msg.position)}"
             )
-            return
+            return False
 
         self.arm_publisher.publish(msg)
+        return True
 
     def publish_recording(self, payload):
         enabled = payload.get("enabled")
@@ -193,25 +258,30 @@ class Ros2Publisher(Node):
             self.get_logger().warning(
                 "Dropped recording state: enabled must be a boolean"
             )
-            return
+            return False
         self.recording_publisher.publish(Bool(data=enabled))
+        return True
 
     def destroy_node(self):
-        self.running = False
-        self.socket.close(linger=0)
+        if self._destroyed:
+            return
+        self._stop.set()
+        self.thread.join()  # poll is bounded; close/term happen only in its owner.
+        self._destroyed = True
         return super().destroy_node()
 
 
 def main():
     rclpy.init()
-    node = Ros2Publisher()
-
+    node = None
     try:
+        node = Ros2Publisher()
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     finally:
-        node.destroy_node()
+        if node is not None:
+            node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
 

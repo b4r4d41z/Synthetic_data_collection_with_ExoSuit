@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import queue
 import threading
 
 import rospy
@@ -34,13 +35,17 @@ ZMQ_ENDPOINT = os.getenv(
 
 class Ros1Receiver:
     def __init__(self):
-        context = zmq.Context.instance()
-        self.socket = context.socket(zmq.PUSH)
-
-        self.socket.setsockopt(zmq.SNDHWM, 1)
-        self.socket.connect(ZMQ_ENDPOINT)
-
-        self.send_lock = threading.Lock()
+        # Callbacks never touch ZeroMQ or block on a disconnected receiver.
+        self.pending = queue.Queue(maxsize=32)
+        self._stop = threading.Event()
+        self._ready = threading.Event()
+        self.sender_error = None
+        self.thread = threading.Thread(target=self.send_loop, name='exo-zmq-sender')
+        self.thread.start()
+        if not self._ready.wait(5.0) or self.sender_error:
+            self.close()
+            raise RuntimeError(f'Bridge sender startup failed: {self.sender_error or "startup timeout"}')
+        rospy.on_shutdown(self.close)
 
         self.hand_subscriber = rospy.Subscriber(
             ROS1_HAND_TOPIC,
@@ -76,8 +81,52 @@ class Ros1Receiver:
         )
 
     def send_payload(self, payload):
-        with self.send_lock:
-            self.socket.send_json(payload)
+        if self._stop.is_set():
+            return
+        if self.sender_error:
+            rospy.logerr_throttle(2.0, 'Bridge sender stopped: %s', self.sender_error)
+            return
+        try:
+            self.pending.put_nowait(payload)
+        except queue.Full:
+            rospy.logwarn_throttle(2.0, 'Bridge send queue full (32); dropped new payload; check ROS2 receiver/connection')
+
+    def send_loop(self):
+        # A mutex cannot make PUSH a thread-safe socket. Keep creation, all sends
+        # and close in this one owner, with a private context and bounded IO.
+        context = socket = None
+        try:
+            context = zmq.Context()
+            socket = context.socket(zmq.PUSH)
+            socket.setsockopt(zmq.SNDHWM, 1)
+            socket.setsockopt(zmq.IMMEDIATE, 1)
+            socket.connect(ZMQ_ENDPOINT)
+            self._ready.set()
+            while not self._stop.is_set():
+                try:
+                    payload = self.pending.get(timeout=0.1)
+                except queue.Empty:
+                    continue
+                while not self._stop.is_set():
+                    if socket.poll(100, zmq.POLLOUT):
+                        try:
+                            socket.send_json(payload, flags=zmq.NOBLOCK)
+                            break
+                        except zmq.Again:
+                            continue
+        except Exception as error:
+            self.sender_error = str(error)
+            rospy.logerr('Bridge sender stopped: %s', error)
+        finally:
+            if socket is not None:
+                socket.close(linger=0)
+            if context is not None:
+                context.term()
+            self._ready.set()
+
+    def close(self):
+        self._stop.set()
+        self.thread.join()  # No blocked send; socket/context are closed by owner.
 
     def hand_callback(self, msg):
         left = list(msg.left_hand_position)
@@ -126,8 +175,11 @@ class Ros1Receiver:
 
 def main():
     rospy.init_node("exo_ros1_receiver")
-    Ros1Receiver()
-    rospy.spin()
+    receiver = Ros1Receiver()
+    try:
+        rospy.spin()
+    finally:
+        receiver.close()
 
 
 if __name__ == "__main__":

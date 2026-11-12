@@ -50,7 +50,7 @@ class ClockTests(unittest.TestCase):
         package=ROOT/'exo2isaacsim/src/isaac_eff_control'
         for name in ('bfm_action_executor.py','bfm_executor_config.json'):
             self.assertFalse((package/'isaac_eff_control'/name).exists())
-        self.assertIn('CreateTimeStepsPerSecondAttr().Set(300)',
+        self.assertIn('CreateTimeStepsPerSecondAttr().Set(requested_hz)',
                       (package/'isaac_eff_control/collection_graph.py').read_text())
         self.assertIn('Deprecated',(ROOT/'exo2isaacsim/src/dynamic_biped/msg/BfmExecutionStatus.msg').read_text())
 

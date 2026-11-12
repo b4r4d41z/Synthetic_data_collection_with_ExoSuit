@@ -225,12 +225,21 @@ def configure_physics_clock(stage):
 
 def configure_physics_timestep(stage):
     """Existing PhysxSchema timestep attribute, session-only before PLAY."""
+    from .bfm_contract import PHYSICS_HZ, validated_physics_hz
+    requested_hz = validated_physics_hz(PHYSICS_HZ)
     from pxr import Usd, UsdPhysics, PhysxSchema
     scenes = [p for p in stage.Traverse() if p.IsA(UsdPhysics.Scene)]
     if len(scenes) != 1:
         raise RuntimeError('BFM v4 requires one existing PhysicsScene')
     with Usd.EditContext(stage, stage.GetSessionLayer()):
         api = PhysxSchema.PhysxSceneAPI.Apply(scenes[0])
-        api.CreateTimeStepsPerSecondAttr().Set(300)
-    if api.GetTimeStepsPerSecondAttr().Get() != 300:
-        raise RuntimeError('BFM physics timestep override failed')
+        try:
+            if not api or not api.CreateTimeStepsPerSecondAttr().Set(requested_hz):
+                raise RuntimeError('PhysxSceneAPI rejected the requested value')
+        except Exception as error:
+            raise RuntimeError(f'BFM physics frequency {requested_hz} Hz could not be applied: {error}') from error
+    effective_hz = api.GetTimeStepsPerSecondAttr().Get()
+    if effective_hz != requested_hz or api.GetTimeStepsPerSecondAttr().ValueMightBeTimeVarying():
+        raise RuntimeError(f'BFM physics frequency override failed: requested={requested_hz}, effective={effective_hz}')
+    print(f'[BFM PHYSICS] {scenes[0].GetPath()}: requested/effective={effective_hz} Hz; '
+          'runtime/session configuration active (not wall FPS)', flush=True)

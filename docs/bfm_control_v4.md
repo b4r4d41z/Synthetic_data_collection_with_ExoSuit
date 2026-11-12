@@ -35,8 +35,9 @@ PAUSE and the sampler. Logical inputs must contain six finite values in 0..100
 per hand. ROS header stamps remain native node/source stamps; wall scheduling
 is not a claim that every physical update occurs at 50 Hz.
 
-PhysX remains 300 Hz, authored into the session layer by the existing runtime
-configuration. The ONDEMAND physics `/clock` graph and camera pipeline are intact.
+PhysX defaults to 300 Hz; `PHYSICS_HZ` is its single configuration source (see
+below), authored into the session layer by the existing runtime configuration.
+The ONDEMAND physics `/clock` graph and camera pipeline are intact.
 The rational 15 Hz sampler retains latest valid targets and publishes only in
 playing episodes. No source-age watchdog is imposed: an unchanged/latest target
 may be sampled repeatedly after input stops. This is explicit in metadata and
@@ -199,5 +200,97 @@ For arm interruption, the mapper reports raw input silence and ROS2 bridge logs
 independent ZMQ arm/hand received counts on health transitions. These diagnostics
 never gate messages. If arms stop while hand counts advance, compare ROS1
 `/kuavo_arm_traj`, bridge input and ROS2 raw topic before blaming the sampler.
-The existing recordings cannot localize the upstream cause more precisely; no
-transport parameters or hardware protocol were changed speculatively.
+The existing recordings cannot localize the upstream cause more precisely;
+the ownership/lifecycle corrections and diagnostics are described below.
+
+## Configuring physics frequency
+
+Edit only `PHYSICS_HZ` in
+`exo2isaacsim/src/isaac_eff_control/isaac_eff_control/bfm_contract.py`:
+
+```python
+PHYSICS_HZ = 60.0  # Other examples: 120.0, 300.0 (default).
+```
+
+Use a finite positive whole-number Hz value: PhysxSceneAPI's
+`timeStepsPerSecond` is a signed USD integer. Strings, booleans, fractional
+values, nonfinite and out-of-range values fail explicitly. A rejected USD write
+or incorrect effective readback also fails setup; there is no fallback to 300.
+This does not establish that arbitrarily high representable values are practical.
+
+Restart Isaac Sim and separately launched ROS nodes after editing. Rebuild
+`isaac_eff_control` if running a copied installation rather than a symlink install.
+No launch arguments, exports, ROS parameters or Docker settings change. Startup
+prints `[BFM PHYSICS] ... requested/effective=... Hz`; verify before pressing PLAY.
+The existing PhysicsScene is overridden only in its session layer. In Isaac's
+Script Editor, before PLAY, verify the actual composed attribute:
+
+```python
+import omni.usd
+from pxr import PhysxSchema, UsdPhysics
+stage = omni.usd.get_context().get_stage()
+scenes = [p for p in stage.Traverse() if p.IsA(UsdPhysics.Scene)]
+assert len(scenes) == 1
+print(PhysxSchema.PhysxSceneAPI(scenes[0]).GetTimeStepsPerSecondAttr().Get())
+```
+
+New episode metadata `bfm.control.physics_hz` uses the same validated constant;
+old metadata is not rewritten. `/bfm/action` and cameras still request 15 Hz
+simulation time, fingers use 50 Hz wall time, and arms remain source-driven.
+The rational action scheduler selects the first physics sample at/after each
+deadline, including rates not divisible by 15. It never emits catch-up bursts.
+
+Configured physics Hz is steps per simulated second, not displayed render FPS
+or steps per wall second. Over the same active interval, measure simulation
+advance / wall elapsed = RTF; achieved physics steps/wall second is approximately
+configured Hz times RTF. Compare 60/120/300 with identical scene, cameras,
+commands and recording load. PAUSE and resets must be excluded from that ratio.
+`ros2 topic hz /clock` is a receive-rate observation, not proof that no physics
+updates were missed; compare `/clock` stamps as well as recorder/monotonic time.
+
+## Bridge lifecycle and stability checks
+
+`report_input()` now uses distinct INFO/WARNING call sites, required by Jazzy's
+severity cache. Logging failures are isolated from forwarding. Health changes
+report received/forwarded/invalid counts independently for arms and hands;
+malformed JSON and receiver errors are separate diagnostics. `NO RECENT INPUT`
+means inactivity at this bridge, not proof of a transport/hardware failure.
+
+Each PUSH/PULL socket now has one worker owner for create, poll, send/receive
+and close. Polls are bounded to 100 ms; shutdown signals and joins the worker
+before destroying the ROS2 node. Each worker owns its own context and closes
+with zero linger before terminating it; no shared context is terminated.
+ROS1 callbacks enqueue without network blocking. The FIFO has at most 32 pending
+payloads plus one in-flight payload. Under disconnect/overload, a full queue
+drops new payloads with a throttled warning rather than blocking callbacks or
+growing without bound. Normal accepted payload order/fields/stamps are preserved;
+this is not lossless delivery during outages. ZeroMQ handles reconnect normally.
+No cadence limit, interpolation or command-age gate was added.
+
+The original ROS2 close-during-recv race was unsafe. ROS1's mutex serialized
+callback sends but still used PUSH from multiple threads and could block all
+callbacks indefinitely on disconnect. Both lifecycles are now confined to their
+owners. This addresses confirmed unsafe patterns; it does **not** prove the
+reported native `signaler.cpp` assertion had only this cause.
+Reference: [libzmq socket thread safety](https://github.com/zeromq/libzmq/blob/master/doc/zmq_socket.adoc#thread-safety).
+
+Rebuild both existing services; networking, service names and message contracts
+are unchanged:
+
+```bash
+docker compose -f docker/exo_ros_bridge/docker-compose.yml build ros1_bridge ros2_bridge
+docker compose -f docker/exo_ros_bridge/docker-compose.yml up -d --force-recreate ros1_bridge ros2_bridge
+docker compose -f docker/exo_ros_bridge/docker-compose.yml logs --since=10m -f ros1_bridge ros2_bridge
+docker inspect --format '{{.Name}} restarts={{.RestartCount}} exit={{.State.ExitCode}}' exo_ros1_bridge exo_ros2_bridge
+ros2 topic hz /robot/command/arm_joint_target
+ros2 topic hz /robot/command/hand_target
+```
+
+Run sustained ExoSuit traffic, idle input, reconnect the source, restart each
+bridge separately, then stop/restart the stack. Verify absence of logging
+ValueError, ZeroMQ assertions, unexpected exits/restarts, corrupt values and
+stuck shutdown. If arms alone stop, compare ROS1 `/kuavo_arm_traj` using
+`rostopic hz` in the ROS1 environment, ROS2 received/invalid/forwarded counts and
+the raw ROS2 topic. No incoming arm payload with continuing hand traffic does
+not by itself identify the upstream fault. Real ROS/Docker/Isaac validation and
+long-duration native-crash testing remain required; host tests cannot certify it.
