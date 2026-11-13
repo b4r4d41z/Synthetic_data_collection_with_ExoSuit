@@ -7,6 +7,11 @@ recordings and their metadata are unchanged. BfmAction retains its existing fiel
 0..100 hands, `producer_session_id` and monotonically increasing `action_id`.
 BfmState remains the same 56D measured physical/task state.
 
+Operator snapshots now carry explicit selected-input evidence; see
+[Gateway input provenance v1](source_provenance_v1.md) for the appended Action
+metadata, recorded trace, converter verification and required ROS2 rebuild.
+MCAP receipt order remains unsuitable for identifying which source a snapshot used.
+
 ## Teleoperation and sampling
 
 ```

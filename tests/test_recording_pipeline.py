@@ -211,6 +211,7 @@ class RecordingPipelineTests(unittest.TestCase):
             "/left_hand_joint_command",
             "/right_hand_joint_command",
             "/bfm/action",
+            "/bfm/source/input_provenance",
             "/bfm/state",
             "/bfm/source/arm_joint_target_rad",
             "/bfm/command/hand_target",
@@ -734,7 +735,8 @@ class RecordingPipelineTests(unittest.TestCase):
             ["string[7]", "left_arm_joint_names"], ["float64[7]", "left_arm_target"],
             ["float64[6]", "left_hand_target"], ["string[7]", "right_arm_joint_names"],
             ["float64[7]", "right_arm_target"], ["float64[6]", "right_hand_target"],
-            ["string", "producer_session_id"], ["uint64", "action_id"]])
+            ["string", "producer_session_id"], ["uint64", "action_id"],
+            ["uint32", "source_provenance_version"], ["string", "source_provenance_sha256"]])
         from isaac_eff_control.bfm_contract import LEFT_ARM_JOINTS, RIGHT_ARM_JOINTS, ARM_JOINTS, collection_metadata, state_defaults
         self.assertEqual(LEFT_ARM_JOINTS, tuple(f"zarm_l{i}_joint" for i in range(1,8)))
         self.assertEqual(RIGHT_ARM_JOINTS, tuple(f"zarm_r{i}_joint" for i in range(1,8)))

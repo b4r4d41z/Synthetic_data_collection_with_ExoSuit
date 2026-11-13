@@ -28,6 +28,7 @@ from .bfm_episode import ACK_TOPIC, CONTROL_TOPIC, EPISODE_TOPIC
 from .recording_provenance import recording_code_provenance
 from .fruit_success import METHOD as SUCCESS_METHOD
 from .episode_outcome import atomic_outcome_update, final_position_outcome
+from .source_provenance import PROVENANCE_TOPIC
 
 from .bfm_contract import (
     collection_enabled, collection_metadata, scene_config_default,
@@ -49,6 +50,7 @@ DEFAULT_TOPICS = [
     "/left_hand_joint_command",
     "/right_hand_joint_command",
     "/bfm/action",
+    PROVENANCE_TOPIC,
     "/bfm/state",
     "/bfm/source/arm_joint_target_rad",
     "/bfm/command/hand_target",
@@ -107,6 +109,8 @@ class SimRecorder(Node):
             for topic in self.topics
         ):
             raise ValueError("topics must be a nonempty list of absolute ROS topic names")
+        if self.get_parameter("bfm_collection_mode").value and PROVENANCE_TOPIC not in self.topics:
+            raise ValueError(f'BFM collection requires operator-input evidence topic {PROVENANCE_TOPIC}')
         if not math.isfinite(self.stop_timeout_sec) or self.stop_timeout_sec <= 0:
             raise ValueError("stop_timeout_sec must be finite and positive")
         if not output_root or not str(output_root).strip():

@@ -48,6 +48,7 @@ CLOCK_DOMAINS = {
     "synchronization": "mcap_log_time (unchanged); headers are not a universal clock",
     "/clock.clock": "IsaacReadSimulationTime simulation time, published on physics steps; existing resetOnStop default",
     "/bfm/action.header.stamp": "selected /clock sample; decision generation, not measured controller application",
+    "/bfm/source/input_provenance": "decision_stamp equals Action simulation stamp; embedded input headers retain source-native clocks; join by identity/digest, never MCAP receive order",
     "/bfm/state.header.stamp": "SimulationManager completed physics simulation time at Kit post-update; separate epoch from /clock if reset policies differ",
     "/robot/state/joint_states.header.stamp": "IsaacReadSimulationTime via saved graph; sensorTime is separately the joint sensor simulation time",
     "camera_image.header.stamp": "Isaac ROS2CameraHelper simulation time (default useSystemTime=false); render cadence unchanged",
@@ -208,6 +209,7 @@ def scene_configuration(path):
 def collection_metadata(enabled, state, configuration=None):
     """Describe configured semantics without claiming live runtime verification."""
     state = validate_state_parameters(state)
+    from .source_provenance import PROVENANCE_TOPIC, PROVENANCE_VERSION, PROTOCOL
     return {
         "enabled": enabled,
         "policy_hz": POLICY_HZ,
@@ -222,6 +224,20 @@ def collection_metadata(enabled, state, configuration=None):
         "contract_version": CONTRACT_VERSION,
         "control_architecture": "decoupled_teleoperation_v1",
         "action_role": "sampled_operator_target_not_execution_acknowledgement",
+        "operator_input_provenance": {
+            "protocol": PROTOCOL, "version": PROVENANCE_VERSION,
+            "required_for_operator_actions": bool(enabled),
+            "topic": PROVENANCE_TOPIC, "message_type": "std_msgs/msg/String",
+            "action_fields": ["source_provenance_version", "source_provenance_sha256"],
+            "join": ["producer_session_id", "action_id"],
+            "digest": "SHA-256 of exact UTF-8 String.data bytes; no reserialization",
+            "input_identity": ["producer_session_id", "kind", "input_sequence"],
+            "sequence_scope": "each valid input callback; independent arm/hand counters; monotonic across STOP and clock rollback",
+            "trace_scope": "one self-contained selected-input bundle per Action, including repeated old inputs; unsampled sequences may be absent",
+            "identity_limit": "Gateway-received inputs only; no unique upstream ROS1 identity or physical execution claim",
+            "missing_evidence": "fail verification; never approximate or use latest MCAP source",
+            "non_operator_actions": "version 0 and empty digest make no operator provenance claim; policy producers leave defaults",
+        },
         "control": {
             "arm": "direct mapped bounded targets at source rate; no added trajectory generator",
             "hand_hz": HAND_CONTROL_HZ, "hand_clock": "steady_wall_time",
@@ -252,6 +268,7 @@ def collection_metadata(enabled, state, configuration=None):
             "executed_command_replay": [HELD_ARM_TOPIC, "/left_hand_joint_command", "/right_hand_joint_command"],
             "measured_robot_state": "/robot/state/joint_states",
             "canonical_action": ACTION_TOPIC,
+            "selected_operator_input_evidence": PROVENANCE_TOPIC,
             "canonical_state": STATE_TOPIC,
         },
         "task_state": {

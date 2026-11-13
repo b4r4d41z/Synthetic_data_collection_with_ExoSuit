@@ -19,6 +19,7 @@ from sensor_msgs.msg import JointState
 from rosgraph_msgs.msg import Clock
 
 from .sim_policy_clock import SimPolicyClock
+from .source_provenance import PROVENANCE_TOPIC, PROVENANCE_VERSION, encode_trace
 
 from .bfm_contract import (
     ACTION_TOPIC, ARM_JOINTS, ARM_SOURCE_TOPIC, HELD_ARM_TOPIC, HELD_HAND_TOPIC,
@@ -33,6 +34,7 @@ class BfmActionGateway(Node):
             "bfm_collection_mode", collection_enabled()).value
         self.producer_session_id = uuid4().hex
         self.action_id = 0
+        self.input_sequences = dict(arm=0, hand=0)  # Lifetime of this Gateway, never reset by STOP/clock.
         self.playing = False
         self.boundary = None
         self.arm = None
@@ -40,7 +42,9 @@ class BfmActionGateway(Node):
         if not self.enabled:
             self.get_logger().info("BFM gateway disabled; normal direct control is unchanged")
             return
-        self.arm_limits = arm_target_processing()["joint_limits"]
+        self.arm_processing = arm_target_processing()
+        self.arm_limits = self.arm_processing["joint_limits"]
+        self.hand_input_topic = os.getenv("HAND_INPUT_TOPIC", RAW_HAND_TOPIC)
         reliable = QoSProfile(
             history=HistoryPolicy.KEEP_LAST, depth=1,
             reliability=ReliabilityPolicy.RELIABLE,
@@ -50,9 +54,12 @@ class BfmActionGateway(Node):
             reliability=ReliabilityPolicy.BEST_EFFORT,
         )
         self.action_pub = self.create_publisher(BfmAction, ACTION_TOPIC, reliable)
+        self.provenance_pub = self.create_publisher(String, PROVENANCE_TOPIC,
+            QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=100,
+                       reliability=ReliabilityPolicy.BEST_EFFORT))
         self.create_subscription(JointState, ARM_SOURCE_TOPIC, self.arm_callback, hand_qos)
         self.create_subscription(
-            RobotHandPosition, os.getenv("HAND_INPUT_TOPIC", RAW_HAND_TOPIC),
+            RobotHandPosition, self.hand_input_topic,
             self.hand_callback, hand_qos,
         )
         self.policy_clock = SimPolicyClock()
@@ -95,6 +102,7 @@ class BfmActionGateway(Node):
             )
             return
         self.arm = deepcopy(msg)
+        self.input_sequences['arm'] += 1
 
     def hand_callback(self, msg):
         values = [*msg.left_hand_position, *msg.right_hand_position]
@@ -107,6 +115,7 @@ class BfmActionGateway(Node):
             )
             return
         self.hand = deepcopy(msg)
+        self.input_sequences['hand'] += 1
 
     def policy_tick(self, simulation_stamp=None):
         if not self.enabled or not self.playing:
@@ -122,6 +131,10 @@ class BfmActionGateway(Node):
         if self.count_publishers(ACTION_TOPIC) > 1:
             raise RuntimeError("Competing /bfm/action publisher")
         arm, hand = deepcopy(self.arm), deepcopy(self.hand)
+        # Freeze the selected pre-clamp sources and identities before publication.
+        # Subsequent callbacks cannot change this Action's evidence.
+        selected_arm = deepcopy(arm)
+        sequences = dict(self.input_sequences)
         # Reapplying the same saturation is idempotent; raw input is never mutated.
         arm.position = [min(max(value, self.arm_limits[name][0]), self.arm_limits[name][1])
                         for name, value in zip(arm.name, arm.position)]
@@ -138,6 +151,16 @@ class BfmActionGateway(Node):
         action.right_arm_joint_names = list(RIGHT_ARM_JOINTS)
         action.right_arm_target = [positions[name] for name in RIGHT_ARM_JOINTS]
         action.right_hand_target = [float(value) for value in hand.right_hand_position]
+        text, digest = encode_trace(action, selected_arm, hand, sequences,
+                                    self.arm_processing, self.hand_input_topic)
+        action.source_provenance_version = PROVENANCE_VERSION
+        action.source_provenance_sha256 = digest
+        evidence = String()
+        evidence.data = text
+        # Best-effort evidence is independently recorded; never wait for ACKs.
+        # A missing trace is an explicit offline verification failure, not a
+        # reason to reinterpret the latest MCAP source or relax target equality.
+        self.provenance_pub.publish(evidence)
         # Observation of the latest valid operator targets, never a control path
         # or an acknowledgement. Full-rate source/controller streams are recorded.
         self.action_pub.publish(action)
