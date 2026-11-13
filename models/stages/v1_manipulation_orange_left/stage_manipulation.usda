@@ -1,0 +1,24 @@
+#usda 1.0
+# Stable V1 robot/environment; scenario-local single-orange pool.
+# No experimental robot physics, collision or saved articulation-state layer.
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+    timeCodesPerSecond = 60
+    startTimeCode = 0
+    endTimeCode = 1000000
+    subLayers = [
+        @things_pool.usda@,
+        @../v1_manipulation_one_side_right/stage_sorting_v1.usd@
+    ]
+)
+
+over "World"
+{
+    over "Task"
+    {
+        over "Fruits" (active = false) {}
+        over "Parking" (active = false) {}
+    }
+}

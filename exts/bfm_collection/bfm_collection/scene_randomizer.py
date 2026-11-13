@@ -20,8 +20,10 @@ def load_configuration(path, repository):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     scenario = data.get("randomization", {}).get("scenario")
     ambidextrous = scenario == "ambidextrous_v4"
-    v3 = scenario in ("things_v3", "ambidextrous_v4")
-    object_path = ("/World/Task/Things/lemon1" if ambidextrous else
+    orange_left = scenario == "orange_left_v1"
+    v3 = scenario in ("things_v3", "ambidextrous_v4", "orange_left_v1")
+    object_path = ("/World/Task/Things/orange2" if orange_left else
+                   "/World/Task/Things/lemon1" if ambidextrous else
                    "/World/Task/Things/apple_02" if v3 else OBJECT_PATH)
     if (data.get("schema_version") != 1 or data["parameters"]["object_prim_path"] != object_path
             or data["parameters"]["container_prim_path"] != CONTAINER_PATH):
@@ -34,6 +36,13 @@ def load_configuration(path, repository):
                 else {"avocado.usd", "lemon1.usd", "orange2.usd"})
     if ambidextrous:
         expected = {"lemon1.usd", "orange2.usd", "lunchbag.usd", "ketchup_bottle.usd"}
+    if orange_left:
+        expected = {"orange2.usd"}
+        if (assets != ["models/addons/objects/fruits_veggies/orange2.usd"] or pool != assets
+                or config.get("fixed_layout") != "B"):
+            raise ValueError("Orange-left requires only the original orange2 asset and fixed_layout B")
+    elif "fixed_layout" in config:
+        raise ValueError("fixed_layout is reserved for the orange-left scenario; existing scenarios use their original layouts")
     if v3 and (config.get("pool_path") != "/World/Task/Things"
                or config.get("parking_path") != "/World/Task/ThingsParking"):
         raise ValueError("V3 requires the pre-authored things pool and parking")
@@ -189,7 +198,7 @@ class SceneRandomizer:
                 Usd.TimeCode.Default()) != Gf.Matrix4d(1):
             raise ValueError("Sorting /World must have an identity world transform")
         self.rng = random.Random(self.config["seed"])
-        self.v3 = self.config.get("scenario") in ("things_v3", "ambidextrous_v4")
+        self.v3 = self.config.get("scenario") in ("things_v3", "ambidextrous_v4", "orange_left_v1")
         self.assets = {a: asset_geometry(self.repository / a, allow_child_body=self.v3)
                        for a in self.config["pool_assets"]}
         from pxr import UsdPhysics
@@ -283,7 +292,7 @@ class SceneRandomizer:
             regions = {"right": dict(self.config["object_spawn_region"]), "left": {
                 key: centre[0 if key.startswith("x") else 1] + value
                 for key, value in offsets.items()}}
-            layout = self.rng.choice(("A", "B"))
+            layout = self.config.get("fixed_layout") or self.rng.choice(("A", "B"))
             object_region = regions["right" if layout == "A" else "left"]
             box_region = regions["left" if layout == "A" else "right"]
             candidate_config = dict(self.config, object_spawn_region=object_region,

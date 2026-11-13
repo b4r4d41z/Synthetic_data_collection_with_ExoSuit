@@ -1,0 +1,116 @@
+#usda 1.0
+(
+    "Orange-left only: unchanged referenced orange2, contact overrides and one static parking cradle. No runtime topology changes."
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def "World"
+{
+    def "Task"
+    {
+        def Xform "Things"
+        {
+            def Material "ThingContact" (
+                prepend apiSchemas = ["PhysicsMaterialAPI", "PhysxMaterialAPI"]
+            )
+            {
+                float physics:dynamicFriction = 0.5
+                float physics:restitution = 0
+                float physics:staticFriction = 0.6
+                token physxMaterial:frictionCombineMode = "average"
+                token physxMaterial:restitutionCombineMode = "average"
+            }
+
+            def Xform "orange2" (
+                prepend references = @../../addons/objects/fruits_veggies/orange2.usd@
+            )
+            {
+                vector3f physics:angularVelocity = (0, 0, 0)
+                vector3f physics:velocity = (0, 0, 0)
+                matrix4d xformOp:transform:bfmEpisode = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (102, 100, 1.9300598623693803, 1) )
+                uniform token[] xformOpOrder = ["xformOp:transform:bfmEpisode"]
+
+                over "orange_02_inst"
+                {
+                    over "Orange_02"
+                    {
+                        over "OrangeSkin" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            rel material:binding:physics = </World/Task/Things/ThingContact>
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                        }
+
+                        over "OrangeStem" (
+                            prepend apiSchemas = ["PhysxCollisionAPI"]
+                        )
+                        {
+                            rel material:binding:physics = </World/Task/Things/ThingContact>
+                            float physxCollision:contactOffset = 0.002
+                            float physxCollision:restOffset = 0
+                        }
+                    }
+                }
+            }
+        }
+
+        def Xform "ThingsParking"
+        {
+            def "orange2"
+            {
+                def Cube "floor" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.8, 0.1)
+                    double3 xformOp:translate = (102, 100, 1.88)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "left" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (101.6, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "right" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.1, 0.8, 0.6)
+                    double3 xformOp:translate = (102.4, 100, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "front" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (102, 99.6, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "back" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    double size = 1
+                    float3 xformOp:scale = (0.8, 0.1, 0.6)
+                    double3 xformOp:translate = (102, 100.4, 2.13)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+        }
+    }
+}

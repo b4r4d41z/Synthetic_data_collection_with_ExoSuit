@@ -49,9 +49,15 @@ class PhysicsObjectPool:
         self.targets = {path: list(pose) for path, pose in episode['body_poses'].items()}
         expected = {episode['object_prim_path'], episode['container_prim_path'],
                     *episode['parking_positions']}
-        count = 6 if episode.get('scenario') == 'things_v3' else 5
+        orange_left = episode.get('scenario') == 'orange_left_v1'
+        count = 2 if orange_left else 6 if episode.get('scenario') == 'things_v3' else 5
+        if orange_left and (episode['object_prim_path'] != '/World/Task/Things/orange2'
+                            or episode['container_prim_path'] != '/World/container_b04'
+                            or episode['parking_positions']):
+            raise ValueError('Orange-left must reset only orange2 and the original container')
         if set(self.targets) != expected or len(expected) != count:
-            raise ValueError('Episode must identify five distinct things and one container' if count == 6
+            raise ValueError('Orange-left episode must identify exactly one orange and one container' if orange_left else
+                             'Episode must identify five distinct things and one container' if count == 6
                              else 'Episode must identify four distinct manipulation objects and one container')
         for path, pose in self.targets.items():
             if (len(pose) != 7 or not all(math.isfinite(v) for v in pose)
@@ -140,7 +146,9 @@ class PhysicsObjectPool:
                              native_tensor(transforms, [0], indices=True))
             bodies[path] = body
         self.simulation_view, self.bodies, self.buffers = simulation_view, bodies, buffers
-        self.log('[BFM PHYSX] things pool resolved: 4/4; container resolved: 1'
+        self.log('[BFM PHYSX] things pool resolved: 1/1; container resolved: 1'
+                 if self.episode.get('scenario') == 'orange_left_v1' else
+                 '[BFM PHYSX] things pool resolved: 4/4; container resolved: 1'
                  if self.episode.get('scenario') == 'ambidextrous_v4' else
                  '[BFM PHYSX] things pool resolved: 5/5; container resolved: 1'
                  if self.episode.get('scenario') == 'things_v3' else

@@ -16,6 +16,8 @@ setup(
          ['../../../models/stages/v1_manipulation_one_side_right/sorting_scene.json']),
         ('share/' + package_name + '/scenarios/v1_manipulation_ambidextrous',
          ['../../../models/stages/v1_manipulation_ambidextrous/sorting_scene.json']),
+        ('share/' + package_name + '/scenarios/v1_manipulation_orange_left',
+         ['../../../models/stages/v1_manipulation_orange_left/sorting_scene.json']),
         ('share/' + package_name + '/scenarios/sorting_experimental',
          ['../../../models/stages/sorting_experimental/sorting_scene_v3.json']),
         (

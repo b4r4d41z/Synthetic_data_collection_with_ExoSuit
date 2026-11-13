@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "scene": "models/stages/v1_manipulation_orange_left/stage_manipulation.usda",
+  "parameters": {
+    "state_frame": "world",
+    "reference_prim_path": "/",
+    "eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_r1_link/zarm_r2_link/zarm_r3_link/zarm_r4_link/zarm_r5_link/zarm_r6_link/zarm_r7_link/zarm_r7_end_effector/right_hand_C_MC",
+    "object_prim_path": "/World/Task/Things/orange2",
+    "container_prim_path": "/World/container_b04",
+    "goal_local_center": [
+      -0.08494214117424082,
+      0.0,
+      0.05886988293797252
+    ],
+    "goal_half_extents": [
+      0.118,
+      0.068,
+      0.017130117062027467
+    ],
+    "goal_local_orientation": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "left_eef_prim_path": "/World/s40_sharpa_two_cameras/Geometry/base_link/zarm_l1_link/zarm_l2_link/zarm_l3_link/zarm_l4_link/zarm_l5_link/zarm_l6_link/zarm_l7_link/zarm_l7_end_effector/left_hand_C_MC",
+    "articulation_prim_path": "/World/s40_sharpa_two_cameras/fix_base_joint"
+  },
+  "provenance": {
+    "baseline_commit": "131cfb57eadc18bce5a479fd50bf228e38b266a0",
+    "container_asset": "models/addons/objects/vomp/container_b04/container_b04.usd",
+    "container_asset_sha256": "8828c9dd15e1eecaec06966e98f678328621d467728ba8c0c15444c6e9148671",
+    "robot_root": "/World/s40_sharpa_two_cameras",
+    "required_robot_physics_variant": "physx",
+    "container_mesh": "/World/container_b04/Container_B04_01",
+    "container_mesh_to_body_translation_m": [
+      -0.08494214117424082,
+      0.0,
+      0.0
+    ],
+    "interior_floor_mesh_z_m": 0.010474557988345623,
+    "rim_mesh_z_m": 0.1199781745672226,
+    "conservative_interior_mesh_min_m": [
+      -0.16,
+      -0.11,
+      0.011
+    ],
+    "conservative_interior_mesh_max_m": [
+      0.16,
+      0.11,
+      0.118
+    ],
+    "clearance_radius_m": 0.039,
+    "safety_margin_m": 0.003,
+    "quaternion_convention": "xyzw; local goal axes relative to container body",
+    "method": "Original fixed goal OBB retained: measured container interior, historical 39 mm clearance plus 3 mm margin and support-based floor bound. No fruit-specific goal recalibration in the randomized runtime.",
+    "object_position_semantics": "Live PhysX center of mass and linear velocity of the episode-selected thing pool rigid body (episode.object_prim_path).",
+    "runtime_verified": false,
+    "floor_contact_tolerance_m": 0.003,
+    "goal_calibration": "Existing OBB retained unchanged from the original orange-skin calibration; not recalibrated for larger fruits. This region is not a fruit-specific containment/success certificate.",
+    "minimum_support_radius_m": 0.03426520788759943,
+    "fruit_pool_asset": "models/stages/v1_manipulation_orange_left/things_pool.usda",
+    "success_detector": {
+      "method": "collision_mesh_residence_latched_v2",
+      "geometry": "32 inner-floor mesh vertices at z=0.010474557988345623; convex floor hull, conservative extrusion to lowest rim vertex with mesh z>0.117",
+      "bounds": "all enabled selected-fruit collision mesh vertices, transformed through live fruit and intended container rigid-body poses",
+      "margin_m": 0.003,
+      "floor_tolerance_m": 0.003,
+      "settle_sim_sec": 0.3,
+      "clock": "SimulationManager.get_simulation_time; completed physics time",
+      "qualification": "elapsed simulation time across contained observations; duplicate time adds nothing; exit or invalid measurement clears pending dwell; no callback-gap cutoff",
+      "success_semantics": "episode_success_once; latched until episode/physics reset or simulation-time rollback; independent of terminal",
+      "velocity_gate": false,
+      "runtime_verified": false
+    },
+    "fruit_pool_sha256": "938d2e46c66c37d8fce5ec2a151c60797f165628d4adac2b87dc95b3a5f30d5f",
+    "scene_sha256": "323bd0678d360b813bbc6b380207d3c02f05233692c3176d436c4ce3965012a5",
+    "object_pool_normalization": "Scenario-local single-orange pool copies the validated ambidextrous orange2 definition, collision/contact overrides and one static cradle; source geometry, mass/inertia and materials unchanged. No per-episode topology changes."
+  },
+  "randomization": {
+    "object_assets": [
+      "models/addons/objects/fruits_veggies/orange2.usd"
+    ],
+    "object_spawn_region": {
+      "x_min": 0.95,
+      "x_max": 1.025,
+      "y_min": 3.99,
+      "y_max": 4.12
+    },
+    "container_offset_region": {
+      "x_min": -0.06,
+      "x_max": 0.06,
+      "y_min": -0.06,
+      "y_max": 0.06
+    },
+    "table_prim_path": "/World/SM_SecretaryDeskA",
+    "yaw_min": -3.141592653589793,
+    "yaw_max": 3.141592653589793,
+    "seed": null,
+    "max_attempts": 100,
+    "clearance_m": 0.005,
+    "edge_margin_m": 0.025,
+    "obstacle_margin_m": 0.03,
+    "surface_tolerance_m": 0.002,
+    "placement_provenance": {
+      "baseline_commit": "d4f666eac0ea939dedfa526c2f0a8863e49fb52e",
+      "reference_object_xy_m": [
+        1.023983120918274,
+        4.038509845733643
+      ],
+      "container_origin_xy_m": [
+        1.0898085832595825,
+        4.441446304321289
+      ],
+      "method": "Fixed V3 layout B: object footprint centre in the existing left region (captured container collision footprint centre plus unchanged offsets); container footprint centre in the existing right/object rectangle. Independent randomized positions; all existing support, clearance and obstacle checks retained.",
+      "container_method": "Fixed layout B: sample container footprint centre independently in the existing right/object rectangle. Preserve template orientation/Z; use existing footprint-based support and exclusion checks. No new workspace boundaries.",
+      "table_geometry_host_verified": false,
+      "isaac_runtime_verified": false
+    },
+    "pool_assets": [
+      "models/addons/objects/fruits_veggies/orange2.usd"
+    ],
+    "collection_objects_note": "Orange-left only: orange2 is the sole preloaded manipulation body; container remains the existing body; layout B every episode.",
+    "scenario": "orange_left_v1",
+    "pool_path": "/World/Task/Things",
+    "parking_path": "/World/Task/ThingsParking",
+    "fixed_layout": "B"
+  }
+}

@@ -66,6 +66,10 @@ models/stages/
   v1_manipulation_ambidextrous/
     stage_manipulation.usda
     sorting_scene.json
+  v1_manipulation_orange_left/
+    stage_manipulation.usda
+    things_pool.usda
+    sorting_scene.json
   sorting_experimental/
     stage_sorting_v2.usda
     stage_sorting_v3.usda
@@ -115,7 +119,7 @@ SCENARIO=v1_manipulation_ambidextrous bash launch_bfm_isaac.sh
 bash launch_bfm_isaac.sh v1_manipulation_ambidextrous
 ```
 
-There are exactly three scenario directories. The old `sorting_v1` directory
+There are exactly four scenario directories. The old `sorting_v1` directory
 and selector are removed, without compatibility aliases or symlinks. Experimental
 V2 and pool parking references now point directly to the renamed stable resources;
 only those paths and the affected pool checksum change. Composition order and
@@ -123,6 +127,45 @@ experimental behavior remain unchanged. Shared meshes/textures remain under
 `models/robots` and `models/addons`. The stable USD and fruit pool are byte-identical
 moves. Controllers, cameras, task outcomes, collection lifecycle and randomization
 code are unchanged. The default launch remains `sorting_experimental`.
+
+### Single-object orange-left collection
+
+`v1_manipulation_orange_left` simplifies collection to the existing `orange2`
+asset. It reuses the stable V1 robot/environment and a local single-body pool;
+source geometry, materials, mass/inertia and the existing success detector are
+unchanged. Unlike ambidextrous V4's random A/B layouts, `orange_left_v1` requires
+`fixed_layout: "B"`: orange footprint centre in the established **left** region,
+container footprint centre in the established **right** region. These are the
+planner's existing spatial conventions, not image coordinates. Both positions
+remain independently randomized, with configured random orange yaw, original
+support/clearance/obstacle checks and unchanged container orientation/Z.
+
+```bash
+cd /workspace/Synthetic_data_collection_with_ExoSuit/exo2isaacsim
+source /opt/ros/jazzy/setup.bash
+colcon build --packages-select dynamic_biped isaac_eff_control --symlink-install
+source install/setup.bash
+cd ..
+bash launch_bfm_isaac.sh v1_manipulation_orange_left
+# In a second terminal:
+bash start_isaac_control.sh
+```
+
+Wait for `[BFM PLAN READY]`, then PLAY manually. STOP prepares a new randomized
+episode; PAUSE/RESUME retains the current plan. The existing reset writes only
+the two preloaded actors (orange and container), with no topology changes.
+Recording remains `records/record_<timestamp>_<random>/episode.json` plus the
+existing `bag/` MCAP. The authoritative episode records layout B, actual poses,
+`/World/Task/Things/orange2`, `/World/container_b04` and configuration/pool hashes.
+The decoupled V4 action/state contracts and topics remain unchanged; no BFM
+converter change or execution acknowledgements are introduced.
+
+Static/unit tests cannot certify contacts, tabletop support from remote NVIDIA
+assets, settling or live ROS recording. In Isaac, verify repeated STOP/PLAY,
+left-orange/right-container placement, both arm controls and nonzero
+`/bfm/state`, `/bfm/action`, `/bfm/success` plus existing camera/controller streams
+in the recorded bag. Inspect `/bfm/episode` for matching identity, layout and
+randomized poses; success still requires real geometric containment/residence.
 
 After applying the migration, rebuild only the affected ROS Python package:
 

@@ -6,6 +6,7 @@ import sys
 SCENARIOS = {
     'v1_manipulation_one_side_right': ('stage_sorting_v1.usd', 'sorting_scene.json'),
     'v1_manipulation_ambidextrous': ('stage_manipulation.usda', 'sorting_scene.json'),
+    'v1_manipulation_orange_left': ('stage_manipulation.usda', 'sorting_scene.json'),
     'sorting_experimental': ('stage_sorting_v3.usda', 'sorting_scene_v3.json'),
 }
 DEFAULT = 'sorting_experimental'
@@ -34,8 +35,8 @@ def scenario(name, repository=None):
     if repository is not None:
         pool = Path(repository)/data['provenance']['fruit_pool_asset']
         if not pool.is_file():raise ValueError(f'Missing scenario pool: {pool}')
-        if name == 'v1_manipulation_ambidextrous':
-            for dependency in ('v1_manipulation_ambidextrous/things_pool.usda', 'v1_manipulation_one_side_right/stage_sorting_v1.usd'):
+        if name in ('v1_manipulation_ambidextrous', 'v1_manipulation_orange_left'):
+            for dependency in (name+'/things_pool.usda', 'v1_manipulation_one_side_right/stage_sorting_v1.usd'):
                 if not (Path(repository)/'models/stages'/dependency).is_file():
                     raise ValueError(f'Missing scene dependency: {dependency}')
         if name == 'sorting_experimental':

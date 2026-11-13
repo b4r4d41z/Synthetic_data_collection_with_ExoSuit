@@ -156,4 +156,5 @@ class CompositionTests(unittest.TestCase):
             self.assertEqual(stage.GetRootLayer().subLayerPaths,
                              (['fruit_pool.usda'] if name=='v1_manipulation_one_side_right' else
                               ['things_pool.usda','../v1_manipulation_one_side_right/stage_sorting_v1.usd']
-                              if name=='v1_manipulation_ambidextrous' else ['things_pool.usda','stage_sorting_v2.usda']))
+                              if name in ('v1_manipulation_ambidextrous','v1_manipulation_orange_left')
+                              else ['things_pool.usda','stage_sorting_v2.usda']))

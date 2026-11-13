@@ -42,10 +42,10 @@ def compare_prims(test, before, after, root='/World'):
 
 
 class PreservationTests(unittest.TestCase):
-    def test_exactly_three_directories_without_compatibility_aliases(self):
+    def test_registered_directories_without_compatibility_aliases(self):
         stages = ROOT/'models/stages'
         self.assertEqual({p.name for p in stages.iterdir() if p.is_dir()},
-                         {'sorting_experimental', STABLE.name, AMBI.name})
+                         {'sorting_experimental', STABLE.name, AMBI.name, 'v1_manipulation_orange_left'})
         self.assertFalse((stages/'sorting_v1').exists())
         self.assertFalse((stages/'sorting_v1').is_symlink())
         self.assertFalse(any(p.is_symlink() for p in stages.rglob('*')))
