@@ -66,3 +66,7 @@ models/addons/objects/vomp/*
 # Local recordings
 /data_snapshot/
 *.mcap
+
+# Local recordings
+/data_snapshot/
+*.mcap
