@@ -62,3 +62,7 @@ models/addons/objects/fruits_veggies/*
 models/addons/objects/vomp/*
 !models/addons/objects/vomp/container_b04/
 !models/addons/objects/vomp/container_b04/**
+
+# Local recordings
+/data_snapshot/
+*.mcap

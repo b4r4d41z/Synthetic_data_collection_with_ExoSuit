@@ -1,2 +1,0 @@
-*.mcap filter=lfs diff=lfs merge=lfs -text
-data_snapshot/**/*.mcap filter=lfs diff=lfs merge=lfs -text
