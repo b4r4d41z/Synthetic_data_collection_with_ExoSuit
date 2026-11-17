@@ -12,8 +12,11 @@ class FlowStatus:
     def show(self, state):
         if state != self.state:
             self.state = state
-            log = self.logger.error if state == 'ERROR' else self.logger.info
-            log(f'[{self.label}] {state}')
+            # Jazzy caches severity by call site; keep INFO/ERROR sites distinct.
+            if state == 'ERROR':
+                self.logger.error(f'[{self.label}] {state}')
+            else:
+                self.logger.info(f'[{self.label}] {state}')
 
     def receive(self, valid=True):
         self.last_received = self.clock()

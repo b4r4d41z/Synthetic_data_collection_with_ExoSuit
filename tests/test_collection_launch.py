@@ -213,6 +213,21 @@ else: print('%1')
         self.assertIn('[GATEWAY] ERROR', result.stdout)
         self.assertIn('display-message', self.log.read_text())
 
+    def test_worker_redirects_details_to_plain_backend_and_preserves_warnings(self):
+        self.executable('ros2', """#!/bin/bash
+printf '%s\n' '[INFO] backend details' '[INFO] [ARM] ACTIVE' '[INFO] [ARM] ACTIVE' '[WARN] input loss' '[ERROR] malformed input' 'Traceback: diagnostic'
+""")
+        result = subprocess.run([sys.executable, str(ROOT/'tools/collection/worker.py'),
+                                 'arm_control_node'], env=self.env, text=True,capture_output=True)
+        self.assertNotIn('backend details',result.stdout)
+        self.assertEqual(result.stdout.count('[ARM] ACTIVE'),1)
+        for text in ('input loss','malformed input','Traceback: diagnostic'):
+            self.assertIn(text,result.stdout)
+        self.assertNotIn('\x1b',result.stdout)
+        backend=(ROOT/'records/worker_ARM.log').read_text()
+        self.assertIn('[INFO] backend details',backend)
+        self.assertNotIn('\x1b',backend)
+
     def test_shell_syntax(self):
         for name in ('launch_bfm_isaac.sh', 'start_isaac_control.sh', 'start_bfm_policy_control.sh',
                      'tools/collection/environment.bash', 'tools/collection/worker.bash'):
@@ -294,7 +309,7 @@ class StatusTests(unittest.TestCase):
         node.recording_callback(harness.Bool(True))
         self.assertEqual(node._rec_status, 'RECORDING')
         node.recording_callback(harness.Bool(False))
-        self.assertEqual(node._rec_status, 'STOPPED')
+        self.assertEqual(node._rec_status, 'WAITING')
         node.recording_callback(harness.Bool(True))
         self.process.wait.side_effect = [subprocess.TimeoutExpired('bag', 15), 0]
         node.recording_callback(harness.Bool(False))

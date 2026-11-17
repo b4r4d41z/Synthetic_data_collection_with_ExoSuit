@@ -19,6 +19,8 @@ from time import monotonic
 from uuid import uuid4
 
 import rclpy
+from rclpy.clock import Clock as TimerClock
+from rclpy.clock_type import ClockType
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
@@ -29,6 +31,7 @@ from .recording_provenance import recording_code_provenance
 from .fruit_success import METHOD as SUCCESS_METHOD
 from .episode_outcome import atomic_outcome_update, final_position_outcome
 from .source_provenance import PROVENANCE_TOPIC
+from .recording_readiness import READY_TOPIC, GATE_TOPIC, StartupSamples, positive_seconds
 
 from .bfm_contract import (
     collection_enabled, collection_metadata, scene_config_default,
@@ -89,6 +92,12 @@ class SimRecorder(Node):
             "bfm_state_max_age_sec", 0.5).value)
         if not math.isfinite(self.bfm_state_max_age_sec) or self.bfm_state_max_age_sec <= 0:
             raise ValueError("bfm_state_max_age_sec must be finite and positive")
+        self.readiness_timeout = positive_seconds(
+            self.declare_parameter('recording_readiness_timeout_sec',30.).value,
+            'recording_readiness_timeout_sec')
+        self.readiness_max_age = positive_seconds(
+            self.declare_parameter('recording_readiness_max_age_sec',2.).value,
+            'recording_readiness_max_age_sec')
         for name, default in EPISODE_PARAMETERS.items():
             self.declare_parameter(name, default)
         self.declare_parameter(
@@ -132,6 +141,8 @@ class SimRecorder(Node):
         self._stop_failed = False
         self._rec_status = None
         self._recording_metadata = None
+        self._readiness = self._ready_request = self._gate_ack = self._bag_client = self._bag_future = None
+        self._matched = self._ready_complete = self._saved_reported = False
 
         qos = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
@@ -147,6 +158,25 @@ class SimRecorder(Node):
             from dynamic_biped.msg import BfmState
             from std_msgs.msg import String
             self._episode_string = String
+            self._ready_pub = self.create_publisher(String,READY_TOPIC,qos)
+            self.create_subscription(String,GATE_TOPIC,self.gate_callback,qos)
+            from sensor_msgs.msg import Image, JointState
+            from rosgraph_msgs.msg import Clock
+            from dynamic_biped.msg import RobotHandPosition
+            from .bfm_contract import ARM_SOURCE_TOPIC, RAW_HAND_TOPIC, HELD_ARM_TOPIC, HELD_HAND_TOPIC
+            self._stream_kinds = {'/clock':'clock', STATE_TOPIC:'state',
+                '/robot/state/joint_states':'joints', **{t:'camera' for t in CAMERA_TOPICS.values()},
+                '/robot/command/arm_joint_target':'command',ARM_SOURCE_TOPIC:'command',
+                HELD_ARM_TOPIC:'command', '/left_hand_joint_command':'command','/right_hand_joint_command':'command',
+                RAW_HAND_TOPIC:'hand',HELD_HAND_TOPIC:'hand'}
+            types = dict(clock=Clock,camera=Image,hand=RobotHandPosition,
+                         command=JointState,joints=JointState)
+            for topic,kind in self._stream_kinds.items():
+                if topic == STATE_TOPIC:
+                    continue  # Reuse the existing state subscription.
+                message_type = types[kind]
+                self.create_subscription(message_type,topic,lambda msg,t=topic:self._observe_startup(t,msg),
+                    QoSProfile(depth=1,history=HistoryPolicy.KEEP_LAST,reliability=ReliabilityPolicy.BEST_EFFORT))
             self._success_subscription = self.create_subscription(
                 String, '/bfm/success', self.success_callback, 10)
             self._ack_pub = self.create_publisher(String, ACK_TOPIC, 10)
@@ -163,15 +193,168 @@ class SimRecorder(Node):
         self._subscription = self.create_subscription(
             Bool, RECORDING_TOPIC, self.recording_callback, qos
         )
-        self._monitor = self.create_timer(1.0, self.check_process)
+        self._monitor = self.create_timer(0.2, self.check_process,
+            clock=TimerClock(clock_type=ClockType.STEADY_TIME))
         self.recording_status('WAITING')
 
     def recording_status(self, state):
         if state != self._rec_status:
             self._rec_status = state
-            suffix = f'  {self._episode_path.name}' if self._episode_path else ''
-            log = self.get_logger().error if state == 'ERROR' else self.get_logger().info
-            log(f'[REC] {state}{suffix}')
+            suffix = f' {self._episode_path.name}' if state=='SAVED' else ''
+            if state == 'ERROR':
+                self.get_logger().error(f'[REC] {state}{suffix}')
+            else:
+                self.get_logger().info(f'[REC] {state}{suffix}')
+
+    def _send_readiness(self, phase):
+        if self._ready_request is None:
+            return
+        event = dict(self._ready_request,phase=phase)
+        if self._gate_ack:
+            event.update(gateway_id=self._gate_ack['gateway_id'],gateway_nonce=self._gate_ack['gateway_nonce'])
+        self._ready_heartbeat += 1
+        event['heartbeat'] = self._ready_heartbeat
+        message = self._episode_string()
+        message.data=json.dumps(event)
+        try:
+            self._ready_pub.publish(message)
+        except RuntimeError as error:
+            self.get_logger().warning(f'Readiness publication unavailable: {error}')
+
+    def _cancel_readiness(self):
+        self._send_readiness('closed')
+        self._ready_request = self._readiness = self._gate_ack = None
+        self._ready_complete = self._matched = False
+        client, future = self._bag_client, self._bag_future
+        self._bag_client = self._bag_future = None
+        try:
+            if future is not None:
+                future.cancel()
+            if client is not None:
+                self.destroy_client(client)
+        except RuntimeError as error:
+            # ROS shutdown must not prevent the independent bag from finalizing.
+            self.get_logger().warning(f'Readiness service cleanup unavailable: {error}')
+
+    def gate_callback(self, msg):
+        if self._ready_request is None:
+            return
+        try:
+            event=json.loads(msg.data)
+            if event.get('phase')=='hello':
+                if self._ready_complete and event.get('gateway_id') != self._gate_ack['gateway_id']:
+                    self._ready_request['challenge']=uuid4().hex
+                    self._ready_complete=self._matched=False
+                    self._gate_ack=None
+                    self._readiness.reset()
+                    self._ready_started=monotonic()
+                    self.recording_status('STARTING')
+                    self._send_readiness('starting')
+                return
+            if (event.get('phase')=='gated' and all(event.get(k)==v for k,v in self._ready_request.items())
+                    and all(isinstance(event.get(k),str) and event[k] for k in ('gateway_id','gateway_nonce'))):
+                self._gate_ack=event
+        except (ValueError,TypeError,AttributeError):
+            self.get_logger().warning('Ignoring invalid Gateway recording-gate response')
+
+    def _observe_startup(self, topic, msg):
+        if self._readiness is not None and self._matched:
+            self._readiness.observe(topic,msg)
+
+    def _bag_subscriptions(self):
+        """DDS endpoint matching is not proof that writer_->write admitted data."""
+        from rclpy.qos import qos_check_compatible, QoSCompatibility
+        missing=[]
+        namespace=None
+        for topic in self.topics:
+            subscribers=[s for s in self.get_subscriptions_info_by_topic(topic) if s.node_name==self._bag_node_name]
+            publishers=self.get_publishers_info_by_topic(topic)
+            matches=[s for s in subscribers if any(p.topic_type==s.topic_type and
+                qos_check_compatible(p.qos_profile,s.qos_profile)[0]==QoSCompatibility.OK for p in publishers)]
+            if not matches:
+                missing.append('rosbag subscription/QoS '+topic)
+            else:
+                namespace=matches[0].node_namespace
+        return missing,namespace
+
+    def _check_readiness(self):
+        if self._readiness is None:
+            return
+        if self._readiness.rollback:
+            self._startup_error('Simulation clock moved backwards during recording')
+            return
+        if self._ready_complete:
+            self._send_readiness('ready')
+            return
+        self._send_readiness('starting')
+        missing=[]
+        try:
+            missing,namespace=self._bag_subscriptions()
+            if not missing and not self._matched:
+                self._matched=True
+                self._readiness.reset()
+            if missing:
+                self._matched=False
+                self._readiness.reset()
+            if self._matched:
+                if self._bag_client is None:
+                    from rosbag2_interfaces.srv import IsPaused
+                    self._bag_client=self.create_client(IsPaused,f"{namespace.rstrip('/')}/{self._bag_node_name}/is_paused")
+                if self._bag_future is None and self._bag_client.service_is_ready():
+                    from rosbag2_interfaces.srv import IsPaused
+                    self._bag_future=self._bag_client.call_async(IsPaused.Request())
+                if self._bag_future is None or not self._bag_future.done():
+                    missing.append('rosbag is_paused service response')
+                elif self._bag_future.result().paused:
+                    missing.append('rosbag is paused')
+                missing.extend(self._readiness.missing())
+            if self._gate_ack is None or self._gate_ack.get('inputs_valid') is not True:
+                missing.append('Gateway current-session handshake/valid buffered inputs')
+            if not missing:
+                proof=dict(version=1,status='ready',session_id=self._episode_path.name,
+                    recorder_node=self._bag_node_name,gateway_id=self._gate_ack['gateway_id'],
+                    verified='process alive; own DDS subscriptions/QoS; unpaused service; fresh post-discovery samples',
+                    writer_admission_verified=False,clock_first_ns=self._readiness.clock_first,
+                    clock_last_ns=self._readiness.clock_last)
+                self._persist_readiness(proof)
+                self._ready_complete=True
+                self.recording_status('DATA STREAMS OK')
+                self._publish_recording_event('recording_ready',dict(result_schema_version=1,terminal=False,
+                    end_reason=None,success=None,recording_readiness=proof))
+                self._send_readiness('ready')
+                self.recording_status('RECORDING')
+                return
+        except Exception as error:
+            missing=['readiness inspection: '+str(error)]
+        if monotonic()-self._ready_started >= self.readiness_timeout:
+            self._startup_error('; '.join(missing))
+
+    def _persist_readiness(self, proof):
+        path=self._episode_path/'episode.json'
+        data=json.loads(path.read_text())
+        data['recording_readiness']=proof
+        temporary=path.with_suffix('.readiness.tmp')
+        try:
+            temporary.write_text(json.dumps(data,indent=2,ensure_ascii=False,allow_nan=False)+'\n')
+            temporary.replace(path)
+        finally:
+            temporary.unlink(missing_ok=True)
+
+    def _startup_error(self, reason):
+        self._stop_failed=True
+        self.recording_status('ERROR')
+        self.get_logger().error('Recording readiness failed: '+reason+'; toggle recording false/true to retry')
+        self._record_readiness_failure(reason)
+        self._outcome_requires_review('Recording readiness failed: '+reason)
+        self.stop_recording('error')
+
+    def _record_readiness_failure(self, reason):
+        try:
+            self._persist_readiness(dict(version=1,status='error',reason=reason,
+                session_id=self._episode_path.name,recorder_node=self._bag_node_name,
+                writer_admission_verified=False))
+        except (OSError,ValueError) as error:
+            self.get_logger().error(f'Cannot persist recording readiness failure: {error}')
 
     def episode_callback(self, msg):
         """Fail closed at a timeline boundary before acknowledging reset safety."""
@@ -215,6 +398,7 @@ class SimRecorder(Node):
 
     def state_callback(self, msg):
         """State remains recorded unchanged; success uses dedicated geometry data."""
+        self._observe_startup(STATE_TOPIC,msg)
 
     def success_callback(self, msg):
         if self._process is None or self._pending_outcome is not None:
@@ -402,11 +586,9 @@ class SimRecorder(Node):
             self.get_logger().warning("Previous recorder/outcome still pending; refusing another")
             self.recording_status("ERROR")
             return
+        self.recording_status('STARTING')
         try:
             metadata = self.episode_metadata()
-            serialized_metadata = json.dumps(
-                metadata, indent=2, ensure_ascii=False, allow_nan=False
-            ) + "\n"
             stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
             while True:
                 self._episode_path = self.output_root / f"record_{stamp}_{uuid4().hex[:8]}"
@@ -418,11 +600,35 @@ class SimRecorder(Node):
             # rosbag2 must create its own output directory. The episode parent
             # owns the sidecar, which is saved before the bag process is started.
             self._bag_path = self._episode_path / "bag"
+            self._bag_node_name = 'bfm_bag_' + uuid4().hex
+            self._saved_reported = False
+            if metadata['bfm']['enabled']:
+                boundary = self._episode_status.get('boundary_id')
+                if not isinstance(boundary,str) or not boundary:
+                    raise ValueError('BFM recording requires an episode boundary identity')
+                self._ready_request = dict(version=1, recorder_id=self._recorder_id,
+                    session_id=self._episode_path.name, challenge=uuid4().hex,
+                    boundary_id=boundary,
+                    episode_id=metadata['bfm']['episode']['episode_id'])
+                self._ready_started = monotonic()
+                self._ready_heartbeat = 0
+                self._gate_ack = None
+                self._matched = self._ready_complete = False
+                cameras = {v['topic']:dict(frame=v['frame'],resolution=v['resolution'])
+                           for v in metadata['cameras'].values()}
+                self._readiness = StartupSamples(self._stream_kinds,cameras,self.readiness_max_age)
+                metadata['recording_readiness'] = dict(version=1,status='starting',
+                    session_id=self._episode_path.name,recorder_node=self._bag_node_name,
+                    writer_admission_verified=False)
+            serialized_metadata = json.dumps(
+                metadata, indent=2, ensure_ascii=False, allow_nan=False
+            ) + "\n"
             with (self._episode_path / "episode.json").open("x", encoding="utf-8") as output:
                 output.write(serialized_metadata)
             command = [
                 "ros2", "bag", "record", "--output", str(self._bag_path),
-                "--storage", "mcap", *self.topics,
+                "--storage", "mcap", "--node-name", self._bag_node_name,
+                "--disable-keyboard-controls", *self.topics,
             ]
             # Detailed rosbag output belongs in the backend, not the dashboard.
             # Popen duplicates the descriptor; closing our copy does not close it
@@ -438,6 +644,7 @@ class SimRecorder(Node):
             self._outcome_state = None
             self._outcome_error = "No valid /bfm/success diagnostic received during recording"
         except (OSError, ValueError) as error:
+            self._cancel_readiness()
             self._stop_failed = True
             self.recording_status("ERROR")
             self.get_logger().error(
@@ -446,16 +653,57 @@ class SimRecorder(Node):
             return
         self._recording_metadata = metadata
         self._publish_recording_event('recording_started')
-        self.recording_status('RECORDING')
+        if self._readiness is None:
+            self.recording_status('RECORDING')
+        else:
+            self._send_readiness('starting')
+
+    def _bag_finalized(self):
+        """Cheap closure evidence, not a claim that every message was persisted."""
+        try:
+            if not (self._bag_path/'metadata.yaml').stat().st_size:
+                return False
+            files = list(self._bag_path.glob('*.mcap'))
+            if not files:
+                return False
+            for path in files:
+                with path.open('rb') as stream:
+                    if stream.read(8) != b'\x89MCAP0\r\n':
+                        return False
+                    stream.seek(-8,2)
+                    if stream.read(8) != b'\x89MCAP0\r\n':
+                        return False
+            return True
+        except (OSError,ValueError):
+            return False
+
+    def _report_saved(self, metadata_saved):
+        try:
+            json.loads((self._episode_path/'episode.json').read_text())
+        except (OSError,ValueError):
+            metadata_saved = False
+        if metadata_saved and not self._stop_failed and not self._saved_reported:
+            self._saved_reported = True
+            self.recording_status('SAVED')
+            self.recording_status('WAITING')
+        elif not metadata_saved or self._stop_failed:
+            self.recording_status('ERROR')
 
     def stop_recording(self, end_reason="user_stop"):
         """Interrupt rosbag2 to finalize metadata, with bounded escalation."""
         process = self._process
+        incomplete = self._readiness is not None and not self._ready_complete
+        self._cancel_readiness()
         if process is None:
             result = self._write_outcome()
-            if result and self._rec_status not in ('WAITING', 'STOPPED'):
-                self.recording_status('ERROR' if self._stop_failed else 'STOPPED')
+            if self._episode_path is not None:
+                self._report_saved(result)
             return result
+        if incomplete:
+            if not self._stop_failed:
+                self._record_readiness_failure('Stopped before startup readiness was verified')
+                self._outcome_requires_review('Recording stopped before startup readiness was verified')
+            self._stop_failed = True
         self._capture_outcome(end_reason)
         # Publish the frozen requested outcome while rosbag is still alive.
         # Finalization errors can still change it; the final sidecar is canonical.
@@ -503,8 +751,11 @@ class SimRecorder(Node):
             self._stop_failed = True
             self._outcome_requires_review(f"Bag stopped with error exit code {return_code}")
         self._process = None
+        if not self._bag_finalized():
+            self._stop_failed = True
+            self._outcome_requires_review('Missing finalized MCAP/footer or rosbag metadata.yaml')
         result = self._write_outcome()
-        self.recording_status('STOPPED' if result and not self._stop_failed else 'ERROR')
+        self._report_saved(result)
         return result
 
     def check_process(self):
@@ -512,6 +763,7 @@ class SimRecorder(Node):
         if self._process is not None:
             return_code = self._process.poll()
             if return_code is not None:
+                self._cancel_readiness()
                 self._stop_failed = True
                 self.recording_status("ERROR")
                 self._outcome_requires_review(f"Bag exited unexpectedly (code {return_code})")
@@ -521,6 +773,8 @@ class SimRecorder(Node):
                     f"ros2 bag exited unexpectedly (code {return_code}); "
                     f"output: {self._bag_path}. Toggle recording false/true to retry."
                 )
+            else:
+                self._check_readiness()
 
     def destroy_node(self):
         """Finalize an active bag on Ctrl-C, SIGTERM, or normal node shutdown."""

@@ -18,6 +18,48 @@ from unittest.mock import Mock, call, patch
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def grant_recording(gateway):
+    """Use the real challenge protocol in tests of unrelated Gateway contracts."""
+    gateway.boundary = gateway.boundary or 'fixture-boundary'
+    gateway.episode_id = gateway.episode_id or 'fixture-episode'
+    request = dict(version=1,phase='starting',recorder_id='fixture-recorder',
+                   session_id='fixture-record',challenge='fixture-challenge',
+                   boundary_id=gateway.boundary,episode_id=gateway.episode_id)
+    gateway.recorder_ready_callback(SimpleNamespace(data=json.dumps(request)))
+    reply = json.loads(gateway.gate_pub.publish.call_args.args[0].data)
+    gateway.recorder_ready_callback(SimpleNamespace(data=json.dumps(dict(
+        reply,phase='ready',heartbeat=gateway.recording_gate.sequence+1))))
+
+
+def complete_startup(node, fixture_ack=True):
+    """Exercise Recorder checks with explicit fake DDS/service/data evidence."""
+    node.check_process()  # Discover this process's subscriptions before samples.
+    request = node._ready_request
+    if fixture_ack:
+        node.gate_callback(SimpleNamespace(data=json.dumps(dict(request,phase='gated',
+            gateway_id='fixture-gateway',gateway_nonce='nonce',inputs_valid=True))))
+    for ns in (1_000_000_000,1_100_000_000):
+        for topic,kind in node._stream_kinds.items():
+            msg = Message()
+            msg.header.stamp.sec, msg.header.stamp.nanosec = divmod(ns,10**9)
+            if kind=='clock':msg.clock=msg.header.stamp
+            elif kind=='camera':
+                info=node._readiness.cameras[topic]
+                msg.header.frame_id=info['frame'];msg.width,msg.height=info['resolution']
+                msg.encoding='rgb8';msg.data=b'rgb'
+            elif kind=='command':msg.name=['fixture'];msg.position=[0.]
+            elif kind=='hand':msg.left_hand_position=msg.right_hand_position=[0.]*6
+            node._observe_startup(topic,msg)
+    node.check_process()
+    assert node._ready_complete, node.logger.mock_calls
+
+
+def finalized_bag(path):
+    path.mkdir(exist_ok=True)
+    (path/'metadata.yaml').write_text('fixture metadata')
+    (path/'bag_0.mcap').write_bytes(b'\x89MCAP0\r\nfixture\x89MCAP0\r\n')
+
+
 class Bool:
     def __init__(self, data=False):
         self.data = data
@@ -96,6 +138,23 @@ def ros_stubs(overrides):
         def count_publishers(self, topic):
             return 1
 
+        def get_subscriptions_info_by_topic(self, topic):
+            return [SimpleNamespace(node_name=getattr(self,'_bag_node_name',''),
+                                    node_namespace='/',topic_type='fixture',qos_profile=None)]
+
+        def get_publishers_info_by_topic(self, topic):
+            return [SimpleNamespace(topic_type='fixture',qos_profile=None)]
+
+        def create_client(self, msg_type, name):
+            future = Mock()
+            future.done.return_value=True
+            future.result.return_value=SimpleNamespace(paused=False)
+            client=Mock();client.call_async.return_value=future
+            return client
+
+        def destroy_client(self, client):
+            return True
+
         def get_logger(self):
             return self.logger
 
@@ -113,6 +172,7 @@ def ros_stubs(overrides):
             "rospy", "zmq", "std_msgs", "std_msgs.msg",
             "sensor_msgs", "sensor_msgs.msg", "dynamic_biped", "dynamic_biped.msg",
             "rosgraph_msgs", "rosgraph_msgs.msg",
+            "rosbag2_interfaces", "rosbag2_interfaces.srv",
         )
     }
     modules["rclpy.node"].Node = Node
@@ -128,10 +188,14 @@ def ros_stubs(overrides):
     qos.ReliabilityPolicy = SimpleNamespace(RELIABLE="reliable", BEST_EFFORT="best_effort")
     qos.DurabilityPolicy = SimpleNamespace(TRANSIENT_LOCAL="transient_local")
     qos.HistoryPolicy = SimpleNamespace(KEEP_LAST="keep_last")
+    qos.QoSCompatibility = SimpleNamespace(OK=0)
+    qos.qos_check_compatible = lambda publisher,subscriber:(0,'')
+    modules['rosbag2_interfaces.srv'].IsPaused = SimpleNamespace(Request=Message)
     modules["rosgraph_msgs.msg"].Clock = Message
     modules["std_msgs.msg"].Bool = Bool
     modules["std_msgs.msg"].String = Message
     modules["sensor_msgs.msg"].JointState = Message
+    modules["sensor_msgs.msg"].Image = Message
     modules["dynamic_biped.msg"].RobotHandPosition = Message
     modules["dynamic_biped.msg"].BfmAction = Message
     modules["dynamic_biped.msg"].BfmState = Message
@@ -196,6 +260,10 @@ class RecordingPipelineTests(unittest.TestCase):
         self.process.poll.return_value = None
         self.process.wait.return_value = 0
         self.popen.return_value = self.process
+        def finalize(timeout):
+            finalized_bag(Path(self.popen.call_args.args[0][4]))
+            return 0
+        self.process.wait.side_effect=finalize
 
     def test_default_topics_include_actions_trigger_and_sim_observations(self):
         expected = [
@@ -221,7 +289,7 @@ class RecordingPipelineTests(unittest.TestCase):
         node = self.recorder.SimRecorder()
         self.assertEqual(node.topics, expected)
         node.recording_callback(Bool(True))
-        self.assertEqual(self.popen.call_args.args[0][7:], expected)
+        self.assertEqual(self.popen.call_args.args[0][10:], expected)
 
     def test_state_transitions_are_idempotent_and_each_bag_is_new(self):
         node = self.recorder.SimRecorder()
@@ -233,7 +301,7 @@ class RecordingPipelineTests(unittest.TestCase):
         command = self.popen.call_args.args[0]
         self.assertEqual(command[:4], ["ros2", "bag", "record", "--output"])
         self.assertEqual(command[5:7], ["--storage", "mcap"])
-        self.assertEqual(command[7:], self.recorder.DEFAULT_TOPICS)
+        self.assertEqual(command[10:], self.recorder.DEFAULT_TOPICS)
         self.assertTrue(self.popen.call_args.kwargs["start_new_session"])
         self.assertEqual(self.popen.call_args.kwargs["stderr"], subprocess.STDOUT)
         self.assertEqual(Path(self.popen.call_args.kwargs["stdout"].name),
@@ -544,7 +612,7 @@ class RecordingPipelineTests(unittest.TestCase):
         self.overrides.update(topics=["/robot/command/arm_joint_target"], stop_timeout_sec=2.0)
         node = self.recorder.SimRecorder()
         node.recording_callback(Bool(True))
-        self.assertEqual(self.popen.call_args.args[0][7:], ["/robot/command/arm_joint_target"])
+        self.assertEqual(self.popen.call_args.args[0][10:], ["/robot/command/arm_joint_target"])
         node.recording_callback(Bool(False))
         self.process.wait.assert_called_once_with(timeout=2.0)
 
@@ -630,6 +698,7 @@ class RecordingPipelineTests(unittest.TestCase):
         gateway = module.BfmActionGateway()
         gateway.count_publishers = lambda topic: 1
         gateway.playing = True
+        grant_recording(gateway)
         return module, gateway
 
     def decision_arm(self, gateway):
@@ -954,7 +1023,7 @@ class RecordingPipelineTests(unittest.TestCase):
         self.assertEqual(gateway.arm_limits, expected)
         # Also check the recorder's actual episode JSON after the readiness barrier.
         node = self.recorder.SimRecorder()
-        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase="playing", episode=dict(
+        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase="playing", boundary_id="fixture-boundary", episode=dict(
             episode_id="bounded-test", object_prim_path="/World/Task/Fruits/lemon1")))))
         node.recording_callback(Bool(True))
         saved = json.loads((node._episode_path / "episode.json").read_text())["bfm"]
@@ -1066,7 +1135,7 @@ class RecordingPipelineTests(unittest.TestCase):
                               instruction="Sort items with all six Sharpa channels.",
                               state_frame="fixture", reference_prim_path="/World/Fixture")
         node = self.recorder.SimRecorder()
-        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase="playing", episode=dict(
+        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase="playing", boundary_id="fixture-boundary", episode=dict(
             episode_id="one", asset="lemon1.usd", object_prim_path="/World/Task/Fruits/lemon1")))))
         node.recording_callback(Bool(True))
         metadata = json.loads((node._episode_path / "episode.json").read_text())

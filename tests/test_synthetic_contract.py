@@ -107,9 +107,10 @@ class RecorderContractTests(unittest.TestCase):
     def start(self):
         self.overrides['bfm_collection_mode'] = True
         node = self.recorder.SimRecorder()
-        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase='playing', episode=dict(
+        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase='playing', boundary_id='fixture-boundary', episode=dict(
             episode_id='test', object_prim_path='/World/Task/Fruits/lemon1')))))
         node.recording_callback(harness.Bool(True))
+        harness.complete_startup(node)
         return node
 
     def test_results_are_explicit_without_automatic_terminal_or_stopping(self):
@@ -126,7 +127,7 @@ class RecorderContractTests(unittest.TestCase):
             self.assertEqual(saved['end_reason'], reason)
             events = [json.loads(c.args[0].data) for c in node._episode_pub.publish.call_args_list]
             self.assertEqual([e['event_type'] for e in events],
-                             ['recording_started','recording_end_requested','recording_result'])
+                             ['recording_started','recording_ready','recording_end_requested','recording_result'])
             self.assertFalse(events[-2]['result_final']); self.assertTrue(events[-1]['result_final'])
             for key in ('terminal','end_reason','success','recording_code','clock_domains'):
                 self.assertEqual(events[-1][key], saved[key])
@@ -163,6 +164,7 @@ class RecorderContractTests(unittest.TestCase):
         arm = harness.Message(); arm.name = sorted(module.ARM_JOINTS); arm.position = [0.]*14
         hand = harness.Message(); hand.left_hand_position = hand.right_hand_position = [50.]*6
         gateway.arm_callback(arm); gateway.hand_callback(hand)
+        harness.grant_recording(gateway)
         for ns in (0, 50_000_000, 100_000_000, 100_000_000, 200_000_000):
             gateway.subscriptions['/clock'].callback(SimpleNamespace(clock=SimpleNamespace(sec=0,nanosec=ns)))
         self.assertEqual(gateway.action_pub.publish.call_count, 2)

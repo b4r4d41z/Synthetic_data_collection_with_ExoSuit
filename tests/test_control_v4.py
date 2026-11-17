@@ -203,6 +203,7 @@ class DirectControlTests(unittest.TestCase):
             {
                 '/bfm/action',
                 '/bfm/source/input_provenance',
+                '/bfm/recording_gate',
             },
         )
 
@@ -254,6 +255,7 @@ class DirectControlTests(unittest.TestCase):
 
         g.arm_callback(arm)
         g.hand_callback(hand)
+        harness.grant_recording(g)
 
         g.clock_callback(
             NS(clock=NS(sec=0, nanosec=0))
@@ -277,6 +279,7 @@ class DirectControlTests(unittest.TestCase):
 
         g.arm_callback(arm)
         g.hand_callback(hand)
+        harness.grant_recording(g)
 
         g.clock_callback(
             NS(clock=NS(sec=0, nanosec=66_666_666))

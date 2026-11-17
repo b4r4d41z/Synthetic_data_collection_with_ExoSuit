@@ -25,9 +25,11 @@ class EpisodeOutcomeTests(unittest.TestCase):
     def start(self, identity='one'):
         self.overrides['bfm_collection_mode'] = True
         node = self.recorder.SimRecorder()
-        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase='playing', episode=dict(
+        node.episode_callback(SimpleNamespace(data=json.dumps(dict(phase='playing', boundary_id='fixture-boundary', episode=dict(
             episode_id=identity, object_prim_path='/World/Task/Fruits/pomegranate')))))
         node.recording_callback(harness.Bool(True))
+        harness.complete_startup(node)
+        harness.finalized_bag(node._bag_path)
         self.assertIsNotNone(node._process)
         return node
 
@@ -76,9 +78,10 @@ class EpisodeOutcomeTests(unittest.TestCase):
                 before = json.loads(path.read_text())
                 before['custom_metadata'] = {'keep': [1, 'unchanged']}
                 path.write_text(json.dumps(before))
-                node._bag_path.mkdir()
+                node._bag_path.mkdir(exist_ok=True)
                 bag = node._bag_path/'example.mcap'
-                bag.write_bytes(b'unchanged recorded message bytes')
+                recorded = b'\x89MCAP0\r\nunchanged recorded message bytes\x89MCAP0\r\n'
+                bag.write_bytes(recorded)
                 self.receive(node, state(position))
                 saved = self.stop(node)
                 self.assertFalse(saved['terminal'])
@@ -89,7 +92,7 @@ class EpisodeOutcomeTests(unittest.TestCase):
                 self.assertEqual(audit['method'], 'collision_mesh_residence_latched_v2')
                 self.assertFalse(audit['review_required'])
                 self.assertEqual(saved, {k:v for k,v in before.items() if k not in ('success', 'terminal', 'end_reason')})
-                self.assertEqual(bag.read_bytes(), b'unchanged recorded message bytes')
+                self.assertEqual(bag.read_bytes(), recorded)
                 self.assertFalse(list(path.parent.glob('.episode-outcome-*')))
 
     def test_missing_stale_invalid_and_mismatched_states_remain_unknown(self):

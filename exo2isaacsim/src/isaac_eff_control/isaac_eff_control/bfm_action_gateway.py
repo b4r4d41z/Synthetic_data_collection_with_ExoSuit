@@ -20,6 +20,7 @@ from rosgraph_msgs.msg import Clock
 
 from .sim_policy_clock import SimPolicyClock
 from .source_provenance import PROVENANCE_TOPIC, PROVENANCE_VERSION, encode_trace
+from .recording_readiness import READY_TOPIC, GATE_TOPIC, RecordingGate
 
 from .bfm_contract import (
     ACTION_TOPIC, ARM_JOINTS, ARM_SOURCE_TOPIC, HELD_ARM_TOPIC, HELD_HAND_TOPIC,
@@ -37,11 +38,20 @@ class BfmActionGateway(Node):
         self.input_sequences = dict(arm=0, hand=0)  # Lifetime of this Gateway, never reset by STOP/clock.
         self.playing = False
         self.boundary = None
+        self.episode_id = None
         self.arm = None
         self.hand = None
         if not self.enabled:
             self.get_logger().info("BFM gateway disabled; normal direct control is unchanged")
             return
+        self.recording_gate = RecordingGate(self.producer_session_id)
+        gate_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
+                              durability=DurabilityPolicy.TRANSIENT_LOCAL)
+        self.gate_pub = self.create_publisher(String, GATE_TOPIC, gate_qos)
+        self.create_subscription(String, READY_TOPIC, self.recorder_ready_callback, gate_qos)
+        hello = String()
+        hello.data = json.dumps(dict(version=1, phase='hello', gateway_id=self.producer_session_id))
+        self.gate_pub.publish(hello)
         self.arm_processing = arm_target_processing()
         self.arm_limits = self.arm_processing["joint_limits"]
         self.hand_input_topic = os.getenv("HAND_INPUT_TOPIC", RAW_HAND_TOPIC)
@@ -77,17 +87,35 @@ class BfmActionGateway(Node):
         event = json.loads(msg.data)
         if 'phase' not in event:
             return
+        episode_id = (event.get('episode') or {}).get('episode_id')
+        if (event['phase'] != 'playing' or event.get('boundary_id') != self.boundary
+                or episode_id != self.episode_id):
+            self.recording_gate.close()
         if event.get('boundary_id') != self.boundary or event['phase'] in ('stopped', 'failed', 'closed'):
             self.arm = self.hand = None
             self.policy_clock = SimPolicyClock()
         self.boundary = event.get('boundary_id')
+        self.episode_id = episode_id
         self.playing = event['phase'] == 'playing'
+
+    def recorder_ready_callback(self, msg):
+        try:
+            reply = self.recording_gate.receive(json.loads(msg.data), self.boundary,
+                self.episode_id, self.playing, self.arm is not None and self.hand is not None)
+            if reply is not None:
+                answer = String()
+                answer.data = json.dumps(reply)
+                self.gate_pub.publish(answer)
+        except (ValueError, TypeError, AttributeError):
+            self.recording_gate.close()
+            self.get_logger().warning('Invalid recording-readiness signal; Action publication remains gated')
 
     def clock_callback(self, msg):
         stamp = msg.clock
         now = stamp.sec * 1_000_000_000 + stamp.nanosec
         if self.policy_clock.last_ns is not None and now < self.policy_clock.last_ns:
             self.arm = self.hand = None
+            self.recording_gate.close()
         if self.policy_clock.advance(stamp.sec * 1_000_000_000 + stamp.nanosec):
             self.policy_tick(stamp)
 
@@ -118,7 +146,7 @@ class BfmActionGateway(Node):
         self.input_sequences['hand'] += 1
 
     def policy_tick(self, simulation_stamp=None):
-        if not self.enabled or not self.playing:
+        if not self.enabled or not self.playing or not self.recording_gate.allowed:
             return
         if self.arm is None or self.hand is None:
             missing = [name for name, value in (("arm", self.arm), ("hand", self.hand))

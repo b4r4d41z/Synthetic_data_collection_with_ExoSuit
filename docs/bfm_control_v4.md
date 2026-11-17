@@ -97,6 +97,100 @@ three RGB cameras, `/clock`, `/bfm/action`, `/bfm/state`, `/bfm/success` and exi
 lifecycle/outcome channels. Nothing is downsampled to the action cadence. Required
 streams must be verified in the real bag before dataset admission.
 
+## Recording startup barrier and tmux status
+
+The usual recording control is unchanged. In collection mode the recorder now
+starts rosbag normally, enters `STARTING`, and withholds **demonstration snapshots**
+until startup checks pass. Direct arm forwarding and the wall-scheduled finger
+controller continue throughout. External policy publishers are unaffected.
+
+Each bag process has a unique `--node-name bfm_bag_<uuid>`. The recorder verifies:
+
+1. That process is alive and its own DDS subscription endpoints have appeared
+   for **every recorded topic**, with a matching publisher type and compatible
+   offered/requested QoS. An unrelated monitor/recorder does not satisfy this.
+2. Its private `/<namespace>/<node>/is_paused` service reports `paused=false`.
+   Keyboard pause controls are disabled internally; the operator uses the existing
+   recording control and Isaac UI.
+3. After endpoint discovery, the monitor receives fresh actual clock, state,
+   measured joints, three RGB images, raw/mapped/bounded arm commands, raw/logical
+   hand commands, and both physical finger command streams. Clock, sensor/state
+   stamps must advance. Images must match configured frame, resolution and RGB
+   encoding, and lie in the observed advancing `/clock` window. Source-native
+   arm/hand headers and measured-state epochs are **not** subtracted from `/clock`.
+4. The Gateway has acknowledged this recording/episode/boundary with its current
+   producer UUID, a fresh challenge nonce and valid existing arm/hand buffers.
+   Neither Action messages nor input-provenance messages are required to pass
+   startup: only their DDS subscription endpoints. There is no circular wait.
+
+The proof is persisted as additive `episode.json.recording_readiness` metadata
+and a `recording_ready` event on the existing `/bfm/episode` diagnostic channel.
+Only then are `DATA STREAMS OK`, `RECORDING` and a scoped READY grant published.
+The internal reliable transient-local String channels `/bfm/recorder_ready` and
+`/bfm/recording_gate` carry version 1, recorder/session/challenge/episode/boundary
+identities and the Gateway nonce. They are coordination, not training signals.
+The recorder renews a monotonically numbered grant every 0.2 wall seconds;
+without renewal the Gateway closes within 1.5 wall seconds (checked at a decision
+tick). Duplicate grants cannot renew the lease. STOP/PAUSE/boundary/reset revoke
+it; a new Gateway must handshake and recheck post-discovery data. Old READY cannot
+open a new recording or Gateway. Gated ticks are discarded, never queued.
+
+These checks deliberately make a **limited** guarantee. Official Jazzy opens the
+writer before creating GenericSubscriptions; `is_paused=false` plus discovered
+subscriptions and independent data reception are useful startup evidence, but
+are **not per-message acknowledgement of writer admission, disk durability or
+complete MCAP contents**. `writer_admission_verified=false` records that limit.
+See the official [Jazzy recorder implementation](https://github.com/ros2/rosbag2/blob/jazzy/rosbag2_transport/src/rosbag2_transport/recorder.cpp)
+and [CLI options](https://github.com/ros2/rosbag2/blob/jazzy/ros2bag/ros2bag/verb/record.py).
+No expensive live MCAP scanning, duplicate/fake samples or extra ROS processes
+are used. The barrier cannot guarantee absence of subsequent DDS losses, rendering
+stalls, or converter epoch/provenance failures. Check the actual bag before
+dataset admission; no previously excluded Action is retrospectively repaired.
+
+Node parameters `recording_readiness_timeout_sec` (30 wall seconds) and
+`recording_readiness_max_age_sec` (2 wall seconds) control startup timeout and
+monitor freshness. Startup failure lists missing conditions, revokes the grant,
+finalizes the partial bag and marks the outcome for review. There is no automatic
+restart: the existing false/true recording toggle retries. STOP during startup
+is incomplete and never prints `SAVED`. Existing process escalation, atomic
+outcome persistence and STOP acknowledgement ordering remain authoritative.
+PAUSE continues to finalize a bag as before; PLAY alone does not start a new one.
+
+Main panes show transitions only: ARM/HAND `WAITING`, `ACTIVE`, `STOPPED` (>1 wall
+second without raw valid input), `ERROR`; REC `WAITING`, `STARTING`,
+`DATA STREAMS OK`, `RECORDING`, `SAVED <actual_folder>`, `WAITING`, or `ERROR`.
+`ACTIVE` means input flow, not measured motion or repeated interpolator output.
+`SAVED` requires an acceptable child exit without escalation, rosbag metadata,
+closed MCAP header/footer evidence, and persisted episode metadata. This closure
+check does not certify individual messages. Missing closure or metadata prevents
+`SAVED`; an unknown task result is distinct from an unsaved recording.
+
+The existing workers color only terminal status tokens: gray idle/stopped, blue
+starting, green active/recording/verified/saved, yellow warnings and red errors.
+Non-TTY output and `NO_COLOR` disable ANSI. ROS messages and file logs stay plain.
+Routine details go to `records/worker_ARM.log`, `worker_HAND.log`, `worker_REC.log`
+(and `worker_GATEWAY.log`), alongside `records/rosbag2.log`; the same backend
+window tails the main-worker files. Warnings/errors/tracebacks remain visible.
+Pane structure and signal forwarding/wait-for-cleanup behavior are unchanged.
+
+After applying, rebuild `isaac_eff_control` and restart the collection workers:
+
+```bash
+cd exo2isaacsim
+colcon build --symlink-install --packages-select isaac_eff_control
+source install/setup.bash
+```
+
+Use the same two launch commands. No ROS message regeneration is required; Jazzy
+must provide `rosbag2_interfaces` (now an explicit runtime dependency).
+Live acceptance: PLAY, toggle recording on, verify STARTING then STREAMS OK and
+RECORDING, move both arms/hands, stop, verify SAVED names the real folder and
+`ros2 bag info records/<folder>/bag` has nonzero required streams. Inspect Action
+stamps/provenance and `recording_ready` in MCAP, not just the console. Test a
+missing camera/clock, process failure, early STOP, PAUSE, rapid toggles and worker
+restart: no premature Actions, false SAVED, leaked readiness or reset before
+finalization. Host tests cannot establish DDS/writer admission in live Isaac.
+
 ## Independent ambidextrous pool
 
 `models/stages/v1_manipulation_ambidextrous/things_pool.usda` owns exactly

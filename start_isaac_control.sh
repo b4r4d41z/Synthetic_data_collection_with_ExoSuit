@@ -52,7 +52,8 @@ start_worker "$PANE_ARM" arm_control_node
 start_worker "$PANE_HAND" eff_control_node
 start_worker "$PANE_RECORDER" sim_recorder_node
 start_worker "$PANE_GATEWAY" bfm_action_gateway_node
-printf -v LOG_COMMAND 'exec tail -F -- %q' "$PROJECT_DIR/records/rosbag2.log"
+printf -v LOG_COMMAND 'exec tail -F -- %q %q %q %q' "$PROJECT_DIR/records/rosbag2.log" \
+    "$PROJECT_DIR/records/worker_ARM.log" "$PROJECT_DIR/records/worker_HAND.log" "$PROJECT_DIR/records/worker_REC.log"
 tmux send-keys -t "$PANE_LOG" "$LOG_COMMAND" C-m
 tmux select-window -t "$SESSION:main"
 tmux select-pane -t "$PANE_ARM"

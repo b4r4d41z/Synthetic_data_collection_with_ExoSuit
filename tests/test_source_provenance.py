@@ -28,6 +28,7 @@ class SourceProvenanceTests(unittest.TestCase):
         return gateway
 
     def sample(self, gateway, ns=100_000_000):
+        harness.grant_recording(gateway)
         gateway.policy_tick(NS(sec=ns//10**9, nanosec=ns%10**9))
         return (gateway.action_pub.publish.call_args.args[0],
                 gateway.provenance_pub.publish.call_args.args[0].data)
@@ -96,6 +97,7 @@ class SourceProvenanceTests(unittest.TestCase):
         self.assertIsNone(gateway.arm);self.assertIsNone(gateway.hand)
         gateway.clock_callback(NS(clock=NS(sec=0,nanosec=0)))
         gateway.arm_callback(self.arm_source());gateway.hand_callback(self.hand_source())
+        harness.grant_recording(gateway)
         gateway.clock_callback(NS(clock=NS(sec=0,nanosec=66_666_666)))
         second=gateway.action_pub.publish.call_args.args[0]
         gateway.clock_callback(NS(clock=NS(sec=0,nanosec=0)))
